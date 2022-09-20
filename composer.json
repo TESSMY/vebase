@@ -1,0 +1,17 @@
+{
+    "name": "vecapital/vebase",
+    "description": "Helpers and functions to support vebase",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Vecapital\\Vebase\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gerald Lam",
+            "email": "gerald@vecapital.asia"
+        }
+    ],
+    "require": {}
+}

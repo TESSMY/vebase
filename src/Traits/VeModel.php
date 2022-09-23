@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits;
+namespace Vecapital\Vebase\Traits;
 
 trait VeModel
 {

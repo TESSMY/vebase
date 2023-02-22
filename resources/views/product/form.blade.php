@@ -3,30 +3,29 @@
     <div class="d-flex justify-content-between p-3" style="border-bottom-width:2px">
         <div>
             <span>
-                <h4><i class="fas fa-store text-identity me-2" style="color: #289983"></i>Create Product</h4>
+                <h4><i class="fas fa-store text-identity me-2" style="color: #289983"></i>{{ __('Create Product') }}</h4>
             </span>
         </div>
         <div class="mt-3 mb-3" style="border-top-width:3px">
             <div>
-                <a href="#" class="btn btn-alt px-5">Back</a>
+                <a href="#" class="btn btn-alt px-5">{{ __('Back') }}</a>
             </div>
         </div>
     </div>
-
 
     {{-- form --}}
     <form action="#" method="POST" enctype="multipart/form-data">
     @csrf
         <div class="card shadow bg-white mt-4 mb-4">
             <div class="border-bottom">
-                <div class="ms-4 mt-2 mb-2">General Information</div>
+                <div class="ms-4 mt-2 mb-2">{{ __('General Information') }}</div>
             </div>
 
             <div class="container-fluid mt-5 pb-5 mx-5">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group row mb-3">
-                            <label class="col-md-3 text-right form-label">Name</label>
+                            <label class="col-md-3 text-right form-label">{{ __('Name') }}</label>
                             <div class="col-md-7">
                                 <input type="text" name="name" value ="" class="form-control" required/>
                             </div>
@@ -34,7 +33,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group row mb-4">
-                            <label class="col-md-3 text-right form-label mt-2">Product Image</label>
+                            <label class="col-md-3 text-right form-label mt-2">{{ __('Product Image') }}</label>
                             <div class="col-md-7">
                                 <input type="file" name="image" value="" class="form-control" />
                             </div>
@@ -44,7 +43,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group row mb-3">
-                            <label class="col-md-3 text-right form-label">Description</label>
+                            <label class="col-md-3 text-right form-label">{{ __('Description') }}</label>
                             <div class="col-md-7">
                                 <textarea class="form-control me-5" name="description" rows="3" cols="13"></textarea>
                             </div>
@@ -52,7 +51,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group row mb-3">
-                            <label class="col-md-3 text-right form-label">Brand</label>
+                            <label class="col-md-3 text-right form-label">{{ __('Brand') }}</label>
                             <div class="col-md-7">
                                 <input type="text" name="brand" value ="" class="form-control" required/>
                             </div>
@@ -62,7 +61,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group row mb-3">
-                            <label class="col-md-3 text-right form-label">UOM</label>
+                            <label class="col-md-3 text-right form-label">{{ __('UOM') }}</label>
                             <div class="col-md-7">
                                 <input type="text" name="uom" value ="" class="form-control" required/>
                             </div>
@@ -72,11 +71,11 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group row mb-4">
-                            <label class="col-md-3 text-right form-label mt-2">Supplier</label>
+                            <label class="col-md-3 text-right form-label mt-2">{{ __('Supplier') }}</label>
                             <div class="col-md-7">
                                 <select name="supplier" id="supplier" class="form-select">
-                                    <option class="text-muted" disabled>-- Please Select --</option>
-                                    <option value="0">Supplier 1</option>
+                                    <option class="text-muted" disabled>-- {{ __('Please Select') }} --</option>
+                                    <option value="0">{{ __('Supplier') }} 1</option>
                                 </select>
                             </div>
                         </div>
@@ -84,20 +83,20 @@
                 </div>
             </div>
             <div class="border-bottom mt-5">
-                <div class="ms-4 mb-2">Product Variations</div>
+                <div class="ms-4 mb-2">{{ __('Product Variations') }}</div>
             </div>
             <div class="body my-5">
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                         <tr>
-                            <th>Image</th>
-                            <th>Variant Name</th>
-                            <th>Attributes</th>
-                            <th>Stock</th>
-                            <th>SKU</th>
-                            <th>Unit Cost</th>
-                            <th>Retail Selling Price</th>
+                            <th>{{ __('Image') }}</th>
+                            <th>{{ __('Variant Name') }}</th>
+                            <th>{{ __('Attributes') }}</th>
+                            <th>{{ __('Stock') }}</th>
+                            <th>{{ __('SKU') }}</th>
+                            <th>{{ __('Unit Cost') }}</th>
+                            <th>{{ __('Retail Selling Price') }}</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -176,14 +175,14 @@
                         </tr>
                         </tbody>
                     </table>
-                    <button type="button" class="btn btn-primary px-5 mt-3" @click="addVariants">Add More</button>
+                    <button type="button" class="btn btn-primary px-5 mt-3" @click="addVariants">{{ __('Add More') }}</button>
                     </div>
                 </div>
             </div>
         </div>
         <div class="mt-3 mb-4">
-            <button class="btn btn-primary px-5">Create</button>
-            <button class="btn btn-secondary px-5">Close</button>
+            <button class="btn btn-primary px-5">{{ __('Create') }}</button>
+            <button class="btn btn-secondary px-5">{{ __('Close') }}</button>
         </div>
     </form>
 </div>

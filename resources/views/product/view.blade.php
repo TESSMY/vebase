@@ -4,7 +4,7 @@
     <div class="row justify-content-between align-items-center w-100 border-bottom pb-4">
         <div class="col-md-12">
             <span>
-                <h5>Product Details</h5>
+                <h5>{{ __('Product Details') }}</h5>
             </span>
         </div>
     </div>
@@ -14,7 +14,7 @@
             <div class="w-25 mt-4">
             </div>
             <div class="col-12 col-md-auto d-flex pt-3">
-                <a href="#" class="btn btn-alt px-5">Back</a>
+                <a href="#" class="btn btn-alt px-5">{{ __('Back') }}</a>
             </div>
         </div>
     </div>
@@ -23,16 +23,16 @@
         <div class="body border-top">
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">{{ __('Overview') }}</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="transaction-tab" data-bs-toggle="tab" data-bs-target="#transaction" type="button" role="tab" aria-controls="transaction" aria-selected="false">Transaction</button>
+                    <button class="nav-link" id="transaction-tab" data-bs-toggle="tab" data-bs-target="#transaction" type="button" role="tab" aria-controls="transaction" aria-selected="false">{{ __('Transaction') }}</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">Related Products</button>
+                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">{{ __('Related Products') }}</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">History</button>
+                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">{{ __('History') }}</button>
                 </li>
             </ul>
             <div class="tab-content" id="myTabContent">

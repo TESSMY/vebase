@@ -7,57 +7,57 @@
     <div class="col-md-7">
         <div class="d-flex">
             <div class="col-md-8 pe-6">
-                <h3>Amazing Modern Chair (Orange)</h3>
-                <small class="fw-light">Added Date: 10/10/2022.</small>
+                <h3>{{ __('Amazing Modern Chair') }} ({{ __('Orange') }})</h3>
+                <small class="fw-light">{{ __('Added Date') }}: 10/10/2022.</small>
             </div>
             <div class="col-md-4">
                 <div>
-                    <a href="#" class="btn btn-alt px-5">Edit Product</a>
+                    <a href="#" class="btn btn-alt px-5">{{ __('Edit Product') }}</a>
                 </div>
             </div>
         </div>
         <div class="d-flex mt-3">
             <div class="col-md-6 pe-6">
-                <div>Unit Cost:</div>
+                <div>{{ __('Unit Cost') }}:</div>
                 <b>$25.90</b>
             </div>
             <div class="col-md-6">
-                <div>Retail Price:</div>
+                <div>{{ __('Retail Price') }}:</div>
                 <b>$45.90</b>
             </div>
         </div>
 
         <div class="mt-3">
-            <div>Description:</div>
+            <div>{{ __('Description') }}:</div>
             <div>Lorem ipsum</div>
         </div>
 
         <div class="d-flex mt-3">
             <div class="col-md-4 pe-6">
-                <div>SKU:</div>
-                <b>SKU #12345</b>
+                <div>{{ __('SKU') }}:</div>
+                <b>{{ __('SKU') }} #12345</b>
             </div>
             <div class="col-md-4 pe-6">
-                <div>Barcode:</div>
+                <div>{{ __('Barcode') }}:</div>
                 <b>#12345</b>
             </div>
             <div class="col-md-4">
-                <div>Location:</div>
-                <b>Warehouse, Changi</b>
+                <div>{{ __('Location') }}:</div>
+                <b>{{ __('Warehouse') }}, Changi</b>
             </div>
         </div>
 
         <div class="d-flex mt-3">
             <div class="col-md-4 pe-6">
-                <div>Available Stock:</div>
+                <div>{{ __('Available Stock') }}:</div>
                 <b>1784</b>
             </div>
             <div class="col-md-4 pe-6">
-                <div>Supplier:</div>
-                <b>Supplier #12345</b>
+                <div>{{ __('Supplier') }}:</div>
+                <b>{{ __('Supplier') }} #12345</b>
             </div>
             <div class="col-md-4">
-                <div>Reorder Point:</div>
+                <div>{{ __('Reorder Point') }}:</div>
                 <b>75</b>
             </div>
         </div>

@@ -10,7 +10,7 @@
     <div class="row justify-content-between align-items-center w-100 border-bottom pb-4">
         <div class="col-md-12">
             <span>
-                <h5><i class="fa fa-store text-identity me-4" style="color: #289983"></i>Product Bundling</h5>
+                <h5><i class="fa fa-store text-identity me-4" style="color: #289983"></i>{{ __('Product Bundling') }}</h5>
             </span>
         </div>
     </div>
@@ -18,7 +18,7 @@
     <div class="row my-4">
         <div class="d-flex justify-content-between align-items-end">
             <div class="col-12 col-md-auto d-flex">
-                <a href="{{ route('admin.ve-product-bundles.create') }}" class="btn btn-primary px-5">New Bundle</a>
+                <a href="{{ route('admin.ve-product-bundles.create') }}" class="btn btn-primary px-5">{{ __('New Bundle') }}</a>
             </div>
             <div class="col-lg-4 col-md-6">
                 <form id="frmSearch" action="{{ route('admin.ve-product-bundles.index') }}" method="GET">
@@ -40,14 +40,14 @@
             <table class="table table-rounded table-striped shadow w-100 mt-4">
                 <thead>
                     <tr>
-                        <th class="px-5" style="width:25%">Product Bundle</th>
-                        <th style="width:15%">Sku</th>
-                        <th style="width:15%">Bundle Barcode</th>
-                        <th style="width:10%">Total Stock</th>
-                        <th style="width:10%">Available Stock</th>
-                        <th style="width:15%">Bundle Cost</th>
-                        <th style="width:15%">Bundle Selling Price</th>
-                        <th style="width:5%">Action</th>
+                        <th class="px-5" style="width:25%">{{ __('Product Bundle') }}</th>
+                        <th style="width:15%">{{ __('Sku') }}</th>
+                        <th style="width:15%">{{ __('Bundle Barcode') }}</th>
+                        <th style="width:10%">{{ __('Total Stock') }}</th>
+                        <th style="width:10%">{{ __('Available Stock') }}</th>
+                        <th style="width:15%">{{ __('Bundle Cost') }}</th>
+                        <th style="width:15%">{{ __('Bundle Selling Price') }}</th>
+                        <th style="width:5%">{{ __('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,13 +58,13 @@
                                 <span class="py-3 px-2">Tea Table Set</span>
                             </div>
                         </td>
-                        <td>SKU #12345</td>
+                        <td>{{ __('SKU') }} #12345</td>
                         <td>NP #12345</td>
                         <td>150</td>
                         <td>150</td>
                         <td>$25.90</td>
                         <td>$45.90</td>
-                        <td><a href="{{ route('admin.ve-products.edit', 1) }}" class="btn btn-primary px-5">Edit</a></td>
+                        <td><a href="{{ route('admin.ve-products.edit', 1) }}" class="btn btn-primary px-5">{{ __('Edit') }}</a></td>
                     </tr>
                 </tbody>
             </table>

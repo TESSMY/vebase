@@ -13,6 +13,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
             __DIR__.'/../config/courier.php' => config_path('vecapital.php'),
         ]);
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        $this->loadViewsFrom(base_path('vendor/vecapital/vebase/src/resources/views'), 'vebase');
     }
 
     /**

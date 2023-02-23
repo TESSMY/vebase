@@ -80,11 +80,11 @@ class VeController extends Controller
             $models->latest();
         }
 
-        $modelName = $this->model;
+        $model = $this->model;
         $tableName = $this->tableName;
         $folder = $this->folder;
         $compact = [
-            'models', 'modelName', 'tableName', 'folder', 
+            'models', 'model', 'tableName', 'folder', 
         ];
         
         if (View::exists($this->folder . '.' . $this->tableName . '.index')) {

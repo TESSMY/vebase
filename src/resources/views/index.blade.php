@@ -37,17 +37,17 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            @foreach ($collection as $item)
-                                <th>{{  }}</th>
+                            @foreach ($model::indexFields as $indexField)
+                                <td>{{ $indexField }}</td>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($models as $model)
+                        @forelse ($models as $m)
                             <tr>
-                                <td>{{ $admin->name }}</td>
-                                <td>{{ $admin->email }}</td>
-                                <td>{{ $admin->roles->first()->name }}</td>
+                                @foreach ($model::indexFields as $indexField)
+                                    <td>{{ $m->indexField }}</td>
+                                @endforeach
                                 <td><a href="{{ route('admin.admins.show', $model->getRouteKey()) }}" class="btn btn-primary">View</a></td>
                             </tr>
                         @empty

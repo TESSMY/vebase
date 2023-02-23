@@ -34,6 +34,12 @@ trait VeModel
     protected array $sortable = [];
 
     /**
+     * The fields that are to be shown in the `index` page
+     * @var array
+     */
+    protected array $indexFields = [];
+
+    /**
      * The fields that are needed during creation along with its type
      * E.g. 'email' => [
      *      'type' => 'email',

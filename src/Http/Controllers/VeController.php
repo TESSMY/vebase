@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\View;
 
 class VeController extends Controller
 {
@@ -58,30 +59,17 @@ class VeController extends Controller
         $models = $this->model::query();
 
         if (!empty($search)) {
-            if (empty($this->model::searchable)) {
-                throw new \Exception($this->model . " searchable is empty");
+            if (!empty($this->model::searchable)) {
+                $models = $models->where(function($query) use ($search) {
+                    foreach ($this->model::searchable as $value) {
+                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
+                    }
+                });
             }
-
-            $models = $models->where(function($query) use ($search) {
-                foreach ($this->model::searchable as $value) {
-                    $query->orWhere($value, 'LIKE', '%' . $search . '%');
-                }
-            });
         }
 
-        if (!empty($orderColumn)) {
-            if (empty($this->model::sortable)) {
-                throw new \Exception($this->model . " sortable is empty");
-            }
-            if (!in_array($orderColumn, $this->model::sortable)) {
-                throw new \Exception($orderColumn . " is not in " . $this->model . " sortable");
-            }
-
+        if (!empty($orderColumn) && in_array($orderColumn, $this->model::sortable)) {
             $models = $models->orderBy($orderColumn, $orderBy);
-        }
-
-        if (!empty($this->model::relatable)) {
-            $models->load($this->model::relatable);
         }
 
         // need to check if orderby and sortby will work together
@@ -92,7 +80,23 @@ class VeController extends Controller
             $models->latest();
         }
 
-        return view($this->folder . '.' . $this->tableName . '.index', compact('models'));
+        $modelName = $this->model;
+        $tableName = $this->tableName;
+        $folder = $this->folder;
+        $compact = [
+            'models', 'modelName', 'tableName', 'folder', 
+        ];
+        
+        if (View::exists($this->folder . '.' . $this->tableName . '.index')) {
+            // returns view if found in app resource view folder
+            return view($this->folder . '.' . $this->tableName . '.index', compact($compact));
+        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->tableName . '/index.blade.php'))) {
+            // returns view found in vendor resource folder
+            return View::make('vebase::views.' . $this->tableName . '.index', compact($compact));
+        } else {
+            // default vendor view
+            return View::make('vebase::views.index', compact($compact));
+        }
     }
 
     public function create(Request $request)

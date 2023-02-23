@@ -21,7 +21,7 @@ trait VeModel
     protected array $files = [];
 
     /**
-     * The relations that should be loaded in the `index` or `show` functions
+     * The relations that should be loaded in the `index` or `show` functions for api
      * Make sure to add the relation in the model before adding it here or the relatable will not work
      * @var array
      */
@@ -34,12 +34,34 @@ trait VeModel
     protected array $sortable = [];
 
     /**
+     * The fields that are needed during creation along with its type
+     * E.g. 'email' => [
+     *      'type' => 'email',
+     *      'required' => 'false',
+     * ],
+     *
+     * @var array
+     */
+    protected array $createFields = [];
+
+    /**
      * The fields that are needed during creation
      * E.g. 'email' => 'required|unique:users,email,' . $this->id . ',id,deleted_at,NULL',
      *
      * @var array
      */
-    protected array $create = [];
+    protected array $createValidator = [];
+
+    /**
+     * The fields that are needed during update along with its type
+     * E.g. 'email' => [
+     *      'type' => 'email',
+     *      'required' => 'false',
+     * ],
+     *
+     * @var array
+     */
+    protected array $updateFields = [];
 
     /**
      * The fields that are needed during update
@@ -47,7 +69,7 @@ trait VeModel
      *
      * @var array
      */
-    protected array $update = [];
+    protected array $updateValidator = [];
 
     abstract public function hasApiResourceRoute() : bool;
 

@@ -1,0 +1,66 @@
+@extends('layouts/layout')
+
+@section('content')
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box">
+                    <span class="page-title h4">Admins</span>
+                </div>
+            </div>
+        </div>
+        <div class="border my-2 mb-3"></div>
+        <div class="bg-white card shadow py-3 px-4">
+            <div class="row mb-3">
+                <a href="{{ route('admin.admins.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New Admin </a>
+                <span class="col-md-9"></span>
+                <a href="{{ route('admin.roles.index') }}" class="col-12 col-md-1 btn btn-light rounded"> Roles </a>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12 col-md-2 mb-3 mb-md-0 d-flex">
+                    <span class="my-auto">Display:</span>
+                    <select class="form-select mx-2">
+                        <option selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span class="my-auto">Product</span>
+                </div>
+                <div class="col-md-8"></div>
+                <div class="col-12 col-md-2 p-0 d-md-flex">
+                    <label class="form-label my-auto me-md-2">Search: </label>
+                    <input class="form-control" type="search" placeholder="Search">
+                </div>
+            </div>
+            <div class="overflow-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            @foreach ($collection as $item)
+                                <th>{{  }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($models as $model)
+                            <tr>
+                                <td>{{ $admin->name }}</td>
+                                <td>{{ $admin->email }}</td>
+                                <td>{{ $admin->roles->first()->name }}</td>
+                                <td><a href="{{ route('admin.admins.show', $model->getRouteKey()) }}" class="btn btn-primary">View</a></td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center">There are no {{ $models }} found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="mt-2">
+            {{ $models->links() }}
+        </div>
+    </div>
+@endsection

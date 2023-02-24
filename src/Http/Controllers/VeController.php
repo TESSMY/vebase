@@ -172,13 +172,13 @@ class VeController extends Controller
         
         if (View::exists($this->folder . '.' . $this->routeName . '.show')) {
             // returns view if found in app resource view folder
-            return view($this->folder . '.' . $this->routeName . '.show');
+            return view($this->folder . '.' . $this->routeName . '.show', $compact);
         } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->routeName . '/show.blade.php'))) {
             // returns view found in vendor resource folder
-            return View::make('vebase::' . $this->routeName . '.show');
+            return View::make('vebase::' . $this->routeName . '.show', $compact);
         } else {
             // default vendor view
-            return View::make('vebase::show',);
+            return View::make('vebase::show', $compact);
         }
     }
 

@@ -31,7 +31,7 @@
                     <input class="form-control" type="search" placeholder="Search">
                 </div>
             </div>
-            {{-- <div class="overflow-auto">
+            <div class="overflow-auto">
                 <table class="table">
                     <thead>
                         <tr>
@@ -46,7 +46,7 @@
                                 @foreach ($model::indexFields as $indexField)
                                     <td>{{ $m->indexField }}</td>
                                 @endforeach
-                                <td><a href="{{ route($routePrefix . '.' $routeName '.show', $model->getRouteKey()) }}" class="btn btn-primary">View</a></td>
+                                <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $model->getRouteKey()) }}" class="btn btn-primary">View</a></td>
                             </tr>
                         @empty
                             <tr>
@@ -55,7 +55,7 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div> --}}
+            </div>
         </div>
         <div class="mt-2">
             {{ $models->links() }}

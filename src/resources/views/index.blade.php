@@ -50,7 +50,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">There are no {{ $models }} found.</td>
+                                <td colspan="5" class="text-center">There are no {{ $modelName }} found.</td>
                             </tr>
                         @endforelse
                     </tbody>

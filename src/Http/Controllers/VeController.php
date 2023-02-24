@@ -143,10 +143,6 @@ class VeController extends Controller
     public function show(Request $request, $id)
     {
         $model = $this->checkRouteKey($id);
-
-        if (!empty($model::relatable)) {
-            $model->load($model::relatable);
-        }
         
         return view($this->folder. '.' . $this->routeName . '.show', compact('model'));
     }

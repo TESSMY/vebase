@@ -54,6 +54,7 @@ class VeController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $limit = $request->input('limit') ?? 10;
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
 
@@ -81,7 +82,7 @@ class VeController extends Controller
             $models->latest();
         }
 
-        $models = $models->paginate(10)->withQueryString();
+        $models = $models->paginate($limit)->withQueryString();
         
         $compact = [
             'routeModel' => Str::singular($this->routeName),
@@ -129,11 +130,12 @@ class VeController extends Controller
     {
         $input = $request->all();
 
-        if (empty($this->model::create)) {
-            throw new \Exception($this->model . " create is empty");
+        if (empty($this->model::createValidator)) {
+            flash('Error: ' . $this->model . " create is empty")->error();
+            return back()->withInput($request->input());
         }
 
-        $validator = Validator::make($input, $this->model::create);
+        $validator = Validator::make($input, $this->model::createValidator);
         if ($validator->fails()) {
             foreach ($validator->errors()->all() as $error) {
                 flash('Error: ' . $error)->error();

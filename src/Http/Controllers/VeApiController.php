@@ -28,9 +28,6 @@ class VeApiController extends ApiController
             $class = Str::singular($request->segment(2));
             $this->model = app('App\\Models\\' . ucfirst($class));
 
-            if (Auth::user()->canAccessAdmin()) {
-                $this->folder = 'admin';
-            }
             $this->authorizeResource($this->model::class, $this->model);
         }
     }

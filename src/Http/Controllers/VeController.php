@@ -27,7 +27,6 @@ class VeController extends Controller
      */
     public function __construct(Request $request)
     {
-
         if (!empty($request->segments())) {
             $this->tableName = $request->segment(2);
             $class = Str::singular($request->segment(2));
@@ -82,9 +81,9 @@ class VeController extends Controller
 
         $model = $this->model;
         $tableName = $this->tableName;
-        $folder = $this->folder;
+        $routePrefix = $this->folder;
         $compact = [
-            'models', 'model', 'tableName', 'folder', 
+            'models', 'model', 'tableName', 'routePrefix', 
         ];
         
         if (View::exists($this->folder . '.' . $this->tableName . '.index')) {

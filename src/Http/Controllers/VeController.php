@@ -105,7 +105,7 @@ class VeController extends Controller
         }
     }
 
-    public function create(Request $request)
+    public function create()
     {
         $compact = [
             'model' => $this->model,
@@ -137,9 +137,7 @@ class VeController extends Controller
 
         $validator = Validator::make($input, $this->model::createValidator);
         if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                flash('Error: ' . $error)->error();
-            }
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
 
@@ -164,6 +162,13 @@ class VeController extends Controller
     {
         $routeModel = Str::singular($this->routeName);
         $$routeModel = $this->checkRouteKey($id);
+
+        $compact = [
+            'model' => $this->model,
+            'modelName' => $this->modelName,
+            'routeName' => $this->routeName,
+            'routePrefix' => $this->folder,
+        ];
         
         if (View::exists($this->folder . '.' . $this->routeName . '.show')) {
             // returns view if found in app resource view folder
@@ -173,7 +178,7 @@ class VeController extends Controller
             return View::make('vebase::' . $this->routeName . '.show');
         } else {
             // default vendor view
-            return View::make('vebase::show');
+            return View::make('vebase::show',);
         }
     }
 
@@ -181,7 +186,23 @@ class VeController extends Controller
     {
         $model = $this->checkRouteKey($id);
 
-        return view($this->folder . '.' . $this->routeName . '.edit', compact('model'));
+        $compact = [
+            'model' => $model,
+            'modelName' => $this->modelName,
+            'routeName' => $this->routeName,
+            'routePrefix' => $this->folder,
+        ];
+
+        if (View::exists($this->folder . '.' . $this->routeName . '.edit')) {
+            // returns view if found in app resource view folder
+            return view($this->folder . '.' . $this->routeName . '.edit', $compact);
+        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->routeName . '/edit.blade.php'))) {
+            // returns view found in vendor resource folder
+            return View::make('vebase::' . $this->routeName . '.edit', $compact);
+        } else {
+            // default vendor view
+            return View::make('vebase::edit', $compact);
+        }
     }
 
     public function update(Request $request, $id)
@@ -190,15 +211,13 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (empty($this->model::create)) {
-            throw new \Exception($this->model . " create is empty");
+        if (empty($this->model::updateValidator)) {
+            throw new \Exception($this->model . " updateValidator is empty");
         }
 
-        $validator = Validator::make($input, $model::update);
+        $validator = Validator::make($input, $model::updateValidator);
         if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                flash('Error: ' . $error)->error();
-            }
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
 

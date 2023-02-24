@@ -33,8 +33,8 @@
 <div class="row">
     @foreach ($model::createFields as $createField)
         <div class="col-12 col-md-6 mb-md-2 mb-2">
-            <label>{{ $createField['name'] }}</label>
-            <input class="form-control" type="{{ $createField['type'] }}" name="name" placeholder="{{ $createField['name'] }}" value="{{ old($createField['name']) ?? (!empty($model) ? $model[$createField['name']] : '') }}" {{ $createField['required'] }}>
+            <label>{{ $createField['displayName'] }}</label>
+            <input class="form-control" type="{{ $createField['type'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['displayName'] }}" value="{{ old($createField['name']) ?? (!empty($model) ? $model[$createField['name']] : '') }}" {{ $createField['required'] }}>
         </div>
     @endforeach
 </div>

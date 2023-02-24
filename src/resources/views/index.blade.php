@@ -6,14 +6,14 @@
         <div class="row">
             <div class="col-12">
                 <div class="page-title-box">
-                    <span class="page-title h4">{{ $model }}</span>
+                    <span class="page-title h4">{{ $modelName }}</span>
                 </div>
             </div>
         </div>
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow py-3 px-4">
             <div class="row mb-3">
-                <a href="{{ route($routePrefix . '.' . $tableName '.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New {{ $model }} </a>
+                <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New {{ $modelName }} </a>
             </div>
             <div class="row mb-3">
                 <div class="col-12 col-md-2 mb-3 mb-md-0 d-flex">
@@ -23,7 +23,7 @@
                         <option value="25">25</option>
                         <option value="50">50</option>
                     </select>
-                    <span class="my-auto">{{ $model }}</span>
+                    <span class="my-auto">{{ $modelName }}</span>
                 </div>
                 <div class="col-md-8"></div>
                 <div class="col-12 col-md-2 p-0 d-md-flex">
@@ -31,7 +31,7 @@
                     <input class="form-control" type="search" placeholder="Search">
                 </div>
             </div>
-            <div class="overflow-auto">
+            {{-- <div class="overflow-auto">
                 <table class="table">
                     <thead>
                         <tr>
@@ -46,7 +46,7 @@
                                 @foreach ($model::indexFields as $indexField)
                                     <td>{{ $m->indexField }}</td>
                                 @endforeach
-                                <td><a href="{{ route($routePrefix . '.' $tableName '.show', $model->getRouteKey()) }}" class="btn btn-primary">View</a></td>
+                                <td><a href="{{ route($routePrefix . '.' $routeName '.show', $model->getRouteKey()) }}" class="btn btn-primary">View</a></td>
                             </tr>
                         @empty
                             <tr>
@@ -55,7 +55,7 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </div> --}}
         </div>
         <div class="mt-2">
             {{ $models->links() }}

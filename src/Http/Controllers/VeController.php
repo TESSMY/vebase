@@ -19,7 +19,8 @@ class VeController extends Controller
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     protected $model;
-    protected $tableName;
+    protected $modelName;
+    protected $routeName;
     protected $folder;
 
     /**
@@ -28,9 +29,10 @@ class VeController extends Controller
     public function __construct(Request $request)
     {
         if (!empty($request->segments())) {
-            $this->tableName = $request->segment(2);
-            $class = Str::singular($request->segment(2));
-            $this->model = app('App\\Models\\' . ucfirst($class));
+            $this->routeName = $request->segment(2);
+            $name = Str::singular(Str::camel($this->routeName));
+            $this->model = app('App\\Models\\' . ucfirst($name));
+            $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
 
             if (Auth::user()->canAccessAdmin()) {
                 $this->folder = 'admin';
@@ -79,19 +81,22 @@ class VeController extends Controller
             $models->latest();
         }
 
+        $models = $models->paginate(10)->withQueryString();
+
         $model = $this->model;
-        $tableName = $this->tableName;
+        $modelName = $this->modelName;
+        $routeName = $this->routeName;
         $routePrefix = $this->folder;
         $compact = [
-            'models', 'model', 'tableName', 'routePrefix', 
+            'models', 'model', 'modelName', 'routeName', 'routePrefix', 
         ];
         
-        if (View::exists($this->folder . '.' . $this->tableName . '.index')) {
+        if (View::exists($this->folder . '.' . $this->routeName . '.index')) {
             // returns view if found in app resource view folder
-            return view($this->folder . '.' . $this->tableName . '.index', compact($compact));
-        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->tableName . '/index.blade.php'))) {
+            return view($this->folder . '.' . $this->routeName . '.index', compact($compact));
+        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->routeName . '/index.blade.php'))) {
             // returns view found in vendor resource folder
-            return View::make('vebase::' . $this->tableName . '.index', compact($compact));
+            return View::make('vebase::' . $this->routeName . '.index', compact($compact));
         } else {
             // default vendor view
             return View::make('vebase::index', compact($compact));
@@ -100,7 +105,7 @@ class VeController extends Controller
 
     public function create(Request $request)
     {
-        return view($this->folder . '.' . $this->tableName . '.create');
+        return view($this->folder . '.' . $this->routeName . '.create');
     }
 
     public function store(Request $request)
@@ -126,7 +131,7 @@ class VeController extends Controller
 
             DB::commit();
             flash()->success('Successfully create ' .  $this->model);
-            return redirect()->route($this->folder . '.' . $this->tableName . '.index');
+            return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
@@ -143,14 +148,14 @@ class VeController extends Controller
             $model->load($model::relatable);
         }
         
-        return view($this->folder. '.' . $this->tableName . '.show', compact('model'));
+        return view($this->folder. '.' . $this->routeName . '.show', compact('model'));
     }
 
     public function edit(Request $request, $id)
     {
         $model = $this->checkRouteKey($id);
 
-        return view($this->folder . '.' . $this->tableName . '.edit', compact('model'));
+        return view($this->folder . '.' . $this->routeName . '.edit', compact('model'));
     }
 
     public function update(Request $request, $id)
@@ -178,7 +183,7 @@ class VeController extends Controller
 
             DB::commit();
             flash()->success('Successfully create ' .  $this->model);
-            return redirect()->route($this->folder . '.' . $this->tableName . '.index');
+            return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
@@ -193,7 +198,7 @@ class VeController extends Controller
         $model->delete();
 
         flash()->success('Successfully deleted ' . $this->model);
-        return redirect()->route($this->folder . '.' . $this->tableName . '.index');
+        return redirect()->route($this->folder . '.' . $this->routeName . '.index');
     }
 
 }

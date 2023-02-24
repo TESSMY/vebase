@@ -41,16 +41,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($models as $m)
+                        @forelse ($models as $$routeModel)
                             <tr>
                                 @foreach ($model::indexFields as $indexField)
-                                    <td>{{ $m->indexField }}</td>
+                                    @if ($indexField != 'action')
+                                        <td>{{ $$routeModel[$indexField] }}</td>
+                                    @else
+                                        <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}" class="btn btn-primary">View</a></td>
+                                    @endif
                                 @endforeach
-                                <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $model->getRouteKey()) }}" class="btn btn-primary">View</a></td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">There are no {{ $modelName }} found.</td>
+                                <td colspan="100%" class="text-center">There are no {{ $modelName }} found.</td>
                             </tr>
                         @endforelse
                     </tbody>

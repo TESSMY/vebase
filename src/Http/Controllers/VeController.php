@@ -34,15 +34,15 @@ class VeController extends Controller
             $this->model = app('App\\Models\\' . ucfirst($name));
             $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
 
-            if (Auth::user()->canAccessAdmin()) {
+            // if (Auth::user()->canAccessAdmin()) {
                 $this->folder = 'admin';
-            }
-            $this->authorizeResource($this->model::class, $this->model);
+            // }
+            // $this->authorizeResource($this->model::class, $this->model);
         }
     }
 
     public function checkRouteKey($id) {
-        if ($this->model->getRouteKey() != 'id') {
+        if (!empty($this->model->getRouteKey())) {
             $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
             abort_if(empty($model), 404);
         } else {
@@ -82,14 +82,17 @@ class VeController extends Controller
         }
 
         $models = $models->paginate(10)->withQueryString();
-
-        $model = $this->model;
-        $modelName = $this->modelName;
-        $routeName = $this->routeName;
-        $routePrefix = $this->folder;
+        
         $compact = [
-            'models', 'model', 'modelName', 'routeName', 'routePrefix', 
+            'routeModel' => Str::singular($this->routeName),
+            'models' => $models,
+            'model' => $this->model,
+            'modelName' => $this->modelName,
+            'routeName' => $this->routeName,
+            'routePrefix' => $this->folder,
         ];
+
+        // dd($compact);
         
         if (View::exists($this->folder . '.' . $this->routeName . '.index')) {
             // returns view if found in app resource view folder
@@ -99,7 +102,7 @@ class VeController extends Controller
             return View::make('vebase::' . $this->routeName . '.index', compact($compact));
         } else {
             // default vendor view
-            return View::make('vebase::index', compact($compact));
+            return View::make('vebase::index', $compact);
         }
     }
 

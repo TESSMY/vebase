@@ -91,8 +91,6 @@ class VeController extends Controller
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
         ];
-
-        // dd($compact);
         
         if (View::exists($this->folder . '.' . $this->routeName . '.index')) {
             // returns view if found in app resource view folder
@@ -108,7 +106,23 @@ class VeController extends Controller
 
     public function create(Request $request)
     {
-        return view($this->folder . '.' . $this->routeName . '.create');
+        $compact = [
+            'model' => $this->model,
+            'modelName' => $this->modelName,
+            'routeName' => $this->routeName,
+            'routePrefix' => $this->folder,
+        ];
+
+        if (View::exists($this->folder . '.' . $this->routeName . '.create')) {
+            // returns view if found in app resource view folder
+            return view($this->folder . '.' . $this->routeName . '.create', $compact);
+        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->routeName . '/create.blade.php'))) {
+            // returns view found in vendor resource folder
+            return View::make('vebase::' . $this->routeName . '.create', $compact);
+        } else {
+            // default vendor view
+            return View::make('vebase::create', $compact);
+        }
     }
 
     public function store(Request $request)
@@ -134,6 +148,7 @@ class VeController extends Controller
 
             DB::commit();
             flash()->success('Successfully create ' .  $this->model);
+            
             return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -145,9 +160,19 @@ class VeController extends Controller
 
     public function show(Request $request, $id)
     {
-        $model = $this->checkRouteKey($id);
+        $routeModel = Str::singular($this->routeName);
+        $$routeModel = $this->checkRouteKey($id);
         
-        return view($this->folder. '.' . $this->routeName . '.show', compact('model'));
+        if (View::exists($this->folder . '.' . $this->routeName . '.show')) {
+            // returns view if found in app resource view folder
+            return view($this->folder . '.' . $this->routeName . '.show');
+        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->routeName . '/show.blade.php'))) {
+            // returns view found in vendor resource folder
+            return View::make('vebase::' . $this->routeName . '.show');
+        } else {
+            // default vendor view
+            return View::make('vebase::show');
+        }
     }
 
     public function edit(Request $request, $id)

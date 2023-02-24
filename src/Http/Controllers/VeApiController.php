@@ -2,7 +2,6 @@
 
 namespace Vecapital\Vebase\Http\Controllers;
 
-use App\Http\Controllers\Api\ApiController;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -11,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Vecapital\Vebase\Http\Controllers\ApiController;
 
 class VeApiController extends ApiController
 {

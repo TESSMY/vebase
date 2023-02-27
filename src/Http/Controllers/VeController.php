@@ -34,10 +34,8 @@ class VeController extends Controller
             $this->model = app('App\\Models\\' . ucfirst($name));
             $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
 
-            // if (Auth::user()->canAccessAdmin()) {
-                $this->folder = 'admin';
-            // }
-            // $this->authorizeResource($this->model::class, $this->model);
+            $this->folder = Str::singular($request->segment(1));
+            $this->authorizeResource($this->model::class, $this->model);
         }
     }
 

@@ -47,10 +47,10 @@
                         @forelse ($models as $$routeModel)
                             <tr>
                                 @foreach ($model::indexFields as $indexField)
-                                    @if ($indexField != 'action')
-                                        <td>{{ $$routeModel[$indexField] }}</td>
-                                    @else
+                                    @if ($indexField == 'action')
                                         <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}" class="btn btn-primary">View</a></td>
+                                    @else
+                                        <td>{{ $$routeModel[$indexField] }}</td>
                                     @endif
                                 @endforeach
                             </tr>

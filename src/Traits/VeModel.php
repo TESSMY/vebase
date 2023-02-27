@@ -35,6 +35,7 @@ trait VeModel
 
     /**
      * The fields that are to be shown in the `index` page
+     * E.g. id, name
      * @var array
      */
     protected array $indexFields = [];
@@ -52,7 +53,12 @@ trait VeModel
 
     /**
      * The fields that are needed during creation
-     * E.g. 'email' => 'required|unique:users,email,' . $this->id . ',id,deleted_at,NULL',
+     * E.g. [
+     *     'required' => 'required',
+     *     'type' => 'string',
+     *     'name' => 'name',
+     *     'displayName' => 'Name'
+     * ],
      *
      * @var array
      */
@@ -60,9 +66,11 @@ trait VeModel
 
     /**
      * The fields that are needed during update along with its type
-     * E.g. 'email' => [
-     *      'type' => 'email',
-     *      'required' => 'false',
+     * E.g. [
+     *     'required' => 'required',
+     *     'type' => 'string',
+     *     'name' => 'name',
+     *     'displayName' => 'Name'
      * ],
      *
      * @var array

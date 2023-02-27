@@ -108,6 +108,7 @@ class VeController extends Controller
     public function create()
     {
         $compact = [
+            'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
@@ -131,7 +132,7 @@ class VeController extends Controller
         $input = $request->all();
 
         if (empty($this->model::createValidator)) {
-            flash('Error: ' . $this->model . " create is empty")->error();
+            flash('Error: ' . $this->modelName . " create is empty")->error();
             return back()->withInput($request->input());
         }
 
@@ -147,13 +148,13 @@ class VeController extends Controller
             $this->model::create($input);
 
             DB::commit();
-            flash()->success('Successfully create ' .  $this->model);
+            flash()->success('Successfully create ' .  $this->modelName);
             
             return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error creating ' . $this->model);
+            flash()->error('There was an error creating ' . $this->modelName);
             return back()->withInput();
         }
     }
@@ -164,6 +165,8 @@ class VeController extends Controller
         $$routeModel = $this->checkRouteKey($id);
 
         $compact = [
+            'routeModel' => $routeModel,
+            $routeModel => $$routeModel,
             'model' => $this->model,
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
@@ -184,10 +187,13 @@ class VeController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $model = $this->checkRouteKey($id);
+        $routeModel = Str::singular($this->routeName);
+        $$routeModel = $this->checkRouteKey($id);
 
         $compact = [
-            'model' => $model,
+            'routeModel' => $routeModel,
+            $routeModel => $$routeModel,
+            'model' => $this->model,
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
@@ -212,7 +218,7 @@ class VeController extends Controller
         $input = $request->all();
 
         if (empty($this->model::updateValidator)) {
-            throw new \Exception($this->model . " updateValidator is empty");
+            throw new \Exception($this->modelName . " updateValidator is empty");
         }
 
         $validator = Validator::make($input, $model::updateValidator);
@@ -227,12 +233,12 @@ class VeController extends Controller
             $model::update($input);
 
             DB::commit();
-            flash()->success('Successfully create ' .  $this->model);
+            flash()->success('Successfully create ' .  $this->modelName);
             return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error creating ' . $this->model);
+            flash()->error('There was an error creating ' . $this->modelName);
             return back()->withInput();
         }
     }
@@ -242,7 +248,7 @@ class VeController extends Controller
         $model = $this->checkRouteKey($id);
         $model->delete();
 
-        flash()->success('Successfully deleted ' . $this->model);
+        flash()->success('Successfully deleted ' . $this->modelName);
         return redirect()->route($this->folder . '.' . $this->routeName . '.index');
     }
 

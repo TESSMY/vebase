@@ -3,6 +3,7 @@
         @foreach ($model::createFields as $createField)
             <div class="col-12 col-md-6 mb-md-2 mb-2">
                 <label>{{ $createField['displayName'] }}</label>
+                <input class="form-control" type="{{ $createField['type'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['displayName'] }}" value="{{ old($createField['name']) ?? (!empty($$routeModel) ? $$routeModel[$createField['name']] : '') }}" {{ $createField['required'] }}>
             </div>
         @endforeach
     @else

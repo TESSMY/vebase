@@ -42,9 +42,11 @@ trait VeModel
 
     /**
      * The fields that are needed during creation along with its type
-     * E.g. 'email' => [
-     *      'type' => 'email',
-     *      'required' => 'false',
+     * E.g. [
+     *  'required' => 'required',
+     *  'type' => 'string',
+     *  'name' => 'name',
+     *  'displayName' => 'Name'
      * ],
      *
      * @var array

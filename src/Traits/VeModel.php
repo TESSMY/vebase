@@ -2,43 +2,40 @@
 
 namespace Vecapital\Vebase\Traits;
 
-trait VeModel
+use Illuminate\Database\Eloquent\Model;
+
+abstract class VeModel extends Model
 {
 
     /**
      * The fields that can be searched in the `index` functions
      * Make sure if there are a lot of fields, a composite index is used
      *
-     * @var array
      */
-    public array $searchable = [];
+    public $searchable = [];
 
     /**
      * If there are any files that can be uploaded / stored during creation or edit
      *
-     * @var array
      */
-    public array $files = [];
+    public $files = [];
 
     /**
      * The relations that should be loaded in the `index` or `show` functions for api
      * Make sure to add the relation in the model before adding it here or the relatable will not work
-     * @var array
      */
-    public array $relatable = [];
+    public $relatable = [];
 
     /**
      * The fields that can be sorted in asc or desc in the `index` functions
-     * @var array
      */
-    public array $sortable = [];
+    public $sortable = [];
 
     /**
      * The fields that are to be shown in the `index` page
      * E.g. id, name
-     * @var array
      */
-    public array $indexFields = [];
+    public $indexFields = [];
 
     /**
      * The fields that are needed during creation along with its type
@@ -49,9 +46,8 @@ trait VeModel
      *  'displayName' => 'Name'
      * ],
      *
-     * @var array
      */
-    public array $createFields = [];
+    public $createFields = [];
 
     /**
      * The fields that are needed during creation
@@ -62,9 +58,8 @@ trait VeModel
      *     'displayName' => 'Name'
      * ],
      *
-     * @var array
      */
-    public array $createValidator = [];
+    public $createValidator = [];
 
     /**
      * The fields that are needed during update along with its type
@@ -75,17 +70,15 @@ trait VeModel
      *     'displayName' => 'Name'
      * ],
      *
-     * @var array
      */
-    public array $updateFields = [];
+    public $updateFields = [];
 
     /**
      * The fields that are needed during update
      * E.g. 'name' => 'required|min:3'
      *
-     * @var array
      */
-    public array $updateValidator = [];
+    public $updateValidator = [];
 
     abstract public function hasApiResourceRoute() : bool;
 

@@ -38,7 +38,7 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            @foreach ($model::indexFields as $indexField)
+                            @foreach ($model->getIndexFields() as $indexField)
                                 <td>{{ $indexField }}</td>
                             @endforeach
                         </tr>
@@ -46,7 +46,7 @@
                     <tbody>
                         @forelse ($models as $$routeModel)
                             <tr>
-                                @foreach ($model::indexFields as $indexField)
+                                @foreach ($model->getIndexFields() as $indexField)
                                     @if ($indexField == 'action' || $indexField == '')
                                         <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}" class="btn btn-primary">View</a></td>
                                     @else

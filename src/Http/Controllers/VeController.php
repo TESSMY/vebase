@@ -35,7 +35,7 @@ class VeController extends Controller
             $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
 
             $this->folder = Str::singular($request->segment(1));
-            $this->authorizeResource($this->model::class, $this->model);
+            $this->authorizeResource($this->model::class, Str::singular($this->routeName));
         }
     }
 

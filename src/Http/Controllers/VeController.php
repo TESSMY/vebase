@@ -39,13 +39,10 @@ class VeController extends Controller
         }
     }
 
-    public function checkRouteKey($id) {
-        if (!empty($this->model->getRouteKey())) {
-            $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
-            abort_if(empty($model), 404);
-        } else {
-            $model = $this->model::findOrFail($id);
-        }
+    public function findModel($id) {
+        $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
+        abort_if(empty($model), 404);
+        
         return $model;
     }
 
@@ -160,7 +157,7 @@ class VeController extends Controller
     public function show(Request $request, $id)
     {
         $routeModel = Str::singular($this->routeName);
-        $$routeModel = $this->checkRouteKey($id);
+        $$routeModel = $this->findModel($id);
 
         $compact = [
             'routeModel' => $routeModel,
@@ -186,7 +183,7 @@ class VeController extends Controller
     public function edit(Request $request, $id)
     {
         $routeModel = Str::singular($this->routeName);
-        $$routeModel = $this->checkRouteKey($id);
+        $$routeModel = $this->findModel($id);
 
         $compact = [
             'routeModel' => $routeModel,
@@ -211,7 +208,7 @@ class VeController extends Controller
 
     public function update(Request $request, $id)
     {
-        $model = $this->checkRouteKey($id);
+        $model = $this->findModel($id);
 
         $input = $request->all();
 
@@ -243,7 +240,7 @@ class VeController extends Controller
 
     public function destroy($id)
     {
-        $model = $this->checkRouteKey($id);
+        $model = $this->findModel($id);
         $model->delete();
 
         flash()->success('Successfully deleted ' . $this->modelName);

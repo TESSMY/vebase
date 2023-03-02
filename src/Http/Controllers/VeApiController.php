@@ -32,13 +32,10 @@ class VeApiController extends ApiController
         }
     }
 
-    public function checkRouteKey($id) {
-        if ($this->model->getRouteKey() != 'id') {
-            $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
-            abort_if(empty($model), 404);
-        } else {
-            $model = $this->model::findOrFail($id);
-        }
+    public function findModel($id) {
+        $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
+        abort_if(empty($model), 404);
+
         return $model;
     }
 
@@ -104,7 +101,7 @@ class VeApiController extends ApiController
 
     public function show(Request $request, $id)
     {
-        $model = $this->checkRouteKey($id);
+        $model = $this->findModel($id);
 
         if (!empty($model::relatable)) {
             $model->with($model::relatable);
@@ -115,7 +112,7 @@ class VeApiController extends ApiController
 
     public function update(Request $request, $id)
     {
-        $model = $this->checkRouteKey($id);
+        $model = $this->findModel($id);
 
         $input = $request->all();
 
@@ -140,7 +137,7 @@ class VeApiController extends ApiController
 
     public function destroy($id)
     {
-        $model = $this->checkRouteKey($id);
+        $model = $this->findModel($id);
         $model->delete();
 
         return $this->respond();

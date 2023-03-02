@@ -90,10 +90,10 @@ class VeController extends Controller
         
         if (View::exists($this->folder . '.' . $this->routeName . '.index')) {
             // returns view if found in app resource view folder
-            return view($this->folder . '.' . $this->routeName . '.index', compact($compact));
-        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->routeName . '/index.blade.php'))) {
+            return view($this->folder . '.' . $this->routeName . '.index', $compact);
+        } elseif (file_exists(base_path('vendor/vecapital/vebase/src/resources/views/' . $this->folder . '/' . $this->routeName . '/index.blade.php'))) {
             // returns view found in vendor resource folder
-            return View::make('vebase::' . $this->routeName . '.index', compact($compact));
+            return View::make('vebase::' . $this->folder . '/' . $this->routeName . '.index', $compact);
         } else {
             // default vendor view
             return View::make('vebase::index', $compact);

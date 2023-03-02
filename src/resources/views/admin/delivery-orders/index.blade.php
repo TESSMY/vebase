@@ -65,8 +65,23 @@
                                 <td>SO{{ $$routeModel->salesOrder->id }}</td>
                                 <td></td>
                                 <td>{{ $$routeModel->created_at->format('d/m/Y') }}</td>
-                                <td>{{ $$routeModel->status }}</td>
+                                <td>
+                                    @if ($$routeModel->status == \App\Models\DeliveryOrder::STATUS_PENDING)
+                                    <span class="badge bg-danger">{{ \App\Models\DeliveryOrder::STATUS_ARRAY[\App\Models\DeliveryOrder::STATUS_PENDING] }}</span>
+                                    @elseif ($$routeModel->status == \App\Models\DeliveryOrder::STATUS_INVOICED)
+                                    <span class="badge bg-primary">{{ \App\Models\DeliveryOrder::STATUS_ARRAY[\App\Models\DeliveryOrder::STATUS_INVOICED] }}</span>
+                                    @elseif ($$routeModel->status == \App\Models\DeliveryOrder::STATUS_ONGOING)
+                                    <span class="badge bg-warning">{{ \App\Models\DeliveryOrder::STATUS_ARRAY[\App\Models\DeliveryOrder::STATUS_ONGOING] }}</span>
+                                    @elseif ($$routeModel->status == \App\Models\DeliveryOrder::STATUS_PACKED)
+                                    <span class="badge bg-info">{{ \App\Models\DeliveryOrder::STATUS_ARRAY[\App\Models\DeliveryOrder::STATUS_PACKED] }}</span>
+                                    @elseif ($$routeModel->status == \App\Models\DeliveryOrder::STATUS_SHIPPED)
+                                    <span class="badge bg-primary">{{ \App\Models\DeliveryOrder::STATUS_ARRAY[\App\Models\DeliveryOrder::STATUS_SHIPPED] }}</span>
+                                    @endif
+                                </td>
                                 <td>{{ $$routeModel->grant_total }}</td>
+                                <td>
+                                    <a href="{{ route($routePrefix . '.' . $routeName . '.show', ['delivery_order' => $$routeModel]) }}" class="btn btn-sm btn-primary">{{ __('View') }}</a>
+                                </td>
                             </tr>
                         @empty
                             <tr>

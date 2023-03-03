@@ -69,7 +69,6 @@ class VeController extends Controller
             $models = $models->orderBy($orderColumn, $orderBy);
         }
 
-        // need to check if orderby and sortby will work together
         $sortBy = $request->input('sort_by', 'latest');
         if ($sortBy === 'oldest'){
             $models->oldest();
@@ -126,12 +125,12 @@ class VeController extends Controller
     {
         $input = $request->all();
 
-        if (empty($this->model::createValidator)) {
+        if (empty($this->model->createValidator)) {
             flash('Error: ' . $this->modelName . " create is empty")->error();
             return back()->withInput($request->input());
         }
 
-        $validator = Validator::make($input, $this->model::createValidator);
+        $validator = Validator::make($input, $this->model->createValidator);
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
@@ -213,10 +212,11 @@ class VeController extends Controller
         $input = $request->all();
 
         if (empty($this->model::updateValidator)) {
-            throw new \Exception($this->modelName . " updateValidator is empty");
+            flash('Error:  updateValidator is empty')->error();
+            return back()->withInput($request->input());
         }
 
-        $validator = Validator::make($input, $model::updateValidator);
+        $validator = Validator::make($input, $model->updateValidator);
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);

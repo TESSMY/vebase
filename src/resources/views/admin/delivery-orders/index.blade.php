@@ -17,14 +17,13 @@
                 <button type="button" class="btn btn-sm btn-light col-md-1">{{ __('Print') }}</button>
             </div>
             <form action="{{ route($routePrefix . '.' . $routeName . '.index') }}" method="GET" id="form">
-                @csrf
                 <div class="row mb-3">
                     <div class="col-12 col-md-2 mb-3 mb-md-0 d-flex">
                         <span class="my-auto">{{ __('Display') }}:</span>
                         <select class="form-select form-select-sm mx-2" name="limit">
-                            <option selected>10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
+                            <option value="10" {{ $limit == 10 ? 'selected' : '' }}>10</option>
+                            <option value="25" {{ $limit == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ $limit == 50 ? 'selected' : '' }}>50</option>
                         </select>
                         <span class="my-auto">{{ (__('rows')) }}</span>
                     </div>
@@ -34,7 +33,7 @@
                             <option value="">{{ __('Choose') }}</option>
                         </select>
                     </div>
-                    <div class="col-md-5"></div>
+                    <div class="col-md-4"></div>
                     <div class="col-12 col-md-2 p-0 d-md-flex">
                         <label class="form-label my-auto me-md-2">{{ __('Search') }}: </label>
                         <input class="form-control input-sm" type="search" placeholder="Search" name="search" value="{{ request()->input('search') }}">

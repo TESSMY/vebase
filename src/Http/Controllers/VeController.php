@@ -56,16 +56,16 @@ class VeController extends Controller
         $models = $this->model::query();
 
         if (!empty($search)) {
-            if (!empty($this->model::searchable)) {
+            if (!empty($this->model->searchable)) {
                 $models = $models->where(function($query) use ($search) {
-                    foreach ($this->model::searchable as $value) {
+                    foreach ($this->model->searchable as $value) {
                         $query->orWhere($value, 'LIKE', '%' . $search . '%');
                     }
                 });
             }
         }
 
-        if (!empty($orderColumn) && in_array($orderColumn, $this->model::sortable)) {
+        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
             $models = $models->orderBy($orderColumn, $orderBy);
         }
 

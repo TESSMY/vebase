@@ -45,7 +45,7 @@
                     <thead>
                         <tr>
                             <td>
-                                <input type="checkbox" class="form-check-input">
+                                <input type="checkbox" class="form-check-input" onchange="toggleCheckAll(this)">
                             </td>
                             <td>{{ __('Delivery Order ID') }}</td>
                             <td>{{ __('Sales Order ID') }}</td>
@@ -59,7 +59,7 @@
                     <tbody>
                         @forelse ($models as $$routeModel)
                             <tr>
-                                <td><input type="checkbox" class="form-check-input"></td>
+                                <td><input type="checkbox" class="form-check-input check-do"></td>
                                 <td>DO{{ $$routeModel->id }}</td>
                                 <td>SO{{ $$routeModel->salesOrder->id }}</td>
                                 <td></td>
@@ -96,3 +96,14 @@
         </div>
     </div>
 @endsection
+
+@push('js')
+<script>
+    function toggleCheckAll(elm) {
+        const all_check_boxes = document.querySelectorAll('.check-do')
+        for (let c of all_check_boxes) {
+            c.checked = elm.checked
+        }
+    }
+</script>
+@endpush

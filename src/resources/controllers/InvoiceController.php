@@ -10,7 +10,7 @@ use Vecapital\Vebase\Http\Controllers\VeController;
 
 class InvoiceController extends VeController
 {
-    /**
+   /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
@@ -82,7 +82,7 @@ class InvoiceController extends VeController
      * @param  \App\Models\Invoice  $invoice
      * @return \Illuminate\Http\Response
      */
-    public function show(Invoice $invoice)
+    public function show(Request $request, $invoice)
     {
         return view('admin.invoices.show');
     }
@@ -93,7 +93,7 @@ class InvoiceController extends VeController
      * @param  \App\Models\Invoice  $invoice
      * @return \Illuminate\Http\Response
      */
-    public function edit(Invoice $invoice)
+    public function edit(Request $request, $invoice)
     {
         return view('admin.invoices.edit');
     }
@@ -105,7 +105,7 @@ class InvoiceController extends VeController
      * @param  \App\Models\Invoice  $invoice
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Invoice $invoice)
+    public function update(Request $request, $invoice)
     {
         try {
             DB::beginTransaction();

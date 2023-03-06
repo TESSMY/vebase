@@ -25,6 +25,10 @@
                     <span class="h5">Information</span>
                 </div>
                 @include('vebase::form')
+                <div class="row col-12">
+                    <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Update</button>
+                    <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
+                </div>
             </form>
         </div>
     </div>

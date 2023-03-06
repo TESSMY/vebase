@@ -47,6 +47,7 @@ class InstallCommand extends Command
             }
         }
 
+
         // controller
         $controllers = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'controllers');
         foreach ($controllers as $controller) {

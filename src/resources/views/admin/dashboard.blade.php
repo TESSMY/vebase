@@ -8,6 +8,5 @@
         :revenue-statics="{{ json_encode($revenueStatics) }}"
         :sales-order-statics="{{ json_encode($salesOrderStatics) }}"
         :purchase-orders="{{ json_encode($purchaseOrders) }}"
-        :sales-orders="{{ json_encode($salesOrders) }}">
-        </dashboard>
+        :sales-orders="{{ json_encode($salesOrders) }}"/>
 @endsection

@@ -229,20 +229,12 @@ export default {
         }
     },
     mounted() {
-        let data = []
-        for (const monthlyOrder of this.monthlyOrders) {
-            data.push({
-                month: monthlyOrder.month,
-                total: monthlyOrder.total
-            })
-        }
-
         new Chart(
             this.$refs.chart,
             {
                 type: 'line',
                 data: {
-                    labels: data.map(row => moment(row.month, 'YYYYMM').format('MMM')),
+                    labels: this.monthlyOrders.map(row => moment(row.month, 'MM').format('MMM')),
                     datasets: [
                         {
                             label: '',

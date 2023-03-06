@@ -39,7 +39,21 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function register()
     {
-        //
+        $this->registerCommands();
+    }
+
+     /**
+     * Register the Invoices Artisan commands.
+     *
+     * @return void
+     */
+    protected function registerCommands()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                InstallCommand::class,
+            ]);
+        }
     }
 
 }

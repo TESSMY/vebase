@@ -6,53 +6,10 @@ use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Vecapital\Vebase\Http\Controllers\VeController;
 
-class InvoiceController extends Controller
+class InvoiceController extends VeController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
-    {
-        $search = $request->input('search');
-        $limit = $request->input('limit') ?? 10;
-        $orderColumn = $request->input('order_column');
-        $orderBy = $request->input('order_by');
-
-        $invoices = Invoice::query();
-
-        if (!empty($search)) {
-            if (!empty(Invoice::class()->searchable)) {
-                $invoices = $invoices->where(function($query) use ($search) {
-                    foreach (Invoice::class()->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
-                    }
-                });
-            }
-        }
-
-        if (!empty($orderColumn) && in_array($orderColumn, Invoice::class()->sortable)) {
-            $invoices = $invoices->orderBy($orderColumn, $orderBy);
-        }
-
-        $sortBy = $request->input('sort_by', 'latest');
-        if ($sortBy === 'oldest'){
-            $invoices->oldest();
-        } elseif ($sortBy === 'latest'){
-            $invoices->latest();
-        }
-
-        $invoices = $invoices->paginate($limit)->withQueryString();
-        
-        $compact = [
-            'models' => $invoices,
-        ];
-        
-        return view('admin.invoices.index', $compact);
-    }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -162,19 +119,5 @@ class InvoiceController extends Controller
             flash()->error('There was an issue updating invoice');
             return back()->withInput();
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Invoice  $invoice
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Invoice $invoice)
-    {
-        $invoice->delete();
-
-        flash()->success('Successfully deleted invoice');
-        return redirect()->route('admin.invoices.index');
     }
 }

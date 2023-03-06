@@ -3,7 +3,7 @@
 namespace Vecapital\Vebase;
 
 use Illuminate\Support\Facades\Route;
-use LaravelDaily\Larastarters\Console\InstallCommand;
+use Vecapital\Vebase\Console\InstallCommand;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {

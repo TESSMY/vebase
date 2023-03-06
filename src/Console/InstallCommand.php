@@ -39,20 +39,20 @@ class InstallCommand extends Command
     public function handle()
     {
         // views
-        $viewDirectories = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'views');
+        $viewDirectories = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'views');
         foreach ($viewDirectories as $viewDirectory) {
             // skip '.' and '..' in dir
             if (strlen($viewDirectory) > 2) {
-                (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . $viewDirectory, resource_path('views/admin' . DIRECTORY_SEPARATOR . $viewDirectory));
+                (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . $viewDirectory, resource_path('views/admin' . DIRECTORY_SEPARATOR . $viewDirectory));
             }
         }
 
         // controller
-        $controllers = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'controllers');
+        $controllers = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'controllers');
         foreach ($controllers as $controller) {
             // skip '.' and '..' in dir
             if (strlen($controller) > 2) {
-                copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . $controller, app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR .
+                copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . $controller, app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR .
                 'Admin' . DIRECTORY_SEPARATOR . $controller));
             }
         }

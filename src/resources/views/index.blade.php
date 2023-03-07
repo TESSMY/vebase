@@ -39,7 +39,7 @@
                     <thead>
                         <tr>
                             @foreach ($model->indexFields as $indexField)
-                                <td>{{ $indexField }}</td>
+                                <th>{{ $indexField }}</th>
                             @endforeach
                         </tr>
                     </thead>

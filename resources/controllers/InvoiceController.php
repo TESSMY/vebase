@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Invoice;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\SalesOrder;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -18,7 +22,14 @@ class InvoiceController extends VeController
      */
     public function create()
     {
+        // $salesOrder = SalesOrder::get(['id', 'name']);
+        // $productBundles = Product::get(['id', 'name']);
+        // $productVariants = ProductVariant::get(['id', 'name']);
+
         $compact = [
+            // 'salesOrders' => $salesOrder,
+            // 'productBundles' => $productBundles,
+            // 'productVariants' => $productVariants,
             'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,
             'modelName' => $this->modelName,

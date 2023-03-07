@@ -1,59 +1,129 @@
 <template>
-    <div class="row mb-2">
-        <span class="h4">ADD PRODUCT</span>
-    </div>
-    <div class="overflow-auto">
-        <table class="table table-bordered text-center">
-            <thead>
-                <tr>
-                    <th>Product Details</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Sub Total</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(item, index) in products">
-                    <td>Product Name</td>
-                    <td>
-                        <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
-                    </td>
-                    <td>{{ item.product.unit_price }}</td>
-                    <td>{{ item.subTotal }}</td>
-                    <td>
-                        <span class="btn" @click="removeProduct(index)">
-                            <i class="uil-trash" style="color: red"></i>
-                        </span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="row container-fluid">
-        <div class="col-12 col-md-4 mb-md-0 mb-3">
-            <div class="row px-0">
-                <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProducts()">Add another line</span>
-                <div class="px-0">
-                    <label class="form-label px-0">Notes and instructions</label>
-                    <textarea class="form-control" placeholder="Notes and instructions" rows="5" style="resize: none"></textarea>
+    <div class="bg-white card shadow py-3 px-4">
+                <div class="row border-bottom mb-2">
+                    <span class="h5">{{ $modelName }} Information</span>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-2">
+                        <label class="form-label">Client</label>
+                        <!-- <VueMultiselect v-model="salesOrderId" :options="salesOrderOptions"></VueMultiselect> -->
+                    </div>
+                    <div class="col-12 col-md-6 mb-2">
+                        <label class="form-label">Date</label>
+                        <input class="form-control" type="date" name="name" placeholder="date" value="{{ old('date') ?? (!empty($invoice) ? $invoice->date : '') }}" required>
+                    </div>
+                    <div class="col-12 col-md-6 mb-md-0 mb-2">
+                        <label class="form-label">Client Address</label>
+                        <input class="form-control" type="text" placeholder="Client Address" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 mb-2">
+                        <label class="form-label">Payment Term</label>
+                        <input class="form-control" type="text" name="payment_term" placeholder="Payment Term" value="" required>
+                    </div>
+                    <div class="col-12 col-md-6 mb-2">
+                        <label class="form-label">Sales Order (Optional)</label>
+                        <input type="hidden" name="sales_order_id" value="">
+                        <!-- <VueMultiselect v-model="salesOrderId" :options="salesOrderOptions"></VueMultiselect> -->
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-5"></div>
-        <div class="col-12 col-md-3">
-            <div class="row text-end">
-                <span class="col-8 fw-bold">Sub Total: </span>
-                <span class="col-4">{{ subTotal }}</span>
-                <div class="border my-2"></div>
-                <span class="col-8 fw-bold">Tax: </span>
-                <span class="col-4">15%</span>
-                <div class="border my-2"></div>
-                <span class="col-8 fw-bold">Total (SGD): </span>
-                <span class="col-4">{{ grandTotal }}</span>
+            <div class="border my-2 mb-3"></div>
+            <div class="bg-white card shadow py-3 px-4">
+                <div class="row mb-2">
+                    <span class="h4">ADD PRODUCT</span>
+                </div>
+                <div class="overflow-auto">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th>Product Details</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Sub Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in products">
+                                <td>
+                                    <VueMultiselect v-model="item.product" :options="productOptions"></VueMultiselect>
+                                </td>
+                                <td>
+                                    <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                                </td>
+                                <td>{{ item.product.unit_price }}</td>
+                                <td>{{ item.subTotal }}</td>
+                                <td>
+                                    <span class="btn" @click="removeProduct(index)">
+                                        <i class="uil-trash" style="color: red"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row mb-2">
+                    <span class="h4">ADD BUNDLE</span>
+                </div>
+                <div class="overflow-auto">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th>Product Details</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Sub Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in products">
+                                <td>
+                                    <!-- <VueMultiselect v-model="item.product" :options="productOptions"></VueMultiselect> -->
+                                </td>
+                                <td>
+                                    <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                                </td>
+                                <td>{{ item.product.unit_price }}</td>
+                                <td>{{ item.subTotal }}</td>
+                                <td>
+                                    <span class="btn" @click="removeProduct(index)">
+                                        <i class="uil-trash" style="color: red"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row container-fluid">
+                    <div class="col-12 col-md-4 mb-md-0 mb-3">
+                        <div class="row px-0">
+                            <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProducts()">Add another line</span>
+                            <div class="px-0">
+                                <label class="form-label px-0">Notes and instructions</label>
+                                <textarea class="form-control" placeholder="Notes and instructions" rows="5" style="resize: none"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5"></div>
+                    <div class="col-12 col-md-3">
+                        <div class="row text-end">
+                            <span class="col-8 fw-bold">Sub Total: </span>
+                            <span class="col-4">{{ subTotal }}</span>
+                            <div class="border my-2"></div>
+                            <span class="col-8 fw-bold">Tax: </span>
+                            <span class="col-4">15%</span>
+                            <div class="border my-2"></div>
+                            <span class="col-8 fw-bold">Total (SGD): </span>
+                            <span class="col-4">{{ grandTotal }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row col-12">
+                    <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Create</button>
+                    <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
+                </div>
             </div>
-        </div>
-    </div>
 </template>
 
 <script setup>
@@ -67,7 +137,7 @@ const products = ref([{
     },
     'quantity': 0,
     'subTotal': 0,
-}])
+}]);
 
 function addProducts() {
     this.products.push({

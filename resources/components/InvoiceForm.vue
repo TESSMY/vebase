@@ -17,7 +17,7 @@
                 <tr v-for="(item, index) in products">
                     <td>Product Name</td>
                     <td>
-                        <input class="form-control" type="number" min="0" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                        <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
                     </td>
                     <td>{{ item.product.unit_price }}</td>
                     <td>{{ item.subTotal }}</td>
@@ -32,10 +32,12 @@
     </div>
     <div class="row container-fluid">
         <div class="col-12 col-md-4 mb-md-0 mb-3">
-            <span class="btn" @click="addProducts()">Add another line</span>
             <div class="row px-0">
-                <label class="form-label px-0">Notes and instructions</label>
-                <textarea class="form-control" placeholder="Notes and instructions" rows="5" style="resize: none"></textarea>
+                <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProducts()">Add another line</span>
+                <div class="px-0">
+                    <label class="form-label px-0">Notes and instructions</label>
+                    <textarea class="form-control" placeholder="Notes and instructions" rows="5" style="resize: none"></textarea>
+                </div>
             </div>
         </div>
         <div class="col-md-5"></div>

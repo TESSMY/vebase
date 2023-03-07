@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-12 col-md-6">
                 <div class="page-title-box">
-                    <span class="page-title h4">Add New {{ $modelName }}</span>
+                    <span class="page-title h4">Create New {{ $modelName }}</span>
                 </div>
             </div>
             <nav class="col-12 col-md-6">

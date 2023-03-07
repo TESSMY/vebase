@@ -21,7 +21,7 @@
             <form action="{{ route($routePrefix . '.' . $routeName . '.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row border-bottom mb-2">
-                    <span class="h5">Information</span>
+                    <span class="h5">{{ $modelName }} Information</span>
                 </div>
                 @include('vebase::form')
                 <div class="row col-12">

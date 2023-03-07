@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Vecapital\Vebase\Http\Controllers\VeController;
+use Illuminate\Support\Str;
 
 class InvoiceController extends VeController
 {
@@ -17,7 +18,15 @@ class InvoiceController extends VeController
      */
     public function create()
     {
-        return view('admin.invoices.create');
+        $compact = [
+            'routeModel' => Str::singular($this->routeName),
+            'model' => $this->model,
+            'modelName' => $this->modelName,
+            'routeName' => $this->routeName,
+            'routePrefix' => $this->folder,
+        ];
+
+        return view('admin.invoices.create', $compact);
     }
 
     /**

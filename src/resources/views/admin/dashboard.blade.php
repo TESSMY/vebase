@@ -3,10 +3,10 @@
 @section('content')
     <dashboard
         :monthly-orders="{{ json_encode($monthlyOrders) }}"
-        :shipment-statics="{{ json_encode($shipmentStatics) }}"
-        :purchase-order-statics="{{ json_encode($purchaseOrderStatics) }}"
-        :revenue-statics="{{ json_encode($revenueStatics) }}"
-        :sales-order-statics="{{ json_encode($salesOrderStatics) }}"
+        :shipment-statistics="{{ json_encode($shipmentStatistics) }}"
+        :purchase-order-statistics="{{ json_encode($purchaseOrderStatistics) }}"
+        :revenue-statistics="{{ json_encode($revenueStatics) }}"
+        :sales-order-statistics="{{ json_encode($salesOrderStatistics) }}"
         :purchase-orders="{{ json_encode($purchaseOrders) }}"
         :sales-orders="{{ json_encode($salesOrders) }}"/>
 @endsection

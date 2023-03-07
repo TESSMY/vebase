@@ -238,7 +238,7 @@ export default {
                     datasets: [
                         {
                             label: '',
-                            data: data.map(row => row.total_orders)
+                            data: data.map(row => row.total_cost)
                         }
                     ]
                 }

@@ -35,7 +35,6 @@ class VeController extends Controller
             $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
 
             $this->folder = Str::singular($request->segment(1));
-            $this->authorizeResource($this->model::class, Str::singular($this->routeName));
         }
     }
 
@@ -50,6 +49,8 @@ class VeController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', $this->model);
+
         $search = $request->input('search');
         $limit = $request->input('limit') ?? 10;
         $orderColumn = $request->input('order_column');
@@ -103,6 +104,8 @@ class VeController extends Controller
 
     public function create()
     {
+        $this->authorize('create', $this->model);
+
         $compact = [
             'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,
@@ -125,6 +128,8 @@ class VeController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', $this->model);
+        
         $input = $request->all();
 
         if (empty($this->model->createValidator)) {
@@ -159,6 +164,7 @@ class VeController extends Controller
     {
         $routeModel = Str::singular($this->routeName);
         $$routeModel = $this->findModel($id);
+        $this->authorize('view', $$routeModel);
 
         $compact = [
             'routeModel' => $routeModel,
@@ -185,6 +191,7 @@ class VeController extends Controller
     {
         $routeModel = Str::singular($this->routeName);
         $$routeModel = $this->findModel($id);
+        $this->authorize('update', $$routeModel);
 
         $compact = [
             'routeModel' => $routeModel,
@@ -210,6 +217,7 @@ class VeController extends Controller
     public function update(Request $request, $id)
     {
         $model = $this->findModel($id);
+        $this->authorize('update', $model);
 
         $input = $request->all();
 
@@ -243,6 +251,8 @@ class VeController extends Controller
     public function destroy($id)
     {
         $model = $this->findModel($id);
+        $this->authorize('delete', $model);
+
         $model->delete();
 
         flash()->success('Successfully deleted ' . $this->modelName);

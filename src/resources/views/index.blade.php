@@ -67,8 +67,4 @@
             {{ $models->links() }}
         </div>
     </div>
-<<<<<<< HEAD
 @endsection
-=======
-@endsection
->>>>>>> a4162c5... readded index

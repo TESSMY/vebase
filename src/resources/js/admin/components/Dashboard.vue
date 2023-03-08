@@ -19,13 +19,15 @@
                                 </div>
                                 <h5 class="text-muted fw-normal mt-0" title="Number of Customers">Shipment</h5>
                                 <h3 class="mt-3 mb-3">
-                                    {{ shipmentStatics.total.toLocaleString() }}
+                                    {{ currentMonthStatistics.total_shipment[0].toLocaleString() }}
                                 </h3>
                                 <p class="mb-0 text-muted">
-                                    <span class="text-success me-2" v-if="shipmentStatics.growth > 0"><span
-                                            class="mdi mdi-arrow-up-bold"></span> {{ shipmentStatics.growth }}%</span>
+                                    <span class="text-success me-2"
+                                        v-if="currentMonthStatistics.total_shipment[1] > 0"><span
+                                            class="mdi mdi-arrow-up-bold"></span> {{
+                                                currentMonthStatistics.total_shipment[1] }}%</span>
                                     <span class="text-danger me-2" v-else><span class="mdi mdi-arrow-down-bold"></span> {{
-                                        shipmentStatics.growth }}%</span>
+                                        currentMonthStatistics.total_shipment[1] }}%</span>
                                     <span class="text-nowrap">Since last month</span>
                                 </p>
                             </div>
@@ -39,13 +41,15 @@
                                 </div>
                                 <h5 class="text-muted fw-normal mt-0" title="Number of Customers">Purchase Order</h5>
                                 <h3 class="mt-3 mb-3">
-                                    {{ purchaseOrderStatics.total.toLocaleString() }}
+                                    {{ currentMonthStatistics.total_purchase_order[0].toLocaleString() }}
                                 </h3>
                                 <p class="mb-0 text-muted">
-                                    <span class="text-success me-2" v-if="purchaseOrderStatics.growth > 0"><span
-                                            class="mdi mdi-arrow-up-bold"></span> {{ purchaseOrderStatics.growth }}%</span>
+                                    <span class="text-success me-2"
+                                        v-if="currentMonthStatistics.total_purchase_order[1] > 0"><span
+                                            class="mdi mdi-arrow-up-bold"></span> {{
+                                                currentMonthStatistics.total_purchase_order[1] }}%</span>
                                     <span class="text-danger me-2" v-else><span class="mdi mdi-arrow-down-bold"></span> {{
-                                        purchaseOrderStatics.growth }}%</span>
+                                        currentMonthStatistics.total_purchase_order[1] }}%</span>
                                     <span class="text-nowrap">Since last month</span>
                                 </p>
                             </div>
@@ -59,13 +63,14 @@
                                 </div>
                                 <h5 class="text-muted fw-normal mt-0" title="Number of Customers">Revenue</h5>
                                 <h3 class="mt-3 mb-3">
-                                    {{ revenueStatics.total.toLocaleString() }}
+                                    {{ currentMonthStatistics.total_revenue[0].toLocaleString() }}
                                 </h3>
                                 <p class="mb-0 text-muted">
-                                    <span class="text-success me-2" v-if="revenueStatics.growth > 0"><span
-                                            class="mdi mdi-arrow-up-bold"></span> {{ revenueStatics.growth }}%</span>
+                                    <span class="text-success me-2" v-if="currentMonthStatistics.total_revenue[1] > 0"><span
+                                            class="mdi mdi-arrow-up-bold"></span> {{ currentMonthStatistics.total_revenue[1]
+                                            }}%</span>
                                     <span class="text-danger me-2" v-else><span class="mdi mdi-arrow-down-bold"></span> {{
-                                        revenueStatics.growth }}%</span>
+                                        currentMonthStatistics.total_revenue[1] }}%</span>
                                     <span class="text-nowrap">Since last month</span>
                                 </p>
                             </div>
@@ -79,13 +84,15 @@
                                 </div>
                                 <h5 class="text-muted fw-normal mt-0" title="Number of Customers">Sales Order</h5>
                                 <h3 class="mt-3 mb-3">
-                                    {{ salesOrderStatics.total.toLocaleString() }}
+                                    {{ currentMonthStatistics.total_sales_order[0].toLocaleString() }}
                                 </h3>
                                 <p class="mb-0 text-muted">
-                                    <span class="text-success me-2" v-if="salesOrderStatics.growth > 0"><span
-                                            class="mdi mdi-arrow-up-bold"></span> {{ salesOrderStatics.growth }}%</span>
+                                    <span class="text-success me-2"
+                                        v-if="currentMonthStatistics.total_sales_order[1] > 0"><span
+                                            class="mdi mdi-arrow-up-bold"></span> {{
+                                                currentMonthStatistics.total_sales_order[1] }}%</span>
                                     <span class="text-danger me-2" v-else><span class="mdi mdi-arrow-down-bold"></span> {{
-                                        salesOrderStatics.growth }}%</span>
+                                        currentMonthStatistics.total_sales_order[1] }}%</span>
                                     <span class="text-nowrap">Since last month</span>
                                 </p>
                             </div>
@@ -193,62 +200,81 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import Chart from 'chart.js/auto';
 import moment from 'moment';
+import { onMounted, ref, computed } from 'vue';
 
-export default {
-    props: {
-        monthlyOrders: {
-            required: true,
-            type: Array
-        },
-        shipmentStatics: {
-            required: true,
-            type: Object
-        },
-        purchaseOrderStatics: {
-            required: true,
-            type: Object
-        },
-        revenueStatics: {
-            required: true,
-            type: Object
-        },
-        salesOrderStatics: {
-            required: true,
-            type: Object
-        },
-        purchaseOrders: {
-            required: true,
-            type: Array
-        },
-        salesOrders: {
-            required: true,
-            type: Array
-        }
+const props = defineProps({
+    monthlyOrders: {
+        required: true,
+        type: Array
     },
-    mounted() {
-        new Chart(
-            this.$refs.chart,
-            {
-                type: 'line',
-                data: {
-                    labels: this.monthlyOrders.map(row => moment(row.month, 'MM').format('MMM')),
-                    datasets: [
-                        {
-                            label: '',
-                            data: data.map(row => row.total_cost)
-                        }
-                    ]
-                }
+    purchaseOrders: {
+        required: true,
+        type: Array
+    },
+    salesOrders: {
+        required: true,
+        type: Array
+    }
+})
+
+const chart = ref(null)
+
+const initChart = () => {
+    return new Chart(
+        chart.value,
+        {
+            type: 'line',
+            data: {
+                labels: props.monthlyOrders.map(row => moment(row.month, 'MM').format('MMM')),
+                datasets: [
+                    {
+                        label: '',
+                        data: props.monthlyOrders.map(row => row.total_cost)
+                    }
+                ]
             }
-        );
-    },
-    computed: {
-        moment() {
-            return moment
+        }
+    );
+}
+
+onMounted(() => {
+    if (props.monthlyOrders) {
+        initChart()
+    }
+})
+
+const currentMonthStatistics = computed(() => {
+    let data = {
+        total_revenue: [0, 0],
+        total_shipment: [0, 0],
+        total_purchase_order: [0, 0],
+        total_sales_order: [0, 0]
+    }
+    let current_data = props.monthlyOrders.at(-1)
+    let prev_data = props.monthlyOrders.at(-2)
+
+    if (prev_data) {
+        const total_revenue_percentage = (parseFloat(prev_data.total_revenue) - parseFloat(current_data.total_revenue)) / parseFloat(prev_data.total_revenue) * 100
+        const total_shipment_percentage = (parseFloat(prev_data.total_shipment) - parseFloat(current_data.total_shipment)) / parseFloat(prev_data.total_shipment) * 100
+        const total_purchase_order_percentage = (parseFloat(prev_data.total_purchase_order) - parseFloat(current_data.total_purchase_order)) / parseFloat(prev_data.total_purchase_order) * 100
+        const total_sales_order_percentage = (parseFloat(prev_data.total_sales_order) - parseFloat(current_data.total_sales_order)) / parseFloat(prev_data.total_sales_order) * 100
+        data = {
+            total_revenue: [parseFloat(current_data.total_revenue), total_revenue_percentage.toFixed(2)],
+            total_shipment: [parseFloat(current_data.total_shipment), total_shipment_percentage.toFixed(2)],
+            total_purchase_order: [parseFloat(current_data.total_purchase_order), total_purchase_order_percentage.toFixed(2)],
+            total_sales_order: [parseFloat(current_data.total_sales_order), total_sales_order_percentage.toFixed(2)]
+        }
+    } else if (current_data) {
+        data = {
+            total_revenue: [parseFloat(current_data.total_revenue), 100],
+            total_shipment: [parseFloat(current_data.total_shipment), 100],
+            total_purchase_order: [parseFloat(current_data.total_purchase_order), 100],
+            total_sales_order: [parseFloat(current_data.total_sales_order), 100]
         }
     }
-}
+    return data
+})
 </script>

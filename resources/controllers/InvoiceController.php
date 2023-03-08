@@ -24,12 +24,13 @@ class InvoiceController extends VeController
     {
         // $salesOrder = SalesOrder::get(['id', 'name']);
         // $productBundles = Product::get(['id', 'name']);
-        // $productVariants = ProductVariant::get(['id', 'name']);
+        $productVariants = ProductVariant::get(['id', 'name']);
 
         $compact = [
             // 'salesOrders' => $salesOrder,
             // 'productBundles' => $productBundles,
-            // 'productVariants' => $productVariants,
+            'productVariants' => $productVariants,
+            'taxRate' => 7,
             'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,
             'modelName' => $this->modelName,

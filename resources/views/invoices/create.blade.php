@@ -19,7 +19,7 @@
         <div class="border my-2 mb-3"></div>
         <form action="{{ route($routePrefix . '.' . $routeName . '.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <invoice-form></invoice-form>
+            <invoice-form :product-variants="{{ json_encode($productVariants) }}" :tax-rate="{{ $taxRate }}"></invoice-form>
         </form>
     </div>
 @endsection

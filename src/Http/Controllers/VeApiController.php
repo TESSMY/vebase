@@ -27,8 +27,6 @@ class VeApiController extends ApiController
             $this->tableName = $request->segment(2);
             $class = Str::singular($request->segment(2));
             $this->model = app('App\\Models\\' . ucfirst($class));
-
-            $this->authorizeResource($this->model::class, $this->model);
         }
     }
 
@@ -42,6 +40,8 @@ class VeApiController extends ApiController
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', $this->model);
+
         $search = $request->input('search');
         $limit = min(intval($request->get('limit', 10)), 1000);
         $orderColumn = $request->input('order_column');
@@ -79,6 +79,8 @@ class VeApiController extends ApiController
 
     public function store(Request $request)
     {
+        $this->authorize('create', $this->model);
+        
         $input = $request->all();
 
         if (empty($this->model::createValidator)) {
@@ -104,6 +106,7 @@ class VeApiController extends ApiController
     {
         $input = $request->input();
         $model = $this->findModel($id);
+        $this->authorize('view', $model);
 
         if (!empty($input['relatable'])) {
             foreach ($input['relatable'] as $relatable) {
@@ -119,6 +122,7 @@ class VeApiController extends ApiController
     public function update(Request $request, $id)
     {
         $model = $this->findModel($id);
+        $this->authorize('update', $model);
 
         $input = $request->all();
 
@@ -144,6 +148,8 @@ class VeApiController extends ApiController
     public function destroy($id)
     {
         $model = $this->findModel($id);
+        $this->authorize('delete', $model);
+
         $model->delete();
 
         return $this->respond();

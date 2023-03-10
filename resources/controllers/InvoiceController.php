@@ -22,14 +22,14 @@ class InvoiceController extends VeController
      */
     public function create()
     {
+        $clients = User::get(['id', 'name']);
         $salesOrder = SalesOrder::get(['id']);
-        // $productBundles = Product::get(['id', 'name']);
-        $productVariants = ProductVariant::get(['id', 'name']);
+        $products = Product::get(['id', 'name']);
 
         $compact = [
+            'clients' => $clients,
             'salesOrders' => $salesOrder,
-            // 'productBundles' => $productBundles,
-            'productVariants' => $productVariants,
+            'products' => $products,
             'taxRate' => 7,
             'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,

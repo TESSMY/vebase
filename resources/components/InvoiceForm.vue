@@ -1,13 +1,18 @@
 <template>
     <div class="bg-white card shadow py-3 px-4">
         <div class="row border-bottom mb-2">
-            <span class="h5">{{ $modelName }} Information</span>
+            <span class="h5">Invoice Information</span>
         </div>
         <div class="row">
             <div class="col-12 col-md-6 mb-2">
+                <label class="form-label">Sales Order (Optional)</label>
+                 <input type="hidden" name="sales_order_id" :value="salesOrder.id">
+                <multi-select v-model="salesOrder" track-by="id" label="id" :options="salesOrders"></multi-select>
+            </div>
+            <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Client</label>
-                <!-- <input type="hidden" name="client_id" :value="client.id">
-                <multi-select v-model="client" track-by="id" label="id" :options="clients"></multi-select> -->
+                <input type="hidden" name="client_id" :value="client.id">
+                <multi-select v-model="client" track-by="name" label="name" :options="clients"></multi-select>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Date</label>
@@ -21,17 +26,12 @@
                 <label class="form-label">Payment Term</label>
                 <input class="form-control" type="text" name="payment_term" placeholder="Payment Term" value="" required>
             </div>
-            <div class="col-12 col-md-6 mb-2">
-                <label class="form-label">Sales Order (Optional)</label>
-                 <input type="hidden" name="sales_order_id" :value="salesOrder.id">
-                <multi-select v-model="salesOrder" track-by="id" label="id" :options="salesOrders"></multi-select>
-            </div>
         </div>
     </div>
     <div class="border my-2 mb-3"></div>
     <div class="bg-white card shadow py-3 px-4">
         <div class="row mb-2">
-            <span class="h4">ADD PRODUCT</span>
+            <span class="h4">Add PRODUCT</span>
         </div>
         <div class="overflow-auto">
             <table class="table table-bordered text-center">
@@ -47,13 +47,13 @@
                 <tbody>
                     <tr v-for="(item, index) in products">
                         <td>
-                            <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.productVariant.id">
-                            <multi-select v-model="item.productVariant" track-by="name" label="name" :options="props.productVariants"></multi-select>
+                            <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.product.id">
+                            <multi-select v-model="item.product" track-by="name" label="name" :options="props.products"></multi-select>
                         </td>
                         <td>
                             <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
                         </td>
-                        <td>{{ item.productVariant.unit_price }}</td>
+                        <td>{{ item.product.unit_price }}</td>
                         <td>{{ item.subTotal }}</td>
                         <td>
                             <span class="btn" @click="removeProduct(index)">
@@ -67,7 +67,7 @@
         <div class="row container-fluid">
             <div class="col-12 col-md-4 mb-md-0 mb-3">
                 <div class="row px-0">
-                    <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProducts()">Add another line</span>
+                    <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                     <div class="px-0">
                         <label class="form-label px-0">Notes and instructions</label>
                         <textarea class="form-control" placeholder="Notes and instructions" rows="5" style="resize: none"></textarea>
@@ -100,8 +100,7 @@ import { defineComponent, ref } from 'vue';
 
 let props = defineProps({
     salesOrders: Array,
-    productBundles: Array,
-    productVariants: Array,
+    products: Array,
     taxRate: Number,
     clients: Array,
 });
@@ -112,14 +111,14 @@ const client = ref({});
 const grandTotal = ref(0);
 const taxRate = ref(props.taxRate);
 const products = ref([{
-    'productVariant': '',
+    'product': '',
     'quantity': 0,
     'subTotal': 0,
 }]);
 
-function addProducts() {
+function addProduct() {
     this.products.push({
-        'productVariant': '',
+        'product': '',
         'quantity': 0,
         'subTotal': 0,
     })
@@ -131,7 +130,7 @@ function removeProduct(index) {
 }
 
 function updateProductSubTotal(item) {
-    item.subTotal = item.productVariant.unit_price * item.quantity;
+    item.subTotal = item.product.unit_price * item.quantity;
     this.updateTotalPrice();
 }
 

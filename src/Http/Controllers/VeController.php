@@ -35,12 +35,13 @@ class VeController extends Controller
             $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
 
             $this->folder = Str::singular($request->segment(1));
-            $this->authorizeResource($this->model::class, Str::singular($this->routeName));
         }
     }
 
-    public function findModel($id) {
-        $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
+    public function findModel($id) 
+    {
+        $routeKey = $this->model->getRouteKey() ?? 'id';
+        $model = $this->model::where($routeKey, $id)->first();
         abort_if(empty($model), 404);
         
         return $model;
@@ -48,6 +49,8 @@ class VeController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', $this->model);
+
         $search = $request->input('search');
         $limit = $request->input('limit') ?? 10;
         $orderColumn = $request->input('order_column');
@@ -65,11 +68,10 @@ class VeController extends Controller
             }
         }
 
-        if (!empty($orderColumn) && in_array($orderColumn, $this->model::sortable)) {
+        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
             $models = $models->orderBy($orderColumn, $orderBy);
         }
 
-        // need to check if orderby and sortby will work together
         $sortBy = $request->input('sort_by', 'latest');
         if ($sortBy === 'oldest'){
             $models->oldest();
@@ -92,9 +94,9 @@ class VeController extends Controller
         if (View::exists($this->folder . '.' . $this->routeName . '.index')) {
             // returns view if found in app resource view folder
             return view($this->folder . '.' . $this->routeName . '.index', $compact);
-        } elseif (file_exists(base_path('vendor/vecapital/vebase/src/resources/views/' . $this->folder . '/' . $this->routeName . '/index.blade.php'))) {
+        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/' . $this->routeName . '/index.blade.php'))) {
             // returns view found in vendor resource folder
-            return View::make('vebase::' . $this->folder . '/' . $this->routeName . '.index', $compact);
+            return View::make('vebase::' . $this->routeName . '.index', $compact);
         } else {
             // default vendor view
             return View::make('vebase::index', $compact);
@@ -103,6 +105,8 @@ class VeController extends Controller
 
     public function create()
     {
+        $this->authorize('create', $this->model);
+
         $compact = [
             'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,
@@ -125,14 +129,16 @@ class VeController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', $this->model);
+        
         $input = $request->all();
 
-        if (empty($this->model::createValidator)) {
+        if (empty($this->model->createValidator)) {
             flash('Error: ' . $this->modelName . " create is empty")->error();
             return back()->withInput($request->input());
         }
 
-        $validator = Validator::make($input, $this->model::createValidator);
+        $validator = Validator::make($input, $this->model->createValidator);
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
@@ -159,6 +165,7 @@ class VeController extends Controller
     {
         $routeModel = Str::singular($this->routeName);
         $$routeModel = $this->findModel($id);
+        $this->authorize('view', $$routeModel);
 
         $compact = [
             'routeModel' => $routeModel,
@@ -185,6 +192,7 @@ class VeController extends Controller
     {
         $routeModel = Str::singular($this->routeName);
         $$routeModel = $this->findModel($id);
+        $this->authorize('update', $$routeModel);
 
         $compact = [
             'routeModel' => $routeModel,
@@ -210,14 +218,16 @@ class VeController extends Controller
     public function update(Request $request, $id)
     {
         $model = $this->findModel($id);
+        $this->authorize('update', $model);
 
         $input = $request->all();
 
         if (empty($this->model::updateValidator)) {
-            throw new \Exception($this->modelName . " updateValidator is empty");
+            flash('Error:  updateValidator is empty')->error();
+            return back()->withInput($request->input());
         }
 
-        $validator = Validator::make($input, $model::updateValidator);
+        $validator = Validator::make($input, $model->updateValidator);
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
@@ -242,6 +252,8 @@ class VeController extends Controller
     public function destroy($id)
     {
         $model = $this->findModel($id);
+        $this->authorize('delete', $model);
+
         $model->delete();
 
         flash()->success('Successfully deleted ' . $this->modelName);

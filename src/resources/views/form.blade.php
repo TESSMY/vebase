@@ -3,7 +3,7 @@
         @foreach ($model->createFields as $createField)
             <div class="col-12 {{ $createField['size'] ?? 'col-md-6' }} mb-md-2 mb-2">
                 @if (!empty($createField['displayName']))
-                    <label>{{ $createField['displayName'] }}</label>
+                    <label class="form-label">{{ $createField['displayName'] }}</label>
                 @endif
                 @if ($createField['inputType'] == 'select')
                     <select class="form-select" name="{{ $createField['name'] }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
@@ -42,7 +42,7 @@
         @foreach ($model->updateFields as $updateField)
             <div class="col-12 {{ $updateField['size'] ?? 'col-md-6' }} mb-md-2 mb-2">
                 @if (!empty($updateField['displayName']))
-                    <label>{{ $updateField['displayName'] }}</label>
+                    <label class="form-label">{{ $updateField['displayName'] }}</label>
                 @endif
                 @if ($updateField['inputType'] == 'select')
                     <select class="form-select" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>

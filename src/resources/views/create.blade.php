@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-12 col-md-6">
                 <div class="page-title-box">
-                    <span class="page-title h4">Add New {{ $modelName }}</span>
+                    <span class="page-title h4">Create New {{ $modelName }}</span>
                 </div>
             </div>
             <nav class="col-12 col-md-6">
@@ -21,9 +21,13 @@
             <form action="{{ route($routePrefix . '.' . $routeName . '.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row border-bottom mb-2">
-                    <span class="h5">Information</span>
+                    <span class="h5">{{ $modelName }} Information</span>
                 </div>
                 @include('vebase::form')
+                <div class="row col-12">
+                    <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Create</button>
+                    <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
+                </div>
             </form>
         </div>
     </div>

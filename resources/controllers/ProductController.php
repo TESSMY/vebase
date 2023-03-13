@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
+use App\Models\ProductBundle;
 use App\Models\ProductVariant;
 use App\Models\Product;
 use App\Models\Supplier;
@@ -15,9 +16,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Vecapital\Vebase\Http\Controllers\VeController;
 
 
-class ProductController extends Controller
+class ProductController extends VeController
 {
     /**
      * Display a listing of the resource.
@@ -26,6 +28,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('view', Product::class);
         $products = Product::orderBy('created_at', 'desc');
         $search = $request->input('search');
         if (!empty($search)) {
@@ -47,11 +50,13 @@ class ProductController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Product::class);
         $suppliers = Supplier::all();
         $products = Product::all();
+        $variants = ProductVariant::get(['id', 'name', 'sku' , 'selling_price']);
         $brands = Brand::all();
 
-        return view('admin.products.form', compact('suppliers', 'products', 'brands'));
+        return view('admin.products.form', compact('suppliers', 'products', 'brands', 'variants'));
     }
 
     /**
@@ -62,9 +67,17 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Product::class);
         $input = $request->all();
-        foreach ($input['options'] as $index => $option) {
-            $input['option_' . ($index + 1)] = $option;
+        $validator = Validator::make($input, $this->model->createValidator);
+        if ($validator->fails()) {
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
+        }
+        if (!empty($input['options'])) {
+            foreach ($input['options'] as $index => $option) {
+                $input['option_' . ($index + 1)] = $option;
+            }
         }
 
         try {
@@ -130,6 +143,26 @@ class ProductController extends Controller
                 }
             }
 
+            if ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
+                $productCost = 0;
+                foreach($input['bundles'] as $bundle) {
+                    $productVariant = ProductVariant::find($bundle['product_variant_id']);
+                    $bundle = ProductBundle::create([
+                        'product_id' => $product->id,
+                        'product_variant_id' => $bundle['product_variant_id'],
+                        'quantity' => $bundle['quantity'],
+                        'selling_price' => $productVariant->selling_price,
+                        'grand_total' => $bundle['quantity'] * $productVariant->selling_price,
+                        'image' => $bundle['image'] ?? null,
+                    ]);
+                    $bundle->save();
+                    $productCost += $productVariant->cost_price;
+                }
+                $product->cost_price = $productCost;
+                $product->bundle_value = $product->bundles->sum('grand_total');
+                $product->save();
+            }
+
             DB::commit();
             flash()->success($product->name . ' created successfully!');
             return redirect()->route('admin.products.index');
@@ -142,36 +175,16 @@ class ProductController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Product $product)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Product $product)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, $id)
     {
+        $product = $this->findModel($id);
+        $this->authorize('edit', $product);
         $input = $request->all();
         $validator = Validator::make($input, [
             'name' => 'required|max:255',
@@ -208,28 +221,6 @@ class ProductController extends Controller
             DB::rollBack();
             Log::error($exception);
             flash('Error:' . $exception)->error();
-            throw $exception;
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Product $product)
-    {
-        try {
-            $product->variants()->delete();
-            $product->delete();
-
-            DB::commit();
-            return redirect()->route('admin.products.index')->with('message', $product->name . ' removed successfully.');
-        } catch (Exception $exception) {
-            DB::rollback();
-            Log::error($exception);
-            flash()->error('Error:' . $exception);
             throw $exception;
         }
     }

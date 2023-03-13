@@ -2,133 +2,195 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Vecapital\Vebase\Http\Controllers\VeController;
 
-class PurchaseOrderController extends Controller
+class PurchaseOrderController extends VeController
 {
     public function index(Request $request)
     {
+        $this->authorize('view', PurchaseOrder::class);
+
         $search = $request->input('search');
+        $orderColumn = $request->input('order_column');
+        $orderBy = $request->input('order_by');
         $purchaseOrders = PurchaseOrder::query();
 
         if (!empty($search)) {
-            $purchaseOrders = $purchaseOrders->where(function ($query) use ($search) {
-                $query->where('user_id', 'LIKE', '%' . $search . '%')
-                    ->orWhere('certificate_id', 'LIKE', '%' . $search . '%');
-            });
+            if (!empty($purchaseOrders->searchable)) {
+                $purchaseOrders = $purchaseOrders->where(function($query) use ($search, $purchaseOrders) {
+                    foreach ($purchaseOrders->searchable as $value) {
+                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
+                    }
+                });
+            }
         }
+
+        if (!empty($orderColumn) && in_array($orderColumn, $purchaseOrders->sortable)) {
+            $purchaseOrders = $purchaseOrders->orderBy($orderColumn, $orderBy);
+        }
+
 
         $purchaseOrders = $purchaseOrders->latest()->paginate(10)->withQueryString();
 
         return view('admin.purchase-orders.index', compact('purchaseOrders'));
     }
 
-    public function create(Request $request)
+    public function create()
     {
+        $this->authorize('create', PurchaseOrder::class);
         $taxRate = 7;
         return view('admin.purchase-orders.create', compact('taxRate'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', PurchaseOrder::class);
         $input = $request->input();
-        $model = PurchaseOrder::first();
+        $input['user_id'] = Auth::id();
+        $model = new PurchaseOrder();
+
         $validator = Validator::make($input, $model->createValidator);
+
         if ($validator->fails()) {
             foreach ($validator->errors()->all() as $error) {
-                flash('Error: ' . $error)->error();
+                flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             }
             return back()->withInput($request->input())->withErrors($validator);
         }
+
         DB::beginTransaction();
         try {
             $purchaseOrder = PurchaseOrder::create($input);
+
+            if (!empty($input['products'])) {
+                foreach ($input['products'] as $product) {
+                    $productVariant = ProductVariant::find($product['product_variant_id']);
+                    $product = Product::find($product['product_id']);
+                    PurchaseOrderItem::create($input + [
+                        'purchase_order_id' => $purchaseOrder->id,
+                        'product_id' => $product->id,
+                        'product_variant_id' => $productVariant->id,
+                        'quantity' => $product['quantity'],
+                        'unit_price' => $productVariant->cost_price,
+                        'grand_total' => $product['quantity'] * $productVariant->cost_price,
+                    ]);
+                }
+            }
+
+            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
+            $purchaseOrder->save();
+
             DB::commit();
             flash()->success('Successfully created the purchase order.');
             return redirect()->route('admin.purchase-orders.index');
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash('Error: ' . $exception);
+            flash('Error: ' . $exception->getMessage());
             return redirect()->route('admin.purchase-orders.create')->withInput($request->input());
         }
     }
 
-    public function edit(Request $request, PurchaseOrder $purchaseOrder)
+    public function edit(Request $request, $id)
     {
+        $purchaseOrder = $this->findModel($id);
+        $this->authorize('update', $purchaseOrder);
         $taxRate = 7;
         return view('admin.purchase-orders.edit', compact('taxRate', 'purchaseOrder'));
     }
 
-    public function update(Request $request, PurchaseOrder $purchaseOrder)
+    public function update(Request $request, $id)
     {
+        $purchaseOrder = $this->findModel($id);
+        $this->authorize('update', $purchaseOrder);
         $input = $request->input();
+        $input['user_id'] = Auth::id();
+
         $validator = Validator::make($input, $purchaseOrder->updateValidator);
+
         if ($validator->fails()) {
             foreach ($validator->errors()->all() as $error) {
-                flash('Error: ' . $error)->error();
+                flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             }
             return back()->withInput($request->input())->withErrors($validator);
         }
+
         DB::beginTransaction();
         try {
             $purchaseOrder->update($input);
+
+            if (!empty($input['products'])) {
+                $purchaseOrder->purchaseItems->delete();
+                foreach ($input['products'] as $product) {
+                    $productVariant = ProductVariant::find($product['product_variant_id']);
+                    $product = Product::find($product['product_id']);
+                    PurchaseOrderItem::create($input + [
+                        'purchase_order_id' => $purchaseOrder->id,
+                        'product_id' => $product->id,
+                        'product_variant_id' => $productVariant->id,
+                        'quantity' => $product['quantity'],
+                        'unit_price' => $productVariant->cost_price,
+                        'grand_total' => $product['quantity'] * $productVariant->cost_price,
+                    ]);
+                }
+                $purchaseOrder->orderItems->save();
+            }
+
+            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
+            $purchaseOrder->save();
+
             DB::commit();
             flash()->success('Successfully updated the purchase order.');
             return redirect()->route('admin.purchase-orders.index');
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash('Error: ' . $exception);
+            flash('Error: ' . $exception->getMessage());
             return redirect()->route('admin.purchase-orders.edit', $purchaseOrder->getRouteKey())->withInput($request->input());
         }
     }
 
-    public function show(Request $request, PurchaseOrder $purchaseOrder)
+    public function show(Request $request, $id)
     {
-        $purchase_order = $purchaseOrder;
+        $purchaseOrder = $this->findModel($id);
+        $this->authorize('view', $purchaseOrder);
 
-        if (empty($purchaseOrder->file_url)) {
-            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
-            $purchaseOrder->save();
-        }
 
-        return view('admin.purchase-orders.show', compact('purchaseOrder', 'purchase_order'));
+
+        return view('admin.purchase-orders.show', compact('purchaseOrder'));
     }
 
     public function send(Request $request, PurchaseOrder $purchaseOrder)
     {
-        $data["email"] = $request->input('to_email');
-        $data["title"] = 'Purchase Order' . ' ' . $purchaseOrder->id;
-        $data["purchaseOrder"] = $purchaseOrder;
-        Mail::send('admin.purchase-orders.message', $data, function ($message) use ($data, $purchaseOrder) {
-            $message->to($data["email"], $data["email"])
-                    ->subject($data["title"])
-                    ->attach(Storage::url($purchaseOrder->file_url));
-        });
-
-        flash()->success('Mail sent successfully!');
-        return redirect()->route('admin.purchase-orders.index');
-    }
-
-    public function destroy(Request $request, PurchaseOrder $purchaseOrder)
-    {
         try {
-            $purchaseOrder->delete();
-            flash()->success('Successfully deleted the purchase order.');
+            $data["email"] = $request->input('to_email');
+            $data["title"] = 'Purchase Order' . ' ' . $purchaseOrder->id;
+            $data["purchaseOrder"] = $purchaseOrder;
+            Mail::send('admin.purchase-orders.message', $data, function ($message) use ($data, $purchaseOrder) {
+                $message->to($data["email"], $data["email"])
+                        ->subject($data["title"])
+                        ->attach(Storage::url($purchaseOrder->file_url));
+            });
+
+            flash()->success('Mail sent successfully!');
             return redirect()->route('admin.purchase-orders.index');
-        } catch (Exception $exception) {
-            Log::error($exception);
-            flash('Error: ' . $exception);
+        } catch(Exception $exception) {
+            Log::error('There was an issue sending the sending the pdf. Purchase Order ID: ' . $purchaseOrder->id . ' . Error: ' . $exception->getMessage());
+            flash()->error('There was an issue sending the sending the pdf. Purchase Order ID: ' . $purchaseOrder->id . ' . Error: ' . $exception->getMessage());
             return redirect()->route('admin.purchase-orders.index');
         }
+
     }
 }

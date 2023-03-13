@@ -59,6 +59,7 @@
                         <tr v-for="(item, index) in products">
                             <td>
                                 <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.productVariant.id">
+                                <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.id">
                                 <multi-select v-model="item.productVariant" track-by="name" label="name" :options="props.productVariants"></multi-select>
                             </td>
                             <td>{{ item.description }}</td>

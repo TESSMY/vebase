@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Routing\Controller;
 use App\Models\DeliveryOrder;
 use App\Models\SalesOrder;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
+use Vecapital\Vebase\Http\Controllers\VeController;
 
-class DeliveryOrderController extends Controller
+class DeliveryOrderController extends VeController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 

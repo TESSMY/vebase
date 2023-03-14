@@ -113,7 +113,7 @@
                                     <form>
                                         <div class="mb-3">
                                             <label for="simpleinput" class="form-label">Client</label>
-                                            <select disabled name="client_id" class="form-control" v-model="client_id"></select>
+                                            <select name="client_id" class="form-control" v-model="delivery_order.client_id"></select>
                                         </div>
 
                                         <div class="mb-3">
@@ -159,7 +159,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Payment Term</label>
-                                            <input type="number" class="form-control" v-model="delivery_order.payment_term">
+                                            <input type="text" class="form-control" v-model="delivery_order.payment_term">
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Payment Due</label>
@@ -477,6 +477,7 @@
         }
         let data = {
             _method: method,
+            client_id: delivery_order.value.client_id,
             sales_order_id: delivery_order.value.sales_order.id,
             date: delivery_order.value.date,
             packed_by_date: delivery_order.value.packed_by_date,

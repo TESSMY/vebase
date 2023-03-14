@@ -53,7 +53,8 @@ class DeliveryOrderController extends Controller
                 ['product_variant_id' => $itemRequest['id']],
                 [
                     'quantity' => $itemRequest['quantity'],
-                    'sub_total' => $subTotalItem
+                    'sub_total' => $subTotalItem,
+                    'unit_price' => $productVariant[$itemRequest['id']]
                 ]
             );
             $subTotal += $subTotalItem;
@@ -107,7 +108,8 @@ class DeliveryOrderController extends Controller
                 ['product_variant_id' => $itemRequest['id']],
                 [
                     'quantity' => $itemRequest['quantity'],
-                    'sub_total' => $subTotalItem
+                    'sub_total' => $subTotalItem,
+                    'unit_price' => $productVariant[$itemRequest['id']]
                 ]
             );
             $subTotal += $subTotalItem;

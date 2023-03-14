@@ -20,7 +20,7 @@
             </div>
             <div class="col-12 col-md-6 mb-md-0 mb-2">
                 <label class="form-label">Client Address</label>
-                <input class="form-control" type="text" placeholder="Client Address" disabled>
+                <input class="form-control" type="text" placeholder="Client Address" :value="client.address_1 + ' ' + client.address_2" disabled>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Payment Term</label>
@@ -53,8 +53,8 @@
                         <td>
                             <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
                         </td>
-                        <td>{{ item.product.unit_price }}</td>
-                        <td>{{ item.subTotal }}</td>
+                        <td>{{ item.product.selling_price }}</td>
+                        <td>{{ item.subTotal.toFixed(2) }}</td>
                         <td>
                             <span class="btn" @click="removeProduct(index)">
                                 <i class="uil-trash" style="color: red"></i>
@@ -130,7 +130,7 @@ function removeProduct(index) {
 }
 
 function updateProductSubTotal(item) {
-    item.subTotal = item.product.unit_price * item.quantity;
+    item.subTotal = item.product.selling_price * item.quantity;
     this.updateTotalPrice();
 }
 

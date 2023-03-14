@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Product;
+use App\Models\ProductBundle;
 use App\Models\ProductVariant;
 use App\Models\SalesOrder;
 use App\Models\User;
@@ -15,16 +17,17 @@ use Illuminate\Support\Str;
 
 class InvoiceController extends VeController
 {
-   /**
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $clients = User::get(['id', 'name']);
-        $salesOrder = SalesOrder::get(['id']);
-        $products = Product::get(['id', 'name']);
+        $clients = Client::get();
+        $salesOrder = SalesOrder::get();
+        $products = ProductBundle::get();
+        $products = ProductVariant::get();
 
         $compact = [
             'clients' => $clients,

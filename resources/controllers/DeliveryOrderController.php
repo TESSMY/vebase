@@ -33,7 +33,6 @@ class DeliveryOrderController extends Controller
             'cient_id' => 'required|exists:clients,id',
             'sales_order_id' => 'required|exists:sales_orders,id',
             'date' => 'required|date',
-            'packed_by_date' => 'nullable|date',
             'payment_term' => 'nullable|string',
             'note' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -41,7 +40,7 @@ class DeliveryOrderController extends Controller
             'items.*.quantity' => 'required|integer|min:1'
         ]);
 
-        $deliveryOrder = DeliveryOrder::create(request()->only(['cient_id', 'sales_order_id', 'date', 'packed_by_date', 'payment_term', 'note']));
+        $deliveryOrder = DeliveryOrder::create(request()->only(['cient_id', 'sales_order_id', 'date', 'payment_term', 'note']));
         $subTotal = 0;
         $productVariant = ProductVariant::select(['id', 'selling_price'])
             ->whereIn('id', array_column(request('items'), 'id'))
@@ -83,7 +82,6 @@ class DeliveryOrderController extends Controller
             'cient_id' => 'required|exists:clients,id',
             'sales_order_id' => 'required|exists:sales_orders,id',
             'date' => 'required|date',
-            'packed_by_date' => 'nullable|date',
             'payment_term' => 'nullable|string',
             'note' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -92,7 +90,7 @@ class DeliveryOrderController extends Controller
         ]);
 
         DB::beginTransaction();
-        $deliveryOrder->update(request()->only(['cient_id', 'sales_order_id', 'date', 'packed_by_date', 'payment_term', 'note']));
+        $deliveryOrder->update(request()->only(['cient_id', 'sales_order_id', 'date', 'payment_term', 'note']));
         $remainItems = array_column(request('items'), 'id');
 
         // DELETE IF NOT EXISTS IN REQUEST

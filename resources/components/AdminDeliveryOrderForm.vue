@@ -165,10 +165,6 @@
                                             <label class="form-label">Payment Due</label>
                                             <input type="text" class="form-control" v-model="payment_due" :disabled="true">
                                         </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Packed By Date</label>
-                                            <input type="text" class="form-control" ref="packed_by_date_input" v-model="delivery_order.packed_by_date">
-                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -346,7 +342,6 @@
 
     // COMPONENT REFS
     const date_input = ref(null)
-    const packed_by_date_input = ref(null)
     const select_product_input = ref(null)
     const delivery_order_summary = ref(null)
 
@@ -377,7 +372,6 @@
         },
         sales_order_id: null,
         date: null,
-        packed_by_date: null,
         delivery_eta: null,
         items: [],
         note: null
@@ -461,7 +455,6 @@
 
     onMounted(() => {
         flatpickr(date_input.value);
-        flatpickr(packed_by_date_input.value)
     })
 
     const save = () => {
@@ -480,7 +473,6 @@
             client_id: delivery_order.value.client_id,
             sales_order_id: delivery_order.value.sales_order.id,
             date: delivery_order.value.date,
-            packed_by_date: delivery_order.value.packed_by_date,
             payment_term: delivery_order.value.payment_term,
             note: delivery_order.value.note,
             items: []

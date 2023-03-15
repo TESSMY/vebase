@@ -57,20 +57,19 @@
         </div>
         <div class="col-md-6">
           <div class="form-group row mb-3">
-            <label
-                class="col-md-4 text-right form-label text-sm-start">Total Stock</label>
+            <label class="col-md-4 text-right form-label text-sm-start">Total Stock</label>
             <div class="col-md-12">
-              <input type="text" name="total_stock" value="" class="form-control" required/>
+              <input type="text" name="total_stock"  class="form-control" v-model="product.total_stock" :readonly="isEdit == true || type == 2" required/>
             </div>
           </div>
         </div>
       </div>
-      <div class="row col-md-12" v-if="type == 1 || type == 3">
+      <div class="row col-md-12" v-if="(type == 1 || type == 3) && isEdit == false">
         <div class="col-md-6" v-if="type == 1">
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Cost Price</label>
             <div class="col-md-12">
-              <input type="text" name="cost_price" v-model="value" class="form-control" min="0" step=".01" :required="type == 1" />
+              <input type="text" name="cost_price" class="form-control" min="0" step=".01" :required="type == 1" />
             </div>
           </div>
         </div>
@@ -78,7 +77,7 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Bundle Value</label>
             <div class="col-md-12">
-              <input type="text" name="bundle_value" v-model="value" class="form-control" min="0" step=".01" :disabled="type == 3" />
+              <input type="number" name="bundle_value" v-model="bundle_value" class="form-control" min="0" step=".01" :readonly="type == 3" />
             </div>
           </div>
         </div>
@@ -86,18 +85,19 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Selling Price</label>
             <div class="col-md-12">
-              <input type="text" name="selling_price" value="" class="form-control" min="0" step=".01" required/>
+              <input type="number" name="selling_price" value="" class="form-control" min="0" step=".01" required/>
             </div>
           </div>
         </div>
       </div>
-      <div class="row col-md-12">
+      <div class="row col-md-12" v-if="type == 1 || type == 2">
         <div class="col-md-6">
           <div class="form-group row mb-3">
             <label
                 class="col-md-4 text-right form-label text-sm-start">Measurement Unit</label>
             <div class="col-md-12">
-              <input type="text" name="measurement_unit" value="" class="form-control" required/>
+              <input type="text" v-if="isEdit" name="measurement_unit" v-model="product.variants[0].measurement_unit" class="form-control" required/>
+              <input type="text" v-else name="measurement_unit" value="" class="form-control" required/>
             </div>
           </div>
         </div>
@@ -106,18 +106,19 @@
             <label
                 class="col-md-4 text-right form-label text-sm-start">Length</label>
             <div class="col-md-12">
-              <input type="text" name="length" value="" class="form-control" required/>
+              <input type="text" v-if="isEdit" name="length" v-model="product.variants[0].length" class="form-control" required/>
+              <input type="text" v-else name="length" value="" class="form-control" required/>
             </div>
           </div>
         </div>
       </div>
-      <div class="row col-md-12">
+      <div class="row col-md-12" v-if="type == 1 || type == 2">
         <div class="col-md-6">
           <div class="form-group row mb-3">
-            <label
-                class="col-md-4 text-right form-label text-sm-start">Width</label>
+            <label class="col-md-4 text-right form-label text-sm-start">Width</label>
             <div class="col-md-12">
-              <input type="text" name="width" value="" class="form-control" required/>
+              <input type="text" v-if="isEdit" name="width" v-model="product.variants[0].width" class="form-control" required/>
+              <input type="text" v-else name="width" value="" class="form-control" required/>
             </div>
           </div>
         </div>
@@ -126,7 +127,8 @@
             <label
                 class="col-md-4 text-right form-label text-sm-start">Height</label>
             <div class="col-md-12">
-              <input type="text" name="height" value="" class="form-control" required/>
+              <input type="text" v-if="isEdit" name="height" v-model="product.variants[0].height" class="form-control" required/>
+              <input type="text" v-else name="height" value="" class="form-control" required/>
             </div>
           </div>
         </div>
@@ -136,7 +138,7 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">SKU</label>
             <div class="col-md-12">
-              <input type="text" name="sku" value="" class="form-control" required/>
+              <input type="text" name="sku" v-model="product.sku" class="form-control" required/>
             </div>
           </div>
         </div>
@@ -159,7 +161,7 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Barcode</label>
             <div class="col-md-12">
-              <input type="text" name="barcode" value="" class="form-control" required/>
+              <input type="text" name="barcode" v-model="product.barcode" class="form-control" required/>
             </div>
           </div>
         </div>
@@ -184,7 +186,7 @@
           <div class="my-2 mx-2 fw-bold">Product Variations</div>
         </div>
         <div class="col-md-12 mt-2">
-          <div class="mb-4" v-for="(option, i) in options">
+          <div class="mb-4" v-for="(option, i) in options" :key="i">
             <div class="row mb-3">
               <label class="mb-2">Option Name</label>
               <div class="d-flex gap-2 align-items-center">
@@ -194,7 +196,7 @@
             </div>
             <div class="row mb-3">
               <label class="mb-2l">Option Values</label>
-              <div class="d-flex gap-2 align-items-center" v-for="(value, v) in option.value">
+              <div class="d-flex gap-2 align-items-center" v-for="(value, v) in option.value" :key="v">
                 <input class="form-control w-50 mt-2" type="text" v-model="option.value[v]" @change="addVariant()">
                 <i class="uil-trash cursor mt-2" v-if="v > 0" @click="removeValue(i, v)"></i>
               </div>
@@ -221,6 +223,7 @@
 
               <tbody class="align-middle">
               <tr v-for="(variant, i) in product.variants" :key="i">
+                <input type="hidden" :name="'variants[' + i + '][product_variant_id]'" :value="variant.id" v-if="variant.id !== 'undefined'">
                 <td>
                   <input name="image" type="file" class="form-control mt-1 block w-15"/>
                 </td>
@@ -231,7 +234,7 @@
                   <input :name="'variants[' + i + '][sku]'" type="text" class="form-control mt-1 block w-15" v-model="variant.sku" required readonly/>
                 </td>
                 <td>
-                  <input :name="'variants[' + i + '][quantity]'" type="text" class="form-control mt-1 block w-15" v-model="variant.quantity" required/>
+                  <input :name="'variants[' + i + '][quantity]'" type="text" class="form-control mt-1 block w-15" v-model="variant.quantity" @input="recalculateTotalStock()" required/>
                 </td>
                 <td>
                   <input :name="'variants[' + i + '][unit_cost]'" type="number" class="form-control mt-1 block w-15 " min="0" step=".01" v-model="variant.unit_cost" required/>
@@ -277,12 +280,13 @@
             <tbody class="align-middle">
             <tr v-for="(bundle, i) in bundles" :key="i">
               <td>
-                <multi-select v-model="bundle.productVariant" track-by="name" label="name" :options="variants"></multi-select>
-                <input type="hidden" :name="'bundles[' + i + '][product_variant_id]'" :value="bundle.productVariant.id">
+                <multi-select v-model="bundle.product_variant" track-by="name" label="name" :options="variants"></multi-select>
+                <input type="hidden" :name="'bundles[' + i + '][product_variant_id]'" :value="bundle.product_variant.id">
+                <input type="hidden" :name="'bundles[' + i + '][product_bundle_id]'" :value="bundle.id">
               </td>
               <td><input type="text" :name="'bundles[' + i + '][quantity]'" v-model="bundle.quantity" class="form-control" @input="recalculateTotal()" required/></td>
-              <td>{{ bundle.productVariant.selling_price }}</td>
-              <td>{{ bundle.subtotal.toFixed(2) }}</td>
+              <td>{{ bundle.product_variant.selling_price }}</td>
+              <td>{{ bundle.subtotal }}</td>
               <td><i class="uil-trash cursor-pointer mt-2" @click="removeBundle(i)"></i></td>
             </tr>
             </tbody>
@@ -300,15 +304,16 @@ import Swal from "sweetalert2";
 
 export default {
   name: "ProductForm",
-  props: ['suppliers', 'products', 'brands', 'variants'],
+  props: ['suppliers', 'products', 'edit_product', 'brands', 'variants', 'product_bundles'],
   data() {
     return {
+      isEdit: false,
       bundles: [{
-        productVariant: '',
+        product_variant: '',
         quantity: 0,
         subtotal: 0
       }],
-      value: 0,
+      bundle_value: 0,
       suppliers: this.suppliers,
       selectedSupplier: '',
       brands: this.brands,
@@ -321,13 +326,75 @@ export default {
         description: '',
         brand: '',
         supplier: '',
-        variants: [],
-        bundles: [],
+        barcode: '',
+        bundle_value: '',
+        total_stock: 0,
+        variants: [{
+          measurement_unit: '',
+          length: '',
+          width: '',
+          height: '',
+          quantity: '',
+          unit_cost: '',
+        }],
+        bundles: [{
+          product_variant: '',
+          quantity: '',
+        }],
       }],
     }
   },
 
+  created() {
+    if (typeof(this.edit_product) != 'undefined') {
+      this.isEdit = true;
+      this.product = this.edit_product;
+      this.product.variants = this.variants;
+      this.type = this.product.type;
+      this.selectedBrand = this.edit_product.brand_id;
+      this.selectedSupplier = this.edit_product.supplier_id;
+      this.bundles = JSON.parse(JSON.stringify(this.product_bundles))
+      this.getOptions();
+    }
+  },
+
   methods: {
+    getOptions() {
+      let values = [];
+      this.product.variants.forEach(variant => {
+        values.push(variant.option_1)
+      });
+      this.options.push({
+        name: this.product.option_1,
+        value: values
+      })
+
+      if (this.product.option_2) {
+        values = [];
+        this.product.variants.forEach(variant => {
+          if (!values.includes(variant.option_2)) {
+            values.push(variant.option_2)
+          }
+        });
+        this.options.push({
+          name: this.product.option_2,
+          value: values
+        })
+      }
+
+      if (this.product.option_3) {
+        values = [];
+        this.product.variants.forEach(variant => {
+          if (!values.includes(variant.option_3)) {
+            values.push(variant.option_3)
+          }
+        });
+        this.options.push({
+          name: this.product.option_3,
+          value: values
+        })
+      }
+    },
     addOptions() {
       if (this.product.name) {
         if (this.options.length < 3) {
@@ -354,20 +421,25 @@ export default {
         })
       }
     },
+
     removeOption(i) {
       this.options.splice(i, 1);
     },
+
     removeVariant(i) {
       this.product.variants.splice(i, 1);
     },
+
     addValue(i) {
       this.options[i].value.push(null);
     },
+
     removeValue(i, v) {
       this.options[i].value.splice(v, 1);
       this.removeVariant(i);
       this.addVariant();
     },
+
     addVariant() {
       let optionsArr = [];
       this.options.forEach((opt, index) => {
@@ -402,23 +474,34 @@ export default {
         })
       });
     },
+
     addBundle() {
       this.bundles.push({
-        productVariant: '',
+        product_variant: '',
         quantity: 0,
         subtotal: 0
       });
     },
+
     removeBundle(i) {
       this.bundles.splice(i, 1);
     },
+
     recalculateTotal() {
-      this.value = 0;
+      this.bundle_value = 0;
       this.bundles.forEach(bundle => {
-        bundle.subtotal = bundle.quantity * bundle.productVariant.selling_price
-        this.value += bundle.subtotal
+        bundle.subtotal = bundle.quantity * bundle.product_variant.selling_price
+        this.bundle_value += bundle.subtotal
       })
-    }
+    },
+
+    recalculateTotalStock() {
+      let total = 0;
+      this.product.variants.forEach(variant => {
+        total += parseInt(variant.quantity)
+      })
+      this.product.total_stock = total;
+    },
   }
 }
 </script>

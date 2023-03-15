@@ -59,8 +59,8 @@
                             <td>{{ $product->total_stock }}</td>
                             <td>{{ $product->available_stock }}</td>
                             <td>
-                                @can('edit-product')
-                                    <a href="{{ route('admin.products.edit', [$product->getRouteKey()]) }}"><i class="fa fa-edit"></i></a>
+                                @can('view-product')
+                                    <a type="button" class="btn btn-primary px-2" href="{{ route('admin.products.show', [$product->getRouteKey()]) }}">View</a>
                                 @endcan
                             </td>
                         </tr>

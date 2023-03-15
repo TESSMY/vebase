@@ -28,16 +28,16 @@ class PurchaseOrderController extends VeController
         $purchaseOrders = PurchaseOrder::query();
 
         if (!empty($search)) {
-            if (!empty($purchaseOrders->searchable)) {
-                $purchaseOrders = $purchaseOrders->where(function($query) use ($search, $purchaseOrders) {
-                    foreach ($purchaseOrders->searchable as $value) {
+            if (!empty($this->model->searchable)) {
+                $purchaseOrders = $purchaseOrders->where(function($query) use ($search) {
+                    foreach ($this->model->searchable as $value) {
                         $query->orWhere($value, 'LIKE', '%' . $search . '%');
                     }
                 });
             }
         }
 
-        if (!empty($orderColumn) && in_array($orderColumn, $purchaseOrders->sortable)) {
+        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
             $purchaseOrders = $purchaseOrders->orderBy($orderColumn, $orderBy);
         }
 
@@ -59,14 +59,11 @@ class PurchaseOrderController extends VeController
         $this->authorize('create', PurchaseOrder::class);
         $input = $request->input();
         $input['user_id'] = Auth::id();
-        $model = new PurchaseOrder();
 
-        $validator = Validator::make($input, $model->createValidator);
+        $validator = Validator::make($input, $this->model->createValidator);
 
         if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            }
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
 
@@ -77,7 +74,7 @@ class PurchaseOrderController extends VeController
             if (!empty($input['products'])) {
                 foreach ($input['products'] as $product) {
                     $productVariant = ProductVariant::find($product['product_variant_id']);
-                    $product = Product::find($product['product_id']);
+                    $product = $productVariant->product;
                     PurchaseOrderItem::create($input + [
                         'purchase_order_id' => $purchaseOrder->id,
                         'product_id' => $product->id,
@@ -118,12 +115,10 @@ class PurchaseOrderController extends VeController
         $input = $request->input();
         $input['user_id'] = Auth::id();
 
-        $validator = Validator::make($input, $purchaseOrder->updateValidator);
+        $validator = Validator::make($input, $this->model->updateValidator);
 
         if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            }
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
 
@@ -135,7 +130,7 @@ class PurchaseOrderController extends VeController
                 $purchaseOrder->purchaseItems->delete();
                 foreach ($input['products'] as $product) {
                     $productVariant = ProductVariant::find($product['product_variant_id']);
-                    $product = Product::find($product['product_id']);
+                    $product = $productVariant->product;
                     PurchaseOrderItem::create($input + [
                         'purchase_order_id' => $purchaseOrder->id,
                         'product_id' => $product->id,
@@ -166,8 +161,6 @@ class PurchaseOrderController extends VeController
     {
         $purchaseOrder = $this->findModel($id);
         $this->authorize('view', $purchaseOrder);
-
-
 
         return view('admin.purchase-orders.show', compact('purchaseOrder'));
     }

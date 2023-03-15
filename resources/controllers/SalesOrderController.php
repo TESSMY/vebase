@@ -28,16 +28,16 @@ class SalesOrderController extends VeController
         $salesOrders = SalesOrder::query();
 
         if (!empty($search)) {
-            if (!empty($salesOrders->searchable)) {
-                $salesOrders = $salesOrders->where(function($query) use ($search, $salesOrders) {
-                    foreach ($salesOrders->searchable as $value) {
+            if (!empty($this->model->searchable)) {
+                $salesOrders = $salesOrders->where(function($query) use ($search) {
+                    foreach ($this->model->searchable as $value) {
                         $query->orWhere($value, 'LIKE', '%' . $search . '%');
                     }
                 });
             }
         }
 
-        if (!empty($orderColumn) && in_array($orderColumn, $salesOrders->sortable)) {
+        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
             $salesOrders = $salesOrders->orderBy($orderColumn, $orderBy);
         }
 
@@ -61,15 +61,11 @@ class SalesOrderController extends VeController
         $input = $request->input();
         $input['user_id'] = Auth::id();
         $input['currency'] = 'SGD';
-        $input['user_id'] = 1;
-        $model = new SalesOrder();
 
-        $validator = Validator::make($input, $model->createValidator);
+        $validator = Validator::make($input, $this->model->createValidator);
 
         if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            }
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
 
@@ -80,7 +76,7 @@ class SalesOrderController extends VeController
             if (!empty($input['products'])) {
                 foreach ($input['products'] as $product) {
                     $productVariant = ProductVariant::find($product['product_variant_id']);
-                    $product = Product::find($product['product_id']);
+                    $product = $productVariant->product;
 
                     SalesOrderItem::create($input + [
                         'sales_order_id' => $salesOrder->id,
@@ -125,9 +121,7 @@ class SalesOrderController extends VeController
         $validator = Validator::make($input, $model->updateValidator);
 
         if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            }
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
 
@@ -139,7 +133,7 @@ class SalesOrderController extends VeController
                 $salesOrder->orderItems->delete();
                 foreach ($input['products'] as $product) {
                     $productVariant = ProductVariant::find($product['product_variant_id']);
-                    $product = Product::find($product['product_id']);
+                    $product = $productVariant->product;
 
                     SalesOrderItem::create($input + [
                         'sales_order_id' => $salesOrder->id,

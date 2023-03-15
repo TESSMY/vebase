@@ -40,13 +40,17 @@
                         </div>
                         <div class="col-md-8">
                             <div class="card-group row">
-                                <div class="card text-center col-sm-3 me-1">
+                                <div class="card col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">NUMBER OF ORDERS</h6>
                                         {{--                                        <h5>{{ $client->salesOrders->count() }}</h5>--}}
+                                        <h5> 0 </h5>
+                                        <div class="d-flex justify-content-start">
+                                            <h8 class="text-muted"><span class="badge rounded-pill bg-warning">-20%</span> This month </h8>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="card text-center col-sm-3 me-1">
+                                <div class="card col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">AVERAGE REVENUE</h6>
                                         {{--                                        @if (($client->salesOrders->count()) != 0)--}}
@@ -54,9 +58,12 @@
                                         {{--                                        @else--}}
                                         <h5> 0 </h5>
                                         {{--                                        @endif--}}
+                                        <div class="d-flex justify-content-start">
+                                            <h8 class="text-muted"><span class="badge rounded-pill bg-danger">-50%</span> This month </h8>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="card text-center col-sm-3 me-1">
+                                <div class="card col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">AVERAGE ANNUAL REVENUE</h6>
                                         {{--                                        @if (($client->salesOrders->count()) != 0)--}}
@@ -64,6 +71,9 @@
                                         {{--                                        @else--}}
                                         <h5> 0 </h5>
                                         {{--                                        @endif--}}
+                                        <div class="d-flex justify-content-start">
+                                            <h8 class="text-muted"><span class="badge rounded-pill bg-info">20%</span> This year </h8>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

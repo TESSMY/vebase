@@ -24,7 +24,7 @@
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Payment Term</label>
-                <input class="form-control" type="text" name="payment_term" placeholder="Payment Term" value="" required>
+                <input class="form-control" type="text" name="payment_term" placeholder="Payment Term" value="">
             </div>
         </div>
     </div>
@@ -70,7 +70,7 @@
                     <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                     <div class="px-0">
                         <label class="form-label px-0">Notes and instructions</label>
-                        <textarea class="form-control" placeholder="Notes and instructions" rows="5" style="resize: none"></textarea>
+                        <textarea class="form-control" name="notes" placeholder="Notes and instructions" rows="5" style="resize: none"></textarea>
                     </div>
                 </div>
             </div>

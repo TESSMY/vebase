@@ -26,11 +26,11 @@
                         <div class="col-md-4">
                             <div class="row">
                                 <div class="col-md-4 px-2">
-                                    <div class="avatar-wrapper">
+                                    <div class="col-md-4 px-2">
                                         @if (!empty($supplier->image))
-                                            <img src="{{ $supplier->image }}" alt="Avatar" class="avatar">
+                                            <img src="{{ $supplier->image }}" alt="Avatar" class="rounded-circle">
                                         @else
-                                            <img src="" alt="Avatar" class="avatar">
+                                            <img src="/images/avatar.jpg" alt=""  class="rounded-circle" height="50" width="50">
                                         @endif
                                     </div>
                                 </div>
@@ -42,13 +42,16 @@
                         </div>
                         <div class="col-md-8">
                             <div class="card-group row">
-                                <div class="card text-center col-sm-3 me-1">
+                                <div class="card col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">NUMBER OF PURCHASED ORDERS</h6>
                                         <h5 class="card-text">{{ $supplier->purchaseOrders->count() }}</h5>
+                                        <div class="d-flex justify-content-start">
+                                            <h8 class="text-muted"><span class="badge rounded-pill bg-warning">-20%</span> This month </h8>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="card text-center col-sm-3 me-1">
+                                <div class="card col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">AVERAGE PRODUCTS ORDERED</h6>
                                         @if (($supplier->purchaseOrders->count()) != 0)
@@ -56,9 +59,12 @@
                                         @else
                                             <h5> 0 </h5>
                                         @endif
+                                        <div class="d-flex justify-content-start">
+                                            <h8 class="text-muted"><span class="badge rounded-pill bg-danger">-50%</span> This month </h8>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="card text-center col-sm-3 me-1">
+                                <div class="card col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">AVERAGE ANNUAL COST</h6>
                                         @if (($supplier->purchaseOrders->count()) != 0)
@@ -66,6 +72,9 @@
                                         @else
                                             <h5> 0 </h5>
                                         @endif
+                                        <div class="d-flex justify-content-start">
+                                            <h8 class="text-muted"><span class="badge rounded-pill bg-info">20%</span> This year </h8>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -82,9 +91,9 @@
                                 <div class="col-md-8">
                                     <h5 class="card-title align-middle py-lg-2">SUPPLIER INFORMATION</h5>
                                 </div>
-                                <div class="col-md-3 align-middle text-end py-lg-2">
+                                <div class="col-md-3 align-middle text-end">
                                     <a href="{{ route('admin.suppliers.edit', $supplier) }}">
-                                        <i class="uil-edit-alt"> Edit </i>
+                                        <span class="btn btn-light uil-edit-alt px-2"> Edit </span>
                                     </a>
                                 </div>
                             </div>
@@ -155,13 +164,6 @@
     <style>
         .header-card {
             background-color: rgb(114,124,245);
-        }
-
-        .avatar {
-            vertical-align: middle;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
         }
 
     </style>

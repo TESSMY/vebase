@@ -26,13 +26,11 @@
                         <div class="col-md-4">
                             <div class="row">
                                 <div class="col-md-4 px-2">
-                                    <div class="avatar-wrapper">
-                                        @if (!empty($client->image))
-                                            <img src="{{ $client->image }}" alt="Avatar" class="avatar">
-                                        @else
-                                            <img src=" " class="rounded object-fit-center" height="50" width="50" />
-                                        @endif
-                                    </div>
+                                    @if (!empty($client->image))
+                                        <img src="{{ $client->image }}" alt="Avatar" class="rounded-circle">
+                                    @else
+                                        <img src="/images/avatar.jpg" alt="" class="rounded-circle" height="50" width="50">
+                                    @endif
                                 </div>
                                 <div class="col-md-8">
                                     <div class="row" style="color: #F9F6EE;">{{ $client->name }}</div>
@@ -45,27 +43,27 @@
                                 <div class="card text-center col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">NUMBER OF ORDERS</h6>
-                                        <h5>{{ $client->salesOrders->count() }}</h5>
+                                        {{--                                        <h5>{{ $client->salesOrders->count() }}</h5>--}}
                                     </div>
                                 </div>
                                 <div class="card text-center col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">AVERAGE REVENUE</h6>
-                                        @if (($client->salesOrders->count()) != 0)
-                                            <h5 class="card-text text-muted">{{($client->saleOrders->sum('grand_total')) / ($client->salesOrders->count())}} </h5>
-                                        @else
-                                            <h5> 0 </h5>
-                                        @endif
+                                        {{--                                        @if (($client->salesOrders->count()) != 0)--}}
+                                        {{--                                            <h5 class="card-text text-muted">{{($client->saleOrders->sum('grand_total')) / ($client->salesOrders->count())}} </h5>--}}
+                                        {{--                                        @else--}}
+                                        <h5> 0 </h5>
+                                        {{--                                        @endif--}}
                                     </div>
                                 </div>
                                 <div class="card text-center col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">AVERAGE ANNUAL REVENUE</h6>
-                                        @if (($client->salesOrders->count()) != 0)
-                                            <h5 class="card-text text-muted">{{($client->saleOrders->sum('grand_total')) }} </h5> //??
-                                        @else
-                                            <h5> 0 </h5>
-                                        @endif
+                                        {{--                                        @if (($client->salesOrders->count()) != 0)--}}
+                                        {{--                                            <h5 class="card-text text-muted">{{($client->saleOrders->sum('grand_total')) }} </h5> //??--}}
+                                        {{--                                        @else--}}
+                                        <h5> 0 </h5>
+                                        {{--                                        @endif--}}
                                     </div>
                                 </div>
                             </div>
@@ -82,9 +80,9 @@
                                 <div class="col-md-8">
                                     <h5 class="card-title align-middle py-lg-2">CLIENT'S INFORMATION</h5>
                                 </div>
-                                <div class="col-md-3 align-middle text-end py-lg-2">
+                                <div class="col-md-3 align-middle text-end">
                                     <a href="{{ route('admin.clients.edit', $client) }}">
-                                        <i class="uil-edit-alt"> Edit </i>
+                                        <span class="btn btn-light uil-edit-alt px-2"> Edit </span>
                                     </a>
                                 </div>
                             </div>
@@ -92,7 +90,7 @@
                             <p class="card-text text-muted">Company Name : {{ $client->company_name }}</p>
                             <p class="card-text text-muted">Email : {{ $client->email }}</p>
                             <p class="card-text text-muted">Mobile : {{ $client->phone }}</p>
-                            <p class="card-text text-muted">Address : {{ $client->address_1 }}, {{ $client->address_2 }}, {{ $client->city }} {{ $client->postcode }} {{ $client->state }} {{ $client->country }}</p>
+                            <p class="card-text text-muted">Address : {{ $client->address_1 }}, {{ $client->address_2 }}, {{ $client->city }}, {{ $client->postcode }}, {{ $client->state }}, {{ $client->country }}</p>
                         </div>
                     </div>
                 </div>
@@ -124,19 +122,19 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        @forelse ($client->salesOrders as $salesOrder)
-                                            <tr>
-                                                <td class="ps-4">{{ $salesOrder->id }}</td>
-                                                <td>{{ $salesOrder->customer_po }}</td>
-                                                <td>{{ $salesOrder->date }}</td>
-                                                <td>{{ $salesOrder->status }}</td>
-                                                <td>{{ $salesOrder->grand_total }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="100%" class="text-center">There are No Sales Orders found.</td>
-                                            </tr>
-                                        @endforelse
+                                        {{--                                        @forelse ($client->salesOrders as $salesOrder)--}}
+                                        {{--                                            <tr>--}}
+                                        {{--                                                <td class="ps-4">{{ $salesOrder->id }}</td>--}}
+                                        {{--                                                <td>{{ $salesOrder->customer_po }}</td>--}}
+                                        {{--                                                <td>{{ $salesOrder->date }}</td>--}}
+                                        {{--                                                <td>{{ $salesOrder->status }}</td>--}}
+                                        {{--                                                <td>{{ $salesOrder->grand_total }}</td>--}}
+                                        {{--                                            </tr>--}}
+                                        {{--                                        @empty--}}
+                                        {{--                                            <tr>--}}
+                                        <td colspan="100%" class="text-center">There are No Sales Orders found.</td>
+                                        {{--                                            </tr>--}}
+                                        {{--                                        @endforelse--}}
                                         </tbody>
                                     </table>
                                     <div class="float-end">
@@ -157,13 +155,6 @@
     <style>
         .header-card {
             background-color: rgb(114,124,245);
-        }
-
-        .avatar {
-            vertical-align: middle;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
         }
     </style>
 @endpush

@@ -181,7 +181,7 @@ class ProductController extends VeController
      */
     public function edit(Request $request, $id)
     {
-//        $this->authorize('edit', Product::class);
+        $this->authorize('edit', Product::class);
         $suppliers = Supplier::all();
         $product = $this->findModel($id);
         $bundles = ProductBundle::where('product_id', $product->id)->with('productVariant')->get();
@@ -215,7 +215,7 @@ class ProductController extends VeController
     public function update(Request $request, $id)
     {
         $product = $this->findModel($id);
-//        $this->authorize('edit', $product);
+        $this->authorize('edit', $product);
         $input = $request->all();
         if (!empty($input['options'])) {
             foreach ($input['options'] as $index => $option) {

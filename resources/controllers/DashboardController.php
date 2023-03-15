@@ -1,6 +1,6 @@
 <?php
 
-namespace Vecapital\Vebase\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\SalesOrder;
 use App\Models\PurchaseOrder;

@@ -181,9 +181,9 @@ class ApiController extends Controller
     public function addDebugInfo($data)
     {
         $this->debugInfo[] = $data;
-//        if (config('app.debug')) {
-//            $this->debugInfo[] = $data;
-//        }
+    //    if (config('app.debug')) {
+    //        $this->debugInfo[] = $data;
+    //    }
     }
 
     /**
@@ -221,7 +221,8 @@ class ApiController extends Controller
      * @param array $items
      * @return LengthAwarePaginator
      */
-    public function paginate(Request $request, $items) {
+    public function paginate(Request $request, $items) 
+    {
         $limit = min(intval($request->get('limit', 10)), self::DEFAULT_MAX_LIMIT);
         $page = (int)$request->get('page', 1);
         $offset = ($page-1) * $limit;
@@ -238,14 +239,14 @@ class ApiController extends Controller
      * @param array $options
      * @return \Illuminate\Http\JsonResponse
      */
-    public function respondPagination($request, $items, $options=[])
+    public function respondPagination($request, $items)
     {
         if (!($items instanceof LengthAwarePaginator)) {
             $pagination = $this->paginate($request, $items);
         } else {
             $pagination = $items;
         }
-        return $this->respond(['pagination' => $this->getPagination($pagination), 'items' => $pagination->items(), 'options' => $options]);
+        return $this->respond(['pagination' => $this->getPagination($pagination), 'items' => $pagination->items()]);
     }
 
     /**
@@ -254,7 +255,8 @@ class ApiController extends Controller
      * @param LengthAwarePaginator $item
      * @return array
      */
-    public function getPagination(LengthAwarePaginator $item) {
+    public function getPagination(LengthAwarePaginator $item) 
+    {
         return [
             'total' => $item->total(),
             'current_page' => $item->currentPage(),
@@ -262,20 +264,5 @@ class ApiController extends Controller
             'from' => $item->firstItem(),
             'to' => $item->lastItem()
         ];
-    }
-
-    public function successJson($message = '', $data = null) {
-        return response()->json([
-            'error' => false,
-            'message' => $message,
-            'data' => $data
-        ]);
-    }
-    public function errorJson($message, $data = null) {
-        return response()->json([
-            'error' => true,
-            'message' => $message,
-            'data' => $data
-        ]);
     }
 }

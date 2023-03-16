@@ -222,21 +222,22 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (empty($this->model::updateValidator)) {
+        if (empty($this->model->updateValidator())) {
             flash('Error:  updateValidator is empty')->error();
             return back()->withInput($request->input());
         }
 
-        $validator = Validator::make($input, $model->updateValidator);
+        $validator = Validator::make($input, $model->updateValidator());
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
 
+
         try {
             DB::beginTransaction();
 
-            $model::update($input);
+            $model->update($input);
 
             DB::commit();
             flash()->success('Successfully create ' .  $this->modelName);

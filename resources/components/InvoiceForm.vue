@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Sales Order (Optional)</label>
-                 <input type="hidden" name="sales_order_id" :value="salesOrder.id">
+                <input type="hidden" name="sales_order_id" :value="salesOrder.id">
                 <multi-select v-model="salesOrder" track-by="id" label="id" :options="salesOrders"></multi-select>
             </div>
             <div class="col-12 col-md-6 mb-2">
@@ -33,7 +33,7 @@
         <div class="row mb-2">
             <span class="h4">Add PRODUCT</span>
         </div>
-        <div class="overflow-auto">
+        <div class="">
             <table class="table table-bordered text-center">
                 <thead>
                     <tr>
@@ -47,7 +47,8 @@
                 <tbody>
                     <tr v-for="(item, index) in products">
                         <td>
-                            <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.product.id">
+                            <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.product.id">
+                            <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.product.id" v-if="item.product.id !== 'undefined'">
                             <multi-select v-model="item.product" track-by="name" label="name" :options="props.products"></multi-select>
                         </td>
                         <td>

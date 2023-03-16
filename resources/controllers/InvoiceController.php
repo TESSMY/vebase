@@ -26,13 +26,20 @@ class InvoiceController extends VeController
     {
         $clients = Client::get();
         $salesOrder = SalesOrder::get();
-        $products = ProductBundle::get();
-        $products = ProductVariant::get();
+        $products = Product::where('type', Product::TYPE_PRODUCT_BUNDLE)->get();
+        $variants = ProductVariant::get();
+        $collection = collect();
+        foreach ($products as $key => $product) {
+            $collection->push($product);
+        }
+        foreach ($variants as $key => $variant) {
+            $collection->push($variant);
+        }
 
         $compact = [
             'clients' => $clients,
             'salesOrders' => $salesOrder,
-            'products' => $products,
+            'products' => $collection,
             'taxRate' => 7,
             'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,
@@ -53,6 +60,7 @@ class InvoiceController extends VeController
     public function store(Request $request)
     {
         $input = $request->input();
+        dd($input);
 
         $validator = Validator::make($input, Invoice::class()->createValidator());
 
@@ -60,42 +68,23 @@ class InvoiceController extends VeController
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
-
-        $client = User::find($input['user_id']);
-        if (!empty($input['sales_order_id'])) {
-            $salesOrder = SalesOrder::find($input['sales_order_id'])->with('orderItems');
-        }
         
         try {
             DB::beginTransaction();
 
             $invoice = Invoice::create($input + ['created_by' => Auth::id()]);
 
-            if (!empty($salesOrder) && $salesOrder->orderItems->isNotEmpty()) {
-                foreach ($salesOrder->orderItems as $orderItem) {
-                    $orderItem = InvoiceItem::create([
-                        'invoice_id' => $invoice->id,
-                        'product_id' => $orderItem->product_id, 
-                        'product_variant_id' => $orderItem->product_variant_id,
-                        'name' => $orderItem->productVariant->name, 
-                        'quantity' => $orderItem->quantity, 
-                        'unit_price' => $orderItem->unit_price, 
-                        'sub_total' => $orderItem->sub_total, 
-                    ]);
-                }
-            } else {
-                foreach ($input['products'] as $productVariant) {
-                    $productVariant = ProductVariant::find($productVariant);
-                    $orderItem = InvoiceItem::create([
-                        'invoice_id' => $invoice->id,
-                        'product_id' => $productVariant->product_id, 
-                        'product_variant_id' => $productVariant->id,
-                        'name' => $productVariant->name, 
-                        'quantity' => $orderItem->quantity, 
-                        'unit_price' => $productVariant->unit_price, 
-                        'sub_total' => $productVariant->unit_price * 1, 
-                    ]);
-                }
+            foreach ($input['products'] as $productVariant) {
+                $productVariant = ProductVariant::find($productVariant);
+                $orderItem = InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'product_id' => $productVariant->product_id, 
+                    'product_variant_id' => $productVariant->id,
+                    'name' => $productVariant->name, 
+                    'quantity' => $orderItem->quantity, 
+                    'unit_price' => $productVariant->unit_price, 
+                    'sub_total' => $productVariant->unit_price * 1, 
+                ]);
             }
 
             DB::commit();

@@ -1,4 +1,4 @@
-<div class="table-responsive">
+<div class="table-responsive mx-3 my-3">
     <table class="table table-rounded table-striped shadow w-100 mt-4">
         <thead>
             <tr class="text-start fw-bold">

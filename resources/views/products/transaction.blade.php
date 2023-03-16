@@ -1,4 +1,4 @@
-<div class="table-responsive">
+<div class="table-responsive mx-3 my-3">
     <table class="table table-rounded table-striped shadow w-100 mt-4">
         <thead>
             <tr class="text-start fw-bold">
@@ -12,15 +12,21 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>{{ __('SKU') }} #12345</td>
-                <td>NP #12345</td>
-                <td>150</td>
-                <td>150</td>
-                <td>$25.90</td>
-                <td>$45.90</td>
-                <td>{{ __('Edit') }}</td>
-            </tr>
+{{--        @forelse($product->orders as $order)--}}
+{{--            <tr>--}}
+{{--                <td>{{ __('S.O') }} #{{ $order->id }}</td>--}}
+{{--                <td>{{ $order->type }}</td>--}}
+{{--                <td>{{ $order->supplier->name }}</td>--}}
+{{--                <td>{{ $order->quantity }}</td>--}}
+{{--                <td>{{ $order->grand_total }}</td>--}}
+{{--                <td>{{ $order->status }}</td>--}}
+{{--                <td>{{ $order->created_at }}</td>--}}
+{{--            </tr>--}}
+{{--        @empty--}}
+{{--            <tr>--}}
+{{--                <td colspan="7" class="text-center bg-white">There are no orders relating to this product.</td>--}}
+{{--            </tr>--}}
+{{--        @endforelse--}}
         </tbody>
     </table>
 </div>

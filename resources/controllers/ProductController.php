@@ -68,16 +68,16 @@ class ProductController extends VeController
     public function store(Request $request)
     {
         $this->authorize('create', Product::class);
-        $input = $request->all();
-        $validator = Validator::make($input, $this->model->createValidator);
-        if ($validator->fails()) {
-            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            return back()->withInput($request->input())->withErrors($validator);
-        }
+        $input = $request->all();;
         if (!empty($input['options'])) {
             foreach ($input['options'] as $index => $option) {
                 $input['option_' . ($index + 1)] = $option;
             }
+        }
+        $validator = Validator::make($input, $this->model->createValidator);
+        if ($validator->fails()) {
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
         }
 
         try {
@@ -175,6 +175,37 @@ class ProductController extends VeController
     }
 
     /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Request $request, $id)
+    {
+        $this->authorize('edit', Product::class);
+        $suppliers = Supplier::all();
+        $product = $this->findModel($id);
+        $bundles = ProductBundle::where('product_id', $product->id)->with('productVariant')->get();
+        $variants = $product->variants;
+        $brands = Brand::all();
+
+        return view('admin.products.form', compact('suppliers', 'product', 'brands', 'variants', 'bundles'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Product  $product
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Request $request, $id)
+    {
+        $this->authorize('view', Product::class);
+        $product = $this->findModel($id);
+
+        return view('admin.products.view', compact('product'));
+    }
+
+    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -186,16 +217,16 @@ class ProductController extends VeController
         $product = $this->findModel($id);
         $this->authorize('edit', $product);
         $input = $request->all();
-        $validator = Validator::make($input, [
-            'name' => 'required|max:255',
-            'sku' => 'required|max:255|unique:App\Models\Product,sku',
-            'supplier_id' => 'required',
-            'total_stock' => 'required|numeric'
-        ]);
+        if (!empty($input['options'])) {
+            foreach ($input['options'] as $index => $option) {
+                $input['option_' . ($index + 1)] = $option;
+            }
+        }
 
+        $validator = Validator::make($input, $this->model->createValidator);
         if ($validator->fails()) {
-            flash('Error: ' . $validator->errors())->error();
-            return back()->withInput($input)->withErrors($validator);
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
         }
 
         try {
@@ -206,12 +237,24 @@ class ProductController extends VeController
                 $product->save();
             }
             $product->update($input);
-            foreach ($input['variants'] as $variant) {
-                $currentVariant = ProductVariant::find($variant['id']);
-                if ($currentVariant) {
-                    $currentVariant->update($variant);
-                } else {
-                    ProductVariant::create($variant);
+            if (!empty($input['variants'])) {
+                foreach ($input['variants'] as $variant) {
+                    $currentVariant = $product->variants->where('id', $variant['product_variant_id'])->first();
+                    if ($currentVariant) {
+                        $currentVariant->update($variant);
+                    } else {
+                        ProductVariant::create($variant + ['product_id' => $product->id]);
+                    }
+                }
+            }
+            if (!empty($input['bundles'])) {
+                foreach ($input['bundles'] as $bundle) {
+                    $currentBundle = $product->bundles()->where('id', $bundle['product_bundle_id'])->first();
+                    if ($currentBundle) {
+                        $currentBundle->update($bundle);
+                    } else {
+                        ProductBundle::create($bundle + ['product_id' => $product->id]);
+                    }
                 }
             }
             DB::commit();
@@ -221,6 +264,25 @@ class ProductController extends VeController
             DB::rollBack();
             Log::error($exception);
             flash('Error:' . $exception)->error();
+            throw $exception;
+        }
+    }
+
+    public function destroy($id)
+    {
+        $product = $this->findModel($id);
+        $this->authorize('delete', $product);
+
+        try {
+            $product->variants()->delete();
+            $product->delete();
+
+            DB::commit();
+            return redirect()->route('admin.products.index')->with('message', $product->name . ' removed successfully.');
+        } catch (Exception $exception) {
+            DB::rollback();
+            Log::error($exception);
+            flash()->error('Error:' . $exception);
             throw $exception;
         }
     }

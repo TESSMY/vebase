@@ -90,7 +90,8 @@
             </div>
         </div>
 
-        <div class="row">
+        <form method="post" class="row">
+            <input type="hidden" name="_method" :value="methodVal">
             <div class="col-12">
                 <ul class="nav nav-tabs nav-bordered mb-3">
                     <li class="nav-item">
@@ -110,62 +111,55 @@
                             <h4 class="header-title">DELIVERY ORDER DETAIL</h4>
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <form>
-                                        <div class="mb-3">
-                                            <label for="simpleinput" class="form-label">Client</label>
-                                            <select name="client_id" class="form-control" v-model="delivery_order.client_id"></select>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Sales Order</label>
-                                            <multiselect class="form-control"
-                                                v-model="delivery_order.sales_order"
-                                                placeholder="Select one"
-                                                :allow-empty="true"
-                                                :searchable="true"
-                                                :close-on-select="true"
-                                                :options="sales_orders"
-                                                :multiple="false"
-                                                :loading="loading_sales_order"
-                                                :internal-search="false"
-                                                :clear-on-select="false"
-                                                :options-limit="100"
-                                                :show-no-results="true"
-                                                :hide-selected="true"
-                                                @search-change="searchSalesOrder"
-                                                @Open="searchSalesOrder"
-                                                label="id">
-                                            </multiselect>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Branch Code</label>
-                                            <input type="text" class="form-control" v-model="branc_code" :disabled="true">
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Issued By</label>
-                                            <input type="text" class="form-control" v-model="issued_by" :disabled="true">
-                                        </div>
-
-                                    </form>
+                                    <div class="mb-3">
+                                        <label for="simpleinput" class="form-label">Client</label>
+                                        <select name="client_id" class="form-control" v-model="delivery_order.client_id"></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Sales Order</label>
+                                        <input type="hidden" name="sales_order_id" v-if="delivery_order?.sales_order?.id" :value="delivery_order.sales_order?.id">
+                                        <multiselect class="form-control"
+                                            v-model="delivery_order.sales_order"
+                                            placeholder="Select one"
+                                            :allow-empty="true"
+                                            :searchable="true"
+                                            :close-on-select="true"
+                                            :options="sales_orders"
+                                            :multiple="false"
+                                            :loading="loading_sales_order"
+                                            :internal-search="false"
+                                            :clear-on-select="false"
+                                            :options-limit="100"
+                                            :show-no-results="true"
+                                            :hide-selected="true"
+                                            @search-change="searchSalesOrder"
+                                            @Open="searchSalesOrder"
+                                            label="id">
+                                        </multiselect>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Branch Code</label>
+                                        <input type="text" class="form-control" v-model="branc_code" :disabled="true">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Issued By</label>
+                                        <input type="text" class="form-control" v-model="issued_by" :disabled="true">
+                                    </div>
                                 </div>
 
                                 <div class="col-lg-6">
-                                    <form>
-                                        <div class="mb-3">
-                                            <label for="example-email" class="form-label">Date</label>
-                                            <input type="text" class="form-control" ref="date_input" v-model="delivery_order.date">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Payment Term</label>
-                                            <input type="text" class="form-control" v-model="delivery_order.payment_term">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Payment Due</label>
-                                            <input type="text" class="form-control" v-model="payment_due" :disabled="true">
-                                        </div>
-                                    </form>
+                                    <div class="mb-3">
+                                        <label for="example-email" class="form-label">Date</label>
+                                        <input type="text" class="form-control" name="date" ref="date_input" v-model="delivery_order.date">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Payment Term</label>
+                                        <input type="text" class="form-control" name="payment_term" v-model="delivery_order.payment_term">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Payment Due</label>
+                                        <input type="text" class="form-control" v-model="payment_due" :disabled="true">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -230,6 +224,7 @@
                                             </tr>
                                             <tr v-for="(item, item_index) in delivery_order.items" :key="item_index">
                                                 <td>
+                                                    <input type="hidden" name="items[]['id']" :value="item.product_varian.id">
                                                     <div class="d-flex">
                                                         <img v-if="item.image" class="product-image" :src="item.image" :alt="item.name">
                                                         <div class="product-info">
@@ -242,7 +237,7 @@
                                                     {{ item.product_variant.product.description }}
                                                 </td>
                                                 <td width="5">
-                                                    <input type="number" class="input-product-quantity" v-model="item.quantity">
+                                                    <input type="number" name="items[]['quantity']" class="input-product-quantity" v-model="item.quantity">
                                                 </td>
                                                 <td>
                                                     ${{ parseFloat(item.product_variant.selling_price).toLocaleString() }}
@@ -265,7 +260,7 @@
                                 <div class="col-xs-6 col-sm-9">
                                     <div class="note-label"><strong>Note & Instruction</strong></div>
                                     <div style="padding: 5px 10px 5px 10px;"></div>
-                                    <textarea rows="4" style="max-width:400px" class="form-control" v-model="delivery_order.note"></textarea>
+                                    <textarea rows="4" name="note" style="max-width:400px" class="form-control" v-model="delivery_order.note"></textarea>
                                 </div>
                                 <div class="col-xs-6 col-sm-3">
                                     <table class="table table-total">
@@ -316,7 +311,7 @@
                 <button class="btn btn-light mr-2" type="button" @click="downloadPdf">Download PDF</button>
                 <button class="btn btn-light" type="button" @click="backToForm()">Back</button>
             </div>
-        </div>
+        </form>
     </div>
 </template>
 
@@ -341,6 +336,7 @@
     })
 
     // COMPONENT REFS
+    const form_elm = ref(null)
     const date_input = ref(null)
     const select_product_input = ref(null)
     const delivery_order_summary = ref(null)
@@ -453,41 +449,17 @@
         return subTotalItem.value + (subTotalItem.value * tax.value / 100) + gst.value - discount.value
     })
 
+    const methodVal = computed(() => {
+        return delivery_order.value.id ? 'POST' : 'PUT'
+    })
+
     onMounted(() => {
         flatpickr(date_input.value);
     })
 
     const save = () => {
         loading_save.value = true
-        let url = ''
-        let method = ''
-        if (delivery_order.value.id) {
-            url = `/admin/delivery-orders/${delivery_order.value.id}`
-            method = 'PUT'
-        } else {
-            url = `/admin/delivery-orders`
-            method = 'POST'
-        }
-        let data = {
-            _method: method,
-            client_id: delivery_order.value.client_id,
-            sales_order_id: delivery_order.value.sales_order.id,
-            date: delivery_order.value.date,
-            payment_term: delivery_order.value.payment_term,
-            note: delivery_order.value.note,
-            items: []
-        }
-        for (let item of delivery_order.value.items) {
-            data.items.push({
-                id: item.product_variant.id,
-                quantity: item.quantity
-            })
-        }
-        axios.post(url, data)
-        .then(response => {
-            loading_save.value = false
-            window.location.replace('/admin/delivery-orders')
-        })
+        form_elm.value.submit()
     }
 
     const sendEmail = () => {

@@ -8,116 +8,136 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Models\DeliveryOrder;
 use App\Models\SalesOrder;
 use App\Models\ProductVariant;
+use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Vecapital\Vebase\Http\Controllers\VeController;
 
 class DeliveryOrderController extends VeController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    public function index()
+    public function index(Request $request)
     {
+        $this->authorize('viewAny', DeliveryOrder::class);
         $deliveryOrders = DeliveryOrder::with(['salesOrder', 'items.productVariant.product'])->paginate();
         return view('admin.delivery-orders.index', compact('deliveryOrders'));
     }
 
     public function create()
     {
+        // $this->authorize('crate', DeliveryOrder::class);
         $action = 'create';
         return view('admin.delivery-orders.form', compact('action'));
     }
 
-    public function store()
+    public function store(Request $request)
     {
-        request()->validate([
-            'cient_id' => 'required|exists:clients,id',
-            'sales_order_id' => 'required|exists:sales_orders,id',
-            'date' => 'required|date',
-            'payment_term' => 'nullable|string',
-            'note' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.id' => 'required|exists:product_variants,id',
-            'items.*.quantity' => 'required|integer|min:1'
-        ]);
+        // $this->authorize('crate', DeliveryOrder::class);
+        $input = $request->input();
+        $validator = Validator::make($input, $this->model->createValidator);
 
-        $deliveryOrder = DeliveryOrder::create(request()->only(['cient_id', 'sales_order_id', 'date', 'payment_term', 'note']));
-        $subTotal = 0;
-        $productVariant = ProductVariant::select(['id', 'selling_price'])
-            ->whereIn('id', array_column(request('items'), 'id'))
-            ->get()
-            ->pluck('selling_price', 'id');
-        foreach (request('items') as $itemRequest) {
-            $subTotalItem = $itemRequest['quantity'] * $productVariant[$itemRequest['id']];
-            $deliveryOrder->items()->updateOrCreate(
-                ['product_variant_id' => $itemRequest['id']],
-                [
-                    'quantity' => $itemRequest['quantity'],
-                    'sub_total' => $subTotalItem,
-                    'unit_price' => $productVariant[$itemRequest['id']]
-                ]
-            );
-            $subTotal += $subTotalItem;
+        if ($validator->fails()) {
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
         }
 
-        $deliveryOrder->grant_total = $subTotal;
-        $deliveryOrder->save();
+        DB::beginTransaction();
+        try {
+            $deliveryOrder = DeliveryOrder::create($input);
+            $subTotal = 0;
+            $productVariant = ProductVariant::select(['id', 'selling_price'])
+                ->whereIn('id', array_column(request('items'), 'id'))
+                ->get()
+                ->pluck('selling_price', 'id');
+            foreach (request('items') as $itemRequest) {
+                $subTotalItem = $itemRequest['quantity'] * $productVariant[$itemRequest['id']];
+                $deliveryOrder->items()->updateOrCreate(
+                    ['product_variant_id' => $itemRequest['id']],
+                    [
+                        'quantity' => $itemRequest['quantity'],
+                        'sub_total' => $subTotalItem,
+                        'unit_price' => $productVariant[$itemRequest['id']]
+                    ]
+                );
+                $subTotal += $subTotalItem;
+            }
 
-        return $deliveryOrder;
+            $deliveryOrder->grant_total = $subTotal;
+            $deliveryOrder->save();
+            DB::commit();
+
+            flash()->success(__('Successfully created the delivery order.'));
+            return redirect()->route('admin.delivery-orders.index');
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            flash()->error($exception->getMessage());
+            return redirect()->route('admin.delivery-orders.create')->withInput($request->input());
+        }
     }
 
-    public function edit(DeliveryOrder $deliveryOrder)
+    public function edit(Request $request, $id)
     {
+        $deliveryOrder = $this->findModel($id);
+        $this->authorize('update', $deliveryOrder);
         $deliveryOrder->load(['salesOrder', 'items.productVariant.product']);
         $action = 'edit';
         return view('admin.delivery-orders.form', compact('deliveryOrder', 'action'));
     }
 
-    public function update(DeliveryOrder $deliveryOrder)
+    public function update(Request $request, $id)
     {
-        if ($deliveryOrder->status != DeliveryOrder::STATUS_PENDING) {
-            return abort(400, __('Delivery order proceed already'));
-        }
+        $deliveryOrder = $this->findModel($id);
+        $this->authorize('update', $deliveryOrder);
 
-        request()->validate([
-            'cient_id' => 'required|exists:clients,id',
-            'sales_order_id' => 'required|exists:sales_orders,id',
-            'date' => 'required|date',
-            'payment_term' => 'nullable|string',
-            'note' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.id' => 'required|exists:product_variants,id',
-            'items.*.quantity' => 'required|integer|min:1'
-        ]);
+        $input = $request->input();
+        $validator = Validator::make($input, $this->model->createValidator);
+
+        if ($validator->fails()) {
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
+        }
 
         DB::beginTransaction();
-        $deliveryOrder->update(request()->only(['cient_id', 'sales_order_id', 'date', 'payment_term', 'note']));
-        $remainItems = array_column(request('items'), 'id');
+        try {
+            $deliveryOrder->update($input);
+            $remainItems = array_column(request('items'), 'id');
 
-        // DELETE IF NOT EXISTS IN REQUEST
-        $deliveryOrder->items()->whereNotIn('product_variant_id', $remainItems)->delete();
-        $subTotal = 0;
-        $productVariant = ProductVariant::select(['id', 'selling_price'])
-            ->whereIn('id', $remainItems)
-            ->get()
-            ->pluck('selling_price', 'id');
-        foreach (request('items') as $itemRequest) {
-            $subTotalItem = $itemRequest['quantity'] * $productVariant[$itemRequest['id']];
-            $deliveryOrder->items()->updateOrCreate(
-                ['product_variant_id' => $itemRequest['id']],
-                [
-                    'quantity' => $itemRequest['quantity'],
-                    'sub_total' => $subTotalItem,
-                    'unit_price' => $productVariant[$itemRequest['id']]
-                ]
-            );
-            $subTotal += $subTotalItem;
+            // DELETE IF NOT EXISTS IN REQUEST
+            $deliveryOrder->items()->whereNotIn('product_variant_id', $remainItems)->delete();
+            $subTotal = 0;
+            $productVariant = ProductVariant::select(['id', 'selling_price'])
+                ->whereIn('id', $remainItems)
+                ->get()
+                ->pluck('selling_price', 'id');
+            foreach (request('items') as $itemRequest) {
+                $subTotalItem = $itemRequest['quantity'] * $productVariant[$itemRequest['id']];
+                $deliveryOrder->items()->updateOrCreate(
+                    ['product_variant_id' => $itemRequest['id']],
+                    [
+                        'quantity' => $itemRequest['quantity'],
+                        'sub_total' => $subTotalItem,
+                        'unit_price' => $productVariant[$itemRequest['id']]
+                    ]
+                );
+                $subTotal += $subTotalItem;
+            }
+
+            $deliveryOrder->sub_total = $subTotal;
+            $deliveryOrder->save();
+            DB::commit();
+
+            flash()->success(__('Successfully updated the delivery order.'));
+            return redirect()->route('admin.delivery-orders.index');
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            flash()->error($exception->getMessage());
+            return redirect()->route('admin.delivery-orders.edit', $deliveryOrder->getRouteKey())->withInput($request->input());
         }
-
-        $deliveryOrder->sub_total = $subTotal;
-        $deliveryOrder->save();
-
-        DB::commit();
-        return $deliveryOrder;
     }
 
     public function listProduct()

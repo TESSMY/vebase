@@ -186,7 +186,7 @@
                                                     {{ salesOrder.status_text }}
                                                 </span>
                                             </td>
-                                            <td>{{ salesOrder.grant_total.toLocaleString() }}</td>
+                                            <td>{{ salesOrder.grand_total.toLocaleString() }}</td>
                                         </tr>
                                     </tbody>
                                 </table>

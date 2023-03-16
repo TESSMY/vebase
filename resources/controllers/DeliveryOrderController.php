@@ -28,19 +28,20 @@ class DeliveryOrderController extends VeController
 
     public function create()
     {
-        // $this->authorize('crate', DeliveryOrder::class);
+        $this->authorize('create', DeliveryOrder::class);
         $action = 'create';
         return view('admin.delivery-orders.form', compact('action'));
     }
 
     public function store(Request $request)
     {
-        // $this->authorize('crate', DeliveryOrder::class);
+        $this->authorize('create', DeliveryOrder::class);
         $input = $request->input();
+        $input['user_id'] = auth()->id();
         $validator = Validator::make($input, $this->model->createValidator);
 
         if ($validator->fails()) {
-            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            flash()->error(implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
 
@@ -65,7 +66,7 @@ class DeliveryOrderController extends VeController
                 $subTotal += $subTotalItem;
             }
 
-            $deliveryOrder->grant_total = $subTotal;
+            $deliveryOrder->grand_total = $subTotal;
             $deliveryOrder->save();
             DB::commit();
 
@@ -165,7 +166,7 @@ class DeliveryOrderController extends VeController
                 ->orWhereHas('user', function ($user) {
                     $user->where('name', 'like', '%' . request('query') . '%');
                 })
-                ->orWhere('grant_total', 'like', '%' . request('query') . '%');
+                ->orWhere('grand_total', 'like', '%' . request('query') . '%');
             });
         }
 

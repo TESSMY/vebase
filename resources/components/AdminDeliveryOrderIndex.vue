@@ -73,7 +73,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    {{ deliveryOrder.grant_total.toLocaleString() }}
+                                    {{ deliveryOrder.grand_total.toLocaleString() }}
                                 </td>
                                 <td>
                                     <a v-if="parseInt(deliveryOrder.status) == 0" :href="`/admin/delivery-orders/${deliveryOrder.id}/edit`" class="btn btn-sm btn-primary">View</a>

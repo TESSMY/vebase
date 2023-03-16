@@ -221,7 +221,7 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (empty($this->model::updateValidator)) {
+        if (empty($this->model->updateValidator)) {
             flash('Error:  updateValidator is empty')->error();
             return back()->withInput($request->input());
         }

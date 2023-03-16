@@ -47,13 +47,10 @@
                         @forelse ($models as $$routeModel)
                             <tr>
                                 @foreach ($model->indexFields as $indexField)
-                                    @if (strtolower($indexField['displayName']) == 'action' || strtolower($indexField['displayName']) == '')
-                                        @if (strtolower($indexField['columnName']) == 'show') 
-                                            <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
-                                        @elseif (strtolower($indexField['columnName']) == 'edit') 
-                                            <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
-                                    
-                                        @endif
+                                    @if (strtolower($indexField['columnName']) == 'show') 
+                                        <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
+                                    @elseif (strtolower($indexField['columnName']) == 'edit') 
+                                        <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
                                     @else
                                         <td>{{ $$routeModel[$indexField['columnName']] }}</td>
                                     @endif

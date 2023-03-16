@@ -34,19 +34,12 @@ class ClientController extends VeController
 
         $input = $request->input();
 
-        $validator = Validator::make($input, [
-            'name' => 'required|min:3',
-            'email' => 'required|unique:clients,email,null,id,deleted_at,NULL',
-            'company_name' => 'nullable',
-            'phone' => 'required',
-            'address_1' => 'required',
-            'address_2' => 'nullable',
-            'city' => 'required',
-            'state'=> 'required',
-            'postcode' => 'required',
-            'country' => 'required',
-        ]);
+        if (empty($this->model->createValidator)) {
+            flash('Error: ' . $this->modelName . " create is empty")->error();
+            return back()->withInput($request->input());
+        }
 
+        $validator = Validator::make($input, $this->model->createValidator);
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
@@ -64,7 +57,7 @@ class ClientController extends VeController
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an issue creating client profile.');
+            flash()->error("There was an issue creating the client profile. Error: " . $exception->getMessage());
             return back()->withInput();
         }
     }
@@ -97,15 +90,15 @@ class ClientController extends VeController
         try {
             DB::beginTransaction();
 
-            Client::update($input);
+            $client->update();
 
             DB::commit();
-            flash()->success('Successfully created client.');
+            flash()->success('Successfully updated client.');
             return redirect()->route('admin.clients.index');
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an issue creating client profile.');
+            flash()->error("There was an issue updating the client profile. Error: " . $exception->getMessage());
             return back()->withInput();
         }
     }

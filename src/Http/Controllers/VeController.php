@@ -88,7 +88,6 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-            'limit' => $limit
         ];
         
         if (View::exists($this->folder . '.' . $this->routeName . '.index')) {

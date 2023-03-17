@@ -83,11 +83,11 @@ class VeApiController extends ApiController
         
         $input = $request->all();
 
-        if (empty($this->model::createValidator)) {
+        if (empty($this->model->createValidator)) {
             throw new \Exception($this->model . " createValidator is empty");
         }
 
-        $validator = Validator::make($input, $this->model::createValidator);
+        $validator = Validator::make($input, $this->model->createValidator);
         if ($validator->fails()) {
             return $this->showValidationError($validator);
         }
@@ -126,11 +126,11 @@ class VeApiController extends ApiController
 
         $input = $request->all();
 
-        if (empty($this->model::create)) {
+        if (empty($this->model->updateValidator)) {
             throw new \Exception($this->model . " updateValidator is empty");
         }
 
-        $validator = Validator::make($input, $model::updateValidator);
+        $validator = Validator::make($input, $model->updateValidator);
         if ($validator->fails()) {
             return $this->showValidationError($validator);
         }

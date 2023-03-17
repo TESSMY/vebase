@@ -113,7 +113,12 @@
 import moment from 'moment'
 import { ref, watch } from 'vue';
 
-const props = defineProps(['deliveryOrders'])
+const props = defineProps({
+    deliveryOrders: {
+        type: Object,
+        required: true
+    }
+})
 const data = ref(props.deliveryOrders.data.map(deliveryOrder => {
     deliveryOrder.checked = false
     return deliveryOrder

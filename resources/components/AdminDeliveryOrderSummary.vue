@@ -189,7 +189,7 @@
                         </tr>
                         <tr>
                             <td>Sales Tax</td>
-                            <td>{{ tax.toLocaleString() }}%</td>
+                            <td>{{ delivery_order.tax_rate?.toLocaleString() }}%</td>
                         </tr>
                         <tr>
                             <td>Other Cost</td>
@@ -254,7 +254,6 @@
     const date_input = ref(null)
 
     const date = ref(null)
-    const tax = ref(15)
     const discount = ref(0)
     const gst = ref(0)
 
@@ -269,7 +268,7 @@
     })
 
     const grandTotal = computed(() => {
-        return subTotalItem.value + (subTotalItem.value * tax.value / 100) + gst.value - discount.value
+        return subTotalItem.value + (subTotalItem.value * delivery_order.value.tax_rate / 100) + gst.value - discount.value
     })
 
     onMounted(() => {

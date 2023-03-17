@@ -77,6 +77,11 @@
     .max-w-400 {
         max-width: 400px;
     }
+    #select-tax, #selec-tax:focus {
+        border: 0;
+        outline: none;
+        background-color: transparent;
+    }
 </style>
 
 <template>
@@ -171,7 +176,7 @@
                                 <div class="col-lg-6">
                                     <div class="mb-3">
                                         <label for="example-email" class="form-label">Date</label>
-                                        <input type="text" class="form-control" name="date" ref="date_input" v-model="delivery_order.date">
+                                        <input type="text" class="form-control" required name="date" ref="date_input" v-model="delivery_order.date">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Payment Term</label>
@@ -234,7 +239,9 @@
                                                     $0.00
                                                 </td>
                                                 <td>
-
+                                                    <select id="select-tax" name="tax_rate" required v-model="delivery_order.tax_rate">
+                                                        <option v-for="tax in taxes" :value="parseFloat(tax.tax_rate)">{{ tax.tax_rate }}%</option>
+                                                    </select>
                                                 </td>
                                                 <td>
                                                     $
@@ -264,7 +271,7 @@
                                                     ${{ parseFloat(item.product_variant.selling_price).toLocaleString() }}
                                                 </td>
                                                 <td class="center" width="5">
-                                                    Tax {{ tax }}%
+                                                    Tax {{ delivery_order.tax_rate }}%
                                                 </td>
                                                 <td>
                                                     ${{ totalPrice(item).toLocaleString() }}
@@ -295,7 +302,7 @@
                                         </tr>
                                         <tr>
                                             <th>Tax</th>
-                                            <td>{{ tax.toLocaleString() }}%</td>
+                                            <td>{{ delivery_order.tax_rate?.toLocaleString() }}%</td>
                                         </tr>
                                         <tr>
                                             <th>GST</th>
@@ -342,6 +349,14 @@
     import { computed, ref, onMounted } from 'vue'
 
     const props = defineProps({
+        taxes: {
+            type: Array,
+            required: true
+        },
+        taxRate: {
+            type: Object,
+            required: false
+        },
         deliveryOrder: {
             type: Object,
             required: false
@@ -367,7 +382,6 @@
     const delivery_order_summary = ref(null)
 
     // DATA
-    const tax = ref(15)
     const discount = ref(0)
     const gst = ref(0)
     const client_id = ref(null)
@@ -384,35 +398,20 @@
     const product_selected = ref([])
     const loading_send_email = ref(false)
     const loading_save = ref(false)
-    const delivery_order = ref(null)
-    if (props.oldInput) {
-        delivery_order.value = {
-            client: props.oldInput.client,
-            sales_order: props.oldInput.sales_order,
-            sales_order_id: props.oldInput.sales_order_id,
-            date: props.oldInput.date,
-            payment_term: props.oldInput.payment_term,
-            delivery_eta: null,
-            items: props.oldInput.items,
-            note: props.oldInput.note
-        }
-    } else if (props.deliveryOrder) {
-        delivery_order.value = props.deliveryOrder
-    } else {
-        delivery_order.value = {
-            client: {
-                id: null,
-                name: null
-            },
-            sales_order: {},
-            sales_order_id: null,
-            payment_term: null,
-            date: null,
-            delivery_eta: null,
-            items: [],
-            note: null
-        }
-    }
+    const delivery_order = ref({
+        client: {
+            id: null,
+            name: null
+        },
+        sales_order: {},
+        sales_order_id: null,
+        payment_term: null,
+        date: null,
+        delivery_eta: null,
+        items: [],
+        note: null,
+        tax_rate: parseFloat(props.taxRate?.tax_rate) || ''
+    })
 
 
     const title = computed(()=>{
@@ -428,6 +427,9 @@
         }
         if (!delivery_order.value?.sales_order?.id) {
             return alert("Sales Order Required")
+        }
+        if (!delivery_order.value?.tax_rate) {
+            return alert("Tax Required")
         }
         if (!delivery_order.value?.items?.length) {
             return alert("Required at least 1 item")
@@ -493,7 +495,7 @@
 
     const totalPrice = item => {
         const total = (parseFloat(item.product_variant.selling_price) * parseInt(item.quantity))
-        let result = total + (tax.value / 100 * total)
+        let result = total + (delivery_order.value.tax_rate / 100 * total)
         return result
     }
 
@@ -506,7 +508,7 @@
     })
 
     const grandTotal = computed(() => {
-        return subTotalItem.value + (subTotalItem.value * tax.value / 100) + gst.value - discount.value
+        return subTotalItem.value + (subTotalItem.value * delivery_order.value.tax_rate / 100) + gst.value - discount.value
     })
 
     const methodVal = computed(() => {
@@ -515,6 +517,21 @@
 
     onMounted(() => {
         flatpickr(date_input.value);
+        if (props.oldInput) {
+            delivery_order.value = {
+                client: props.oldInput.client,
+                sales_order: props.oldInput.sales_order,
+                sales_order_id: props.oldInput.sales_order_id,
+                date: props.oldInput.date,
+                payment_term: props.oldInput.payment_term,
+                delivery_eta: null,
+                items: props.oldInput.items,
+                note: props.oldInput.note,
+                tax_rate: parseFloat(props.oldInput.tax_rate)
+            }
+        } else if (props.deliveryOrder) {
+            delivery_order.value = props.deliveryOrder
+        }
     })
 
     const save = () => {

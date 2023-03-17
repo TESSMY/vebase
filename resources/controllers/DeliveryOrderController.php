@@ -9,6 +9,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Models\DeliveryOrder;
 use App\Models\SalesOrder;
 use App\Models\ProductVariant;
+use App\Models\Tax;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,12 @@ class DeliveryOrderController extends VeController
     public function create()
     {
         $this->authorize('create', DeliveryOrder::class);
-        return view('admin.delivery-orders.form');
+        $taxes = Tax::orderBy('created_at', 'desc')->get();
+        $taxRate = $taxes->firstWhere('is_default', true);
+        if (empty($taxRate)) {
+            $taxRate = $taxes[0];
+        }
+        return view('admin.delivery-orders.form', compact('taxRate', 'taxes'));
     }
 
     public function store(Request $request)
@@ -86,7 +92,11 @@ class DeliveryOrderController extends VeController
                 $subTotal += $subTotalItem;
             }
 
-            $deliveryOrder->grand_total = $subTotal;
+            $taxAmount = $subTotal * $input['tax_rate'] / 100;
+            $deliveryOrder->sub_total = $subTotal;
+            $deliveryOrder->tax_rate = $input['tax_rate'];
+            $deliveryOrder->tax_amount = $taxAmount;
+            $deliveryOrder->grand_total = $subTotal + $taxAmount;
             $deliveryOrder->save();
             DB::commit();
 
@@ -104,8 +114,13 @@ class DeliveryOrderController extends VeController
     {
         $deliveryOrder = $this->findModel($id);
         $this->authorize('update', $deliveryOrder);
+        $taxes = Tax::orderBy('created_at', 'desc')->get();
+        $taxRate = $taxes->firstWhere('tax_rate', $deliveryOrder->tax_rate);
+        if (empty($taxRate)) {
+            $taxRate = $taxes[0];
+        }
         $deliveryOrder->load(['salesOrder', 'items.productVariant.product', 'client']);
-        return view('admin.delivery-orders.form', compact('deliveryOrder'));
+        return view('admin.delivery-orders.form', compact('deliveryOrder', 'taxRate', 'taxes'));
     }
 
     public function update(Request $request, $id)
@@ -166,7 +181,11 @@ class DeliveryOrderController extends VeController
                 $subTotal += $subTotalItem;
             }
 
+            $taxAmount = $subTotal * $input['tax_rate'] / 100;
             $deliveryOrder->sub_total = $subTotal;
+            $deliveryOrder->tax_rate = $input['tax_rate'];
+            $deliveryOrder->tax_amount = $taxAmount;
+            $deliveryOrder->grand_total = $subTotal + $taxAmount;
             $deliveryOrder->save();
             DB::commit();
 

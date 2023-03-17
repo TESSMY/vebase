@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Client;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -29,8 +30,7 @@ class DeliveryOrderController extends VeController
     public function create()
     {
         $this->authorize('create', DeliveryOrder::class);
-        $action = 'create';
-        return view('admin.delivery-orders.form', compact('action'));
+        return view('admin.delivery-orders.form');
     }
 
     public function store(Request $request)
@@ -41,8 +41,28 @@ class DeliveryOrderController extends VeController
         $validator = Validator::make($input, $this->model->createValidator);
 
         if ($validator->fails()) {
-            flash()->error(implode(" ", $validator->errors()->all()))->error();
-            return back()->withInput($request->input())->withErrors($validator);
+            // for multiselect in the component
+            if (!empty($input['sales_order_id'])) {
+                $input['sales_order'] = SalesOrder::find($input['sales_order_id']);
+            }
+            // for multiselect in the component
+            if (!empty($input['client_id'])) {
+                $input['client'] = Client::find($input['client_id']);
+            }
+            // for item list that selected previously
+            if (!empty($input['items'])) {
+                $items = [];
+                $productVariants = ProductVariant::with('product')->whereIn('id', array_column($input['items'], 'id'))->get()->keyBy('id');
+                foreach ($input['items'] as $inputItem) {
+                    $items[] = [
+                        'quantity' => $inputItem['quantity'],
+                        'product_variant' => $productVariants[$inputItem['id']] ?? null
+                    ];
+                }
+                $input['items'] = $items;
+            }
+            flash()->error($validator->errors());
+            return back()->withInput($input)->withErrors($validator);
         }
 
         DB::beginTransaction();
@@ -84,9 +104,8 @@ class DeliveryOrderController extends VeController
     {
         $deliveryOrder = $this->findModel($id);
         $this->authorize('update', $deliveryOrder);
-        $deliveryOrder->load(['salesOrder', 'items.productVariant.product']);
-        $action = 'edit';
-        return view('admin.delivery-orders.form', compact('deliveryOrder', 'action'));
+        $deliveryOrder->load(['salesOrder', 'items.productVariant.product', 'client']);
+        return view('admin.delivery-orders.form', compact('deliveryOrder'));
     }
 
     public function update(Request $request, $id)
@@ -95,11 +114,31 @@ class DeliveryOrderController extends VeController
         $this->authorize('update', $deliveryOrder);
 
         $input = $request->input();
-        $validator = Validator::make($input, $this->model->createValidator);
+        $validator = Validator::make($input, $this->model->updateValidator);
 
         if ($validator->fails()) {
-            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            return back()->withInput($request->input())->withErrors($validator);
+            // for multiselect in the component
+            if (!empty($input['sales_order_id'])) {
+                $input['sales_order'] = SalesOrder::find($input['sales_order_id']);
+            }
+            // for multiselect in the component
+            if (!empty($input['client_id'])) {
+                $input['client'] = Client::find($input['client_id']);
+            }
+            // for item list that selected previously
+            if (!empty($input['items'])) {
+                $items = [];
+                $productVariants = ProductVariant::with('product')->whereIn('id', array_column($input['items'], 'id'))->get()->keyBy('id');
+                foreach ($input['items'] as $inputItem) {
+                    $items[] = [
+                        'quantity' => $inputItem['quantity'],
+                        'product_variant' => $productVariants[$inputItem['id']] ?? null
+                    ];
+                }
+                $input['items'] = $items;
+            }
+            flash()->error($validator->errors());
+            return back()->withInput($input)->withErrors($validator);
         }
 
         DB::beginTransaction();

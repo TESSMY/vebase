@@ -2,6 +2,9 @@
     .more-lg {
         width: 80% !important;
     }
+    .mr-auto {
+        margin-left: auto;
+    }
 </style>
 
 <template>
@@ -37,7 +40,7 @@
                         </select>
                     </div>
                     <div class="col-md-4"></div>
-                    <div class="col-12 col-md-2 p-0 d-md-flex" style="margin-left: auto;">
+                    <div class="col-12 col-md-2 p-0 d-md-flex mr-auto">
                         <label class="form-label my-auto me-md-2">Search: </label>
                         <input class="form-control input-sm" type="search" placeholder="Search" name="search" value="">
                     </div>

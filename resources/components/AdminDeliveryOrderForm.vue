@@ -71,6 +71,12 @@
     .input-product-quantity::-webkit-inner-spin-button {
         appearance: none;
     }
+    .label-padding {
+        padding: 5px 10px 5px 10px;
+    }
+    .max-w-400 {
+        max-width: 400px;
+    }
 </style>
 
 <template>
@@ -90,17 +96,18 @@
             </div>
         </div>
 
-        <form method="post" class="row">
+        <form method="post" ref="form_elm" :action="formAction" class="row">
+            <input type="hidden" name="_token" :value="props.csrfToken">
             <input type="hidden" name="_method" :value="methodVal">
             <div class="col-12">
                 <ul class="nav nav-tabs nav-bordered mb-3">
                     <li class="nav-item">
-                        <a href="#form1" @click="goToSummary()" class="nav-link bg-transparent" :class="{'active':show_tab==1}">
+                        <a @click="gotoForm()" class="nav-link bg-transparent" :class="{'active':show_tab==1}">
                             Add Product & D.O. Details
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#form2" @click="gotoForm()" class="nav-link bg-transparent" :class="{'active':show_tab==2}">
+                        <a @click="goToSummary()" class="nav-link bg-transparent" :class="{'active':show_tab==2}">
                             Delivery Order
                         </a>
                     </li>
@@ -113,7 +120,25 @@
                                 <div class="col-lg-6">
                                     <div class="mb-3">
                                         <label for="simpleinput" class="form-label">Client</label>
-                                        <select name="client_id" class="form-control" v-model="delivery_order.client_id"></select>
+                                        <input type="hidden" name="client_id" v-if="delivery_order?.client?.id" :value="delivery_order.client?.id">
+                                        <multiselect class="form-control"
+                                            v-model="delivery_order.client"
+                                            placeholder="Select one"
+                                            :allow-empty="true"
+                                            :searchable="true"
+                                            :close-on-select="true"
+                                            :options="clients"
+                                            :multiple="false"
+                                            :loading="loading_client"
+                                            :internal-search="false"
+                                            :clear-on-select="false"
+                                            :options-limit="100"
+                                            :show-no-results="true"
+                                            :hide-selected="true"
+                                            @search-change="searchClient"
+                                            @Open="searchClient"
+                                            label="id">
+                                        </multiselect>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Sales Order</label>
@@ -136,10 +161,6 @@
                                             @Open="searchSalesOrder"
                                             label="id">
                                         </multiselect>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Branch Code</label>
-                                        <input type="text" class="form-control" v-model="branc_code" :disabled="true">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Issued By</label>
@@ -224,7 +245,7 @@
                                             </tr>
                                             <tr v-for="(item, item_index) in delivery_order.items" :key="item_index">
                                                 <td>
-                                                    <input type="hidden" name="items[]['id']" :value="item.product_varian.id">
+                                                    <input type="hidden" :name="`items[${item_index}][id]`" :value="item.product_variant.id">
                                                     <div class="d-flex">
                                                         <img v-if="item.image" class="product-image" :src="item.image" :alt="item.name">
                                                         <div class="product-info">
@@ -237,7 +258,7 @@
                                                     {{ item.product_variant.product.description }}
                                                 </td>
                                                 <td width="5">
-                                                    <input type="number" name="items[]['quantity']" class="input-product-quantity" v-model="item.quantity">
+                                                    <input type="number" :name="`items[${item_index}][quantity]`" class="input-product-quantity" v-model="item.quantity">
                                                 </td>
                                                 <td>
                                                     ${{ parseFloat(item.product_variant.selling_price).toLocaleString() }}
@@ -259,8 +280,8 @@
                             <div class="row">
                                 <div class="col-xs-6 col-sm-9">
                                     <div class="note-label"><strong>Note & Instruction</strong></div>
-                                    <div style="padding: 5px 10px 5px 10px;"></div>
-                                    <textarea rows="4" name="note" style="max-width:400px" class="form-control" v-model="delivery_order.note"></textarea>
+                                    <div class="label-padding"></div>
+                                    <textarea rows="4" name="note" class="form-control max-w-400" v-model="delivery_order.note"></textarea>
                                 </div>
                                 <div class="col-xs-6 col-sm-3">
                                     <table class="table table-total">
@@ -325,13 +346,17 @@
             type: Object,
             required: false
         },
-        action: {
-            type: String,
-            required: true
-        },
         formAction: {
             type: String,
             required: true
+        },
+        csrfToken: {
+            type: String,
+            required: true
+        },
+        oldInput: {
+            type: Object,
+            required: false
         }
     })
 
@@ -346,11 +371,11 @@
     const discount = ref(0)
     const gst = ref(0)
     const client_id = ref(null)
+    const loading_client = ref(false)
     const loading_sales_order = ref(false)
     const loading_products = ref(false)
+    const clients = ref([])
     const sales_orders = ref([])
-    const customer_po = ref('')
-    const paymeny_term = ref(0)
     const show_tab = ref(1)
     const payment_due = ref('')
     const branc_code = ref('')
@@ -359,30 +384,52 @@
     const product_selected = ref([])
     const loading_send_email = ref(false)
     const loading_save = ref(false)
-    const delivery_order = ref(props.deliveryOrder || {
-        id: null,
-        supplier: {
-            name: null,
-            id: null,
-            address: null
-        },
-        sales_order_id: null,
-        date: null,
-        delivery_eta: null,
-        items: [],
-        note: null
-    })
+    const delivery_order = ref(null)
+    if (props.oldInput) {
+        delivery_order.value = {
+            client: props.oldInput.client,
+            sales_order: props.oldInput.sales_order,
+            sales_order_id: props.oldInput.sales_order_id,
+            date: props.oldInput.date,
+            payment_term: props.oldInput.payment_term,
+            delivery_eta: null,
+            items: props.oldInput.items,
+            note: props.oldInput.note
+        }
+    } else if (props.deliveryOrder) {
+        delivery_order.value = props.deliveryOrder
+    } else {
+        delivery_order.value = {
+            client: {
+                id: null,
+                name: null
+            },
+            sales_order: {},
+            sales_order_id: null,
+            payment_term: null,
+            date: null,
+            delivery_eta: null,
+            items: [],
+            note: null
+        }
+    }
 
 
     const title = computed(()=>{
-        return props.action == 'create' ? 'Create Delivery Order' : 'Edit Delivery Order'
+        return props.deliveryOrder ? 'Create Delivery Order' : 'Edit Delivery Order'
     })
 
     const goToSummary = () => {
-        if (!delivery_order.value.sales_order.id) {
+        if (!delivery_order.value?.client?.id) {
+            return alert("Client Required")
+        }
+        if (!delivery_order.value?.date) {
+            return alert("Date Required")
+        }
+        if (!delivery_order.value?.sales_order?.id) {
             return alert("Sales Order Required")
         }
-        if (delivery_order.value.items.length == 0) {
+        if (!delivery_order.value?.items?.length) {
             return alert("Required at least 1 item")
         }
         show_tab.value = 2
@@ -396,23 +443,36 @@
         show_tab.value = 1
     }
 
+    const searchClient = query => {
+        loading_client.value = true
+        axios.get('/api/clients', {
+            search : { query }
+        }).then(res => {
+            loading_client.value = false
+            clients.value = res.data.response.items
+        })
+    }
+
     const searchSalesOrder = query => {
         loading_sales_order.value = true
-        axios.get('/admin/delivery-orders/sales-orders', {
-            params : { query }
-        }).then(response => {
+        axios.get('/api/sales-orders', {
+            search : { query }
+        }).then(res => {
             loading_sales_order.value = false
-            sales_orders.value = response.data
+            sales_orders.value = res.data.response.items
         })
     }
 
     const searchProduct = query => {
         loading_products.value = true
-        axios.get('/admin/delivery-orders/products', {
-            params : { query }
-        }).then(response => {
+        axios.get('/api/product-variants', {
+            params: {
+                search: query
+            }
+        })
+        .then(res => {
             loading_products.value = false
-            products.value = response.data
+            products.value = res.data.response.items
         })
     }
 
@@ -450,7 +510,7 @@
     })
 
     const methodVal = computed(() => {
-        return delivery_order.value.id ? 'POST' : 'PUT'
+        return props.deliveryOrder ? 'PUT' : 'POST'
     })
 
     onMounted(() => {

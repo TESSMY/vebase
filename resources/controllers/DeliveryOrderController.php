@@ -36,14 +36,14 @@ class DeliveryOrderController extends VeController
         if (empty($taxRate)) {
             $taxRate = $taxes[0];
         }
-        return view('admin.delivery-orders.form', compact('taxRate', 'taxes'));
+        return view('admin.delivery-orders.create', compact('taxRate', 'taxes'));
     }
 
     public function store(Request $request)
     {
         $this->authorize('create', DeliveryOrder::class);
         $input = $request->input();
-        $input['user_id'] = auth()->id();
+        $input['created_by'] = auth()->id();
         $validator = Validator::make($input, $this->model->createValidator);
 
         if ($validator->fails()) {
@@ -120,7 +120,7 @@ class DeliveryOrderController extends VeController
             $taxRate = $taxes[0];
         }
         $deliveryOrder->load(['salesOrder', 'items.productVariant.product', 'client']);
-        return view('admin.delivery-orders.form', compact('deliveryOrder', 'taxRate', 'taxes'));
+        return view('admin.delivery-orders.edit', compact('deliveryOrder', 'taxRate', 'taxes'));
     }
 
     public function update(Request $request, $id)
@@ -197,50 +197,5 @@ class DeliveryOrderController extends VeController
             flash()->error($exception->getMessage());
             return redirect()->route('admin.delivery-orders.edit', $deliveryOrder->getRouteKey())->withInput($request->input());
         }
-    }
-
-    public function listProduct()
-    {
-        $items = ProductVariant::with('product');
-        if (!empty(request())) {
-            $items->where('product_variants.name', 'like', '%' . request('query') . '%')
-                ->orWhere('product_variants.sku', 'like', '%' . request('query') . '%')
-                ->orWhereHas('product', function ($product) {
-                    $product->where('products.name', 'like', '%' . request('query') . '%')->orWhere('products.sku', 'like', '%' . request('query') . '%');
-                });
-        }
-        $items = $items->limit(30)->get();
-        return $items;
-    }
-
-    public function listSalesOrder()
-    {
-        $salesOrders = SalesOrder::with(['user' => function ($user) { return $user->select('name', 'id'); }]);
-
-        if (!empty(request('query'))) {
-            $salesOrders->where(function ($q) {
-                $q->where('created_at', 'like', '%' . request('query') . '%')
-                ->orWhere('id', 'like', '%' . request('query') . '%')
-                ->orWhereHas('user', function ($user) {
-                    $user->where('name', 'like', '%' . request('query') . '%');
-                })
-                ->orWhere('grand_total', 'like', '%' . request('query') . '%');
-            });
-        }
-
-        $salesOrders = $salesOrders->where('status', '<>', SalesOrder::STATUS_SHIPPED)
-        ->orderBy('created_at', 'desc')
-        ->get();
-        return $salesOrders;
-    }
-
-    public function sendEmail(DeliveryOrder $deliveryOrder)
-    {
-
-    }
-
-    public function downloadPdf(DeliveryOrder $deliveryOrder)
-    {
-
     }
 }

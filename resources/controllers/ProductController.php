@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\ProductBundle;
 use App\Models\ProductVariant;
 use App\Models\Product;
 use App\Models\Supplier;
-use App\Models\User;
 use Exception;
-use HaydenPierce\ClassFinder\ClassFinder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -68,10 +65,14 @@ class ProductController extends VeController
     public function store(Request $request)
     {
         $this->authorize('create', Product::class);
-        $input = $request->all();;
+        $input = $request->all();
         if (!empty($input['options'])) {
-            foreach ($input['options'] as $index => $option) {
-                $input['option_' . ($index + 1)] = $option;
+            if (count($input['options']) > 3) {
+                flash()->error('Too many options provided for a product variant.');
+            } elseif (count($input['options']) <= 3) {
+                foreach ($input['options'] as $index => $option) {
+                    $input['option_' . ($index + 1)] = $option;
+                }
             }
         }
         $validator = Validator::make($input, $this->model->createValidator);
@@ -92,7 +93,7 @@ class ProductController extends VeController
             $product->save();
 
             if ($product->type == Product::TYPE_SINGLE_PRODUCT) {
-                $variant = ProductVariant::create([
+                ProductVariant::create([
                     'product_id' => $product->id,
                     'image' => $product->image,
                     'name' => $input['name'],
@@ -107,7 +108,6 @@ class ProductController extends VeController
                     'total_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
-                $variant->save();
             }
 
             if ($product->type == Product::TYPE_VARIANT_PRODUCT) {
@@ -121,7 +121,7 @@ class ProductController extends VeController
                         $option_2 = $explodedValue[2] ?? null;
                         $option_3 = $explodedValue[3] ?? null;
                     }
-                    $variant = ProductVariant::create([
+                    ProductVariant::create([
                         'product_id' => $product->id,
                         'image' => $variantData['image'] ?? null,
                         'option_1' => $option_1,
@@ -139,7 +139,6 @@ class ProductController extends VeController
                         'total_stock' => $input['total_stock'],
                         'status' => $input['status']
                     ]);
-                    $variant->save();
                 }
             }
 
@@ -147,7 +146,7 @@ class ProductController extends VeController
                 $productCost = 0;
                 foreach($input['bundles'] as $bundle) {
                     $productVariant = ProductVariant::find($bundle['product_variant_id']);
-                    $bundle = ProductBundle::create([
+                    ProductBundle::create([
                         'product_id' => $product->id,
                         'product_variant_id' => $bundle['product_variant_id'],
                         'quantity' => $bundle['quantity'],
@@ -155,7 +154,6 @@ class ProductController extends VeController
                         'grand_total' => $bundle['quantity'] * $productVariant->selling_price,
                         'image' => $bundle['image'] ?? null,
                     ]);
-                    $bundle->save();
                     $productCost += $productVariant->cost_price;
                 }
                 $product->cost_price = $productCost;
@@ -166,11 +164,11 @@ class ProductController extends VeController
             DB::commit();
             flash()->success($product->name . ' created successfully!');
             return redirect()->route('admin.products.index');
-        } catch (Exception $exception) {
+        }  catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash('Error:' . $exception)->error();
-            throw $exception;
+            flash('Error:' . $exception->getMessage());
+            return back();
         }
     }
 
@@ -181,9 +179,9 @@ class ProductController extends VeController
      */
     public function edit(Request $request, $id)
     {
-        $this->authorize('edit', Product::class);
-        $suppliers = Supplier::all();
         $product = $this->findModel($id);
+        $this->authorize('view', $product);
+        $suppliers = Supplier::all();
         $bundles = ProductBundle::where('product_id', $product->id)->with('productVariant')->get();
         $variants = $product->variants;
         $brands = Brand::all();
@@ -199,8 +197,8 @@ class ProductController extends VeController
      */
     public function show(Request $request, $id)
     {
-        $this->authorize('view', Product::class);
         $product = $this->findModel($id);
+        $this->authorize('view', $product);
 
         return view('admin.products.view', compact('product'));
     }
@@ -223,7 +221,7 @@ class ProductController extends VeController
             }
         }
 
-        $validator = Validator::make($input, $this->model->createValidator);
+        $validator = Validator::make($input, $this->model->updateValidator);
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
@@ -260,11 +258,11 @@ class ProductController extends VeController
             DB::commit();
             flash()->success($product->name . ' updated successfully!');
             return redirect()->route('admin.products.index');
-        } catch (\PHPUnit\Exception $exception) {
+        } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash('Error:' . $exception)->error();
-            throw $exception;
+            flash('Error:' . $exception->getMessage());
+            return back();
         }
     }
 
@@ -274,16 +272,20 @@ class ProductController extends VeController
         $this->authorize('delete', $product);
 
         try {
+            if (!empty($product->bundles)) {
+                $product->bundles()->delete();
+            }
             $product->variants()->delete();
             $product->delete();
 
-            DB::commit();
-            return redirect()->route('admin.products.index')->with('message', $product->name . ' removed successfully.');
+            flash()->success($product->name . ' deleted successfully!');
+            return redirect()->route('admin.products.index');
         } catch (Exception $exception) {
-            DB::rollback();
+            DB::rollBack();
             Log::error($exception);
-            flash()->error('Error:' . $exception);
-            throw $exception;
+            flash('Error:' . $exception->getMessage());
+            return back();
         }
     }
+
 }

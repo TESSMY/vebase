@@ -60,7 +60,7 @@
                             <td>{{ $product->available_stock }}</td>
                             <td>
                                 @can('view-product')
-                                    <a type="button" class="btn btn-primary px-2" href="{{ route('admin.products.show', [$product->getRouteKey()]) }}">View</a>
+                                    <a type="button" class="btn btn-primary px-2 me-2" href="{{ route('admin.products.show', [$product->getRouteKey()]) }}">View</a>
                                 @endcan
                             </td>
                         </tr>

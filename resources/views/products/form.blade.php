@@ -16,26 +16,38 @@
             </div>
             <div class="mt-2" style="border-top-width:3px">
                 <div>
-                    <a href="#" class="btn btn-alt px-5">{{ __('Back') }}</a>
+                    <a href="{{ route('admin.products.index') }}" class="btn btn-alt px-5">{{ __('Back') }}</a>
                 </div>
             </div>
         </div>
 
         {{-- form --}}
-        @if(isset($product))
+        @if(isset($product) && !empty($product))
             <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data">
-        @method('PATCH')
-        @else
-            <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
-        @endif
-        @csrf
-                <product-form :suppliers="{{ $suppliers }}" :products="{{ $products ?? 'undefined' }}" :edit_product="{{ $product ?? 'undefined' }}" :brands="{{ $brands }}" :variants="{{ $variants }}" :product_bundles="{{ $bundles ?? 'undefined' }}"></product-form>
-                <div class="mt-3">
-                    <button class="btn btn-primary me-2" type="submit">{{ isset($product) ? __('Update') : __('Create') }}</button>
-                    <button class="btn btn-secondary">{{ __('Close') }}</button>
-                </div>
+                @method('PUT')
+                @else
+                    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+                        @endif
+                        @csrf
+                        <product-form :suppliers="{{ $suppliers }}" :products="{{ $products ?? 'undefined' }}" :edit_product="{{ $product ?? 'undefined' }}" :brands="{{ $brands }}" :variants="{{ $variants }}" :product_bundles="{{ $bundles ?? 'undefined' }}"></product-form>
+                        <div class="mt-3">
+                            <button class="btn btn-primary me-2" type="submit">{{ isset($product) ? __('Update') : __('Create') }}</button>
+                            <button class="btn btn-secondary">{{ __('Close') }}</button>
+                        </div>
+                    </form>
             </form>
-        </form>
+            <hr>
+            @if(isset($product) && !empty($product))
+                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" enctype="multipart/form-data">
+                    @method('DELETE')
+                    @csrf
+                    <div class="text-end">
+                        <button class="btn btn-danger px-2" type="submit">
+                            Delete
+                        </button>
+                    </div>
+                </form>
+            @endif
     </div>
 @endsection
 

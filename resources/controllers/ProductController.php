@@ -35,7 +35,7 @@ class ProductController extends VeController
             });
         }
 
-        $products = $products->paginate(10);
+        $products = $products->latest()->paginate(10)->withQueryString();
 
         return view('admin.products.index', compact('search', 'products'));
     }

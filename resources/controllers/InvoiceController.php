@@ -8,9 +8,11 @@ use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\SalesOrder;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Vecapital\Vebase\Http\Controllers\VeController;
 use Illuminate\Support\Str;
@@ -76,7 +78,8 @@ class InvoiceController extends VeController
         try {
             DB::beginTransaction();
 
-            $invoice = Invoice::create($input + ['created_by' => Auth::id()]);
+            $client = Client::find($input['client_id']);
+            $invoice = Invoice::create($input + ['client_name' => $client->name, 'created_by' => Auth::id()]);
 
             foreach ($input['products'] as $product) {
                 if (isset($product['product_variant_id'])) {
@@ -89,18 +92,18 @@ class InvoiceController extends VeController
                         'name' => $productVariant->name, 
                         'quantity' => $product['quantity'], 
                         'unit_price' => $productVariant->selling_price, 
-                        'sub_total' => $product->selling_price * $product['quantity'], 
+                        'sub_total' => $productVariant->selling_price * $product['quantity'], 
                     ]);
                 } else {
-                    $product = Product::find($product['id']);
+                    $productModel = Product::find($product['product_id']);
 
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
-                        'product_id' => $product->id, 
-                        'name' => $product->name, 
+                        'product_id' => $productModel->id, 
+                        'name' => $productModel->name, 
                         'quantity' => $product['quantity'], 
-                        'unit_price' => $product->selling_price, 
-                        'sub_total' => $product->selling_price * 1, 
+                        'unit_price' => $productModel->cost_price, 
+                        'sub_total' => $productModel->cost_price * $product['quantity'], 
                     ]);
                 }
                 
@@ -110,7 +113,7 @@ class InvoiceController extends VeController
             flash()->success('Successfully created invoice');
             return redirect()->route('admin.invoices.index');
         } catch (Exception $exception) {
-            log()::error($exception);
+            Log::error($exception);
             DB::rollBack();
             flash()->error('There was an issue creating invoice');
             return back()->withInput();
@@ -166,7 +169,12 @@ class InvoiceController extends VeController
     {
         $input = $request->input();
 
-        $validator = Validator::make($input, $invoice->createValidator());
+        if (empty($invoice->updateValidator())) {
+            flash('Error: updateValidator is empty')->error();
+            return back(); 
+        }
+
+        $validator = Validator::make($input, $invoice->updateValidator());
 
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();

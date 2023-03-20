@@ -78,13 +78,13 @@ class SalesOrderController extends VeController
                     $productVariant = ProductVariant::find($product['product_variant_id']);
                     $product = $productVariant->product;
 
-                    SalesOrderItem::create($input + [
+                    SalesOrderItem::create([
                         'sales_order_id' => $salesOrder->id,
                         'product_id' => $product->id,
                         'product_variant_id' => $productVariant->id,
                         'quantity' => $product['quantity'],
-                        'unit_price' => $productVariant->cost_price,
-                        'grand_total' => $product['quantity'] * $productVariant->cost_price,
+                        'unit_price' => $productVariant->selling_price,
+                        'grand_total' => $product['quantity'] * $productVariant->selling_price,
                     ]);
                 }
             }
@@ -135,13 +135,13 @@ class SalesOrderController extends VeController
                     $productVariant = ProductVariant::find($product['product_variant_id']);
                     $product = $productVariant->product;
 
-                    SalesOrderItem::create($input + [
+                    SalesOrderItem::create([
                         'sales_order_id' => $salesOrder->id,
                         'product_id' => $product->id,
                         'product_variant_id' => $productVariant->id,
                         'quantity' => $product['quantity'],
-                        'unit_price' => $productVariant->cost_price,
-                        'grand_total' => $product['quantity'] * $productVariant->cost_price,
+                        'unit_price' => $productVariant->selling_price,
+                        'grand_total' => $product['quantity'] * $productVariant->selling_price,
                     ]);
                 }
                 $salesOrder->orderItems->save();

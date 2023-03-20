@@ -23,7 +23,7 @@ class DeliveryOrderController extends VeController
 
     public function index(Request $request)
     {
-        $this->authorize('viewAny', DeliveryOrder::class);
+        $this->authorize('view', DeliveryOrder::class);
         $deliveryOrders = DeliveryOrder::with(['salesOrder', 'items.productVariant.product'])->paginate();
         return view('admin.delivery-orders.index', compact('deliveryOrders'));
     }

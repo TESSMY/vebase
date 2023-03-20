@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Product;
-use App\Models\ProductBundle;
 use App\Models\ProductVariant;
 use App\Models\SalesOrder;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Validator;
 use Vecapital\Vebase\Http\Controllers\VeController;
 use Illuminate\Support\Str;
 
@@ -60,9 +60,13 @@ class InvoiceController extends VeController
     public function store(Request $request)
     {
         $input = $request->input();
-        dd($input);
 
-        $validator = Validator::make($input, Invoice::class()->createValidator());
+        if (empty($this->model->createValidator)) {
+            flash('Error: createValidator is empty')->error();
+            return back()->withInput($request->input()); 
+        }
+
+        $validator = Validator::make($input, $this->model->createValidator);
 
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
@@ -74,17 +78,32 @@ class InvoiceController extends VeController
 
             $invoice = Invoice::create($input + ['created_by' => Auth::id()]);
 
-            foreach ($input['products'] as $productVariant) {
-                $productVariant = ProductVariant::find($productVariant);
-                $orderItem = InvoiceItem::create([
-                    'invoice_id' => $invoice->id,
-                    'product_id' => $productVariant->product_id, 
-                    'product_variant_id' => $productVariant->id,
-                    'name' => $productVariant->name, 
-                    'quantity' => $orderItem->quantity, 
-                    'unit_price' => $productVariant->unit_price, 
-                    'sub_total' => $productVariant->unit_price * 1, 
-                ]);
+            foreach ($input['products'] as $product) {
+                if (isset($product['product_variant_id'])) {
+                    $productVariant = ProductVariant::find($product['product_variant_id']);
+
+                    InvoiceItem::create([
+                        'invoice_id' => $invoice->id,
+                        'product_id' => $productVariant->product_id, 
+                        'product_variant_id' => $productVariant->id,
+                        'name' => $productVariant->name, 
+                        'quantity' => $product['quantity'], 
+                        'unit_price' => $productVariant->selling_price, 
+                        'sub_total' => $product->selling_price * $product['quantity'], 
+                    ]);
+                } else {
+                    $product = Product::find($product['id']);
+
+                    InvoiceItem::create([
+                        'invoice_id' => $invoice->id,
+                        'product_id' => $product->id, 
+                        'name' => $product->name, 
+                        'quantity' => $product['quantity'], 
+                        'unit_price' => $product->selling_price, 
+                        'sub_total' => $product->selling_price * 1, 
+                    ]);
+                }
+                
             }
 
             DB::commit();

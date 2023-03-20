@@ -7,12 +7,12 @@
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Sales Order (Optional)</label>
                 <input type="hidden" name="sales_order_id" :value="salesOrder.id">
-                <multi-select v-model="salesOrder" track-by="id" label="id" :options="salesOrders"></multi-select>
+                <multi-select placeholder="Search Sales Order" v-model="salesOrder" label="name" :options="salesOrderArray.options" @search-change="fetchSalesOrder"></multi-select>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Client</label>
                 <input type="hidden" name="client_id" :value="client.id">
-                <multi-select v-model="client" track-by="name" label="name" :options="clients"></multi-select>
+                <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients"></multi-select>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Date</label>
@@ -20,7 +20,7 @@
             </div>
             <div class="col-12 col-md-6 mb-md-0 mb-2">
                 <label class="form-label">Client Address</label>
-                <input class="form-control" type="text" placeholder="Client Address" :value="client.address_1 + ' ' + client.address_2" disabled>
+                <input class="form-control" type="text" placeholder="Client Address" name="client_address" :value="client.address_1 + ' ' + client.address_2" readonly>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Payment Term</label>
@@ -47,9 +47,19 @@
                 <tbody>
                     <tr v-for="(item, index) in products">
                         <td>
-                            <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.product.id">
-                            <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.product.id" v-if="item.product.id !== 'undefined'">
-                            <multi-select v-model="item.product" track-by="name" label="name" :options="props.products"></multi-select>
+                            <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
+                                <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.product.id">
+                            </template>
+                            <template v-else>
+                                <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.product.product_id">
+                                <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.product.id">
+                            </template>
+                            <multi-select placeholder="Search Products"
+                                v-model="item.product"
+                                label="name"
+                                :options="productArray.options"
+                                @search-change="fetchProducts">
+                            </multi-select>
                         </td>
                         <td>
                             <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
@@ -97,18 +107,15 @@
 </template>
 
 <script setup>
-import { defineComponent, ref } from 'vue';
+import { defineComponent, reactive, ref } from 'vue';
 
 let props = defineProps({
-    salesOrders: Array,
-    products: Array,
     taxRate: Number,
-    clients: Array,
 });
 
-const subTotal = ref(0);
 const salesOrder = ref({});
 const client = ref({});
+const subTotal = ref(0);
 const grandTotal = ref(0);
 const taxRate = ref(props.taxRate);
 const products = ref([{
@@ -144,5 +151,41 @@ function updateTotalPrice() {
     });
     this.grandTotal *= 1 + (props.taxRate / 100);
 }
+
+const productArray = reactive({ options: [] });
+const fetchProducts = (query) => {
+    if (query) {
+        axios.get(`/web/products?search=${query}`).then((response) => {
+            productArray.options = []
+            response.data.response.items.forEach(product => {
+                if (product.type == 3) { // bundle type
+                    productArray.options.push(product);
+                } else {
+                    product.variants.forEach(variant => {
+                        productArray.options.push(variant)
+                    });
+                }
+            });
+        });
+    }
+};
+
+const clientArray = reactive({ options: [] });
+const fetchClients = (query) => {
+    if (query) {
+        axios.get(`/web/clients?search=${query}`).then((response) => {
+            clientArray.options = response.data.response.items;
+        });
+    }
+};
+
+const salesOrderArray = reactive({ options: [] });
+const fetchSalesOrder = (query) => {
+    if (query) {
+        axios.get(`/web/sales-order?search=${query}`).then((response) => {
+            salesOrderArray.options = response.data.response.items;
+        });
+    }
+};
 
 </script>

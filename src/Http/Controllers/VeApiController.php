@@ -32,10 +32,9 @@ class VeApiController extends ApiController
 
     public function findModel($id) 
     {
-        $routeKey = $this->model->getRouteKey() ?? 'id';
-        $model = $this->model::where($routeKey, $id)->first();
+        $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
         abort_if(empty($model), 404);
-        
+
         return $model;
     }
 
@@ -50,14 +49,20 @@ class VeApiController extends ApiController
 
         $models = $this->model::query();
 
-        if (!empty($this->model->relatable)) {
-            $models->with($this->model->relatable);
+        if (!empty($search)) {
+            if (!empty($this->model->searchable)) {
+                $models = $models->where(function($query) use ($search) {
+                    foreach ($this->model->searchable as $value) {
+                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
+                    }
+                });
+            }
         }
 
         if (!empty($search)) {
-            if (!empty($this->model::searchable)) {
+            if (!empty($this->model->searchable)) {
                 $models = $models->where(function($query) use ($search) {
-                    foreach ($this->model::searchable as $value) {
+                    foreach ($this->model->searchable as $value) {
                         $query->orWhere($value, 'LIKE', '%' . $search . '%');
                     }
                 });

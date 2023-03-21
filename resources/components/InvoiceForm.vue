@@ -16,7 +16,7 @@
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Date</label>
-                <input class="form-control" type="date" name="name" placeholder="date" value="{{ old('date') ?? (!empty($invoice) ? $invoice->date : '') }}" required>
+                <input class="form-control" type="date" name="date" placeholder="date" v-model="date" required>
             </div>
             <div class="col-12 col-md-6 mb-md-0 mb-2">
                 <label class="form-label">Client Address</label>
@@ -24,7 +24,7 @@
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Payment Term</label>
-                <input class="form-control" type="text" name="payment_term" placeholder="Payment Term" value="">
+                <input class="form-control" type="text" name="payment_term" placeholder="Payment Term" v-model="paymentTerm">
             </div>
         </div>
     </div>
@@ -47,12 +47,13 @@
                 <tbody>
                     <tr v-for="(item, index) in products">
                         <td>
+                            <input type="hidden" :name="'products[' + index + '][invoice_item_id]'" :value="item.invoice_item_id">
                             <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
-                                <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.product.id">
+                                <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
                             </template>
                             <template v-else>
-                                <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.product.product_id">
-                                <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.product.id">
+                                <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.product_id">
+                                <input type="hidden" :name="'products[' + index + '][product_variant_id]'" :value="item.product.id">
                             </template>
                             <multi-select placeholder="Search Products"
                                 v-model="item.product"
@@ -62,7 +63,7 @@
                             </multi-select>
                         </td>
                         <td>
-                            <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                            <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
                         </td>
                         <td>{{ item.product.selling_price }}</td>
                         <td>{{ item.subTotal.toFixed(2) }}</td>
@@ -100,20 +101,30 @@
             </div>
         </div>
         <div class="row col-12">
-            <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Create</button>
+            <button type="submit" class="col-12 col-md-1 btn btn-success m-2">
+                <template v-if="props.invoice == undefined">
+                    Create
+                </template>
+                <template v-else>
+                    Update
+                </template>
+            </button>
             <a href="/admin/invoices" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
         </div>
     </div>
 </template>
 
 <script setup>
-import { defineComponent, reactive, ref } from 'vue';
+import { defineComponent, reactive, ref, onBeforeMount } from 'vue';
 
 let props = defineProps({
     taxRate: Number,
+    invoice: Object,
 });
 
 const salesOrder = ref({});
+const date = ref('');
+const paymentTerm = ref('');
 const client = ref({});
 const subTotal = ref(0);
 const grandTotal = ref(0);
@@ -125,7 +136,7 @@ const products = ref([{
 }]);
 
 function addProduct() {
-    this.products.push({
+    products.value.push({
         'product': '',
         'quantity': 0,
         'subTotal': 0,
@@ -133,23 +144,23 @@ function addProduct() {
 }
 
 function removeProduct(index) {
-    this.products.splice(index, 1);
-    this.updateTotalPrice();
+    products.value.splice(index, 1);
+    updateTotalPrice();
 }
 
 function updateProductSubTotal(item) {
     item.subTotal = item.product.selling_price * item.quantity;
-    this.updateTotalPrice();
+    updateTotalPrice();
 }
 
 function updateTotalPrice() {
-    this.subTotal = 0;
-    this.grandTotal = 0;
-    this.products.forEach(item => {
-        this.subTotal += item.subTotal;
-        this.grandTotal += item.subTotal;
+    subTotal.value = 0;
+    grandTotal.value = 0;
+    products.value.forEach(item => {
+        subTotal.value += item.subTotal;
+        grandTotal.value += item.subTotal;
     });
-    this.grandTotal *= 1 + (props.taxRate / 100);
+    grandTotal.value *= 1 + (props.taxRate / 100);
 }
 
 const productArray = reactive({ options: [] });
@@ -187,5 +198,36 @@ const fetchSalesOrder = (query) => {
         });
     }
 };
+
+onBeforeMount(() => {
+    if (props.invoice !== undefined) {
+        if (props.invoice.invoice_items !== undefined) {
+            client.value = props.invoice.client
+            date.value = props.invoice.date
+            paymentTerm.value = props.invoice.payment_term
+            products.value = [];
+            props.invoice.invoice_items.forEach(invoiceItem => {
+                if (invoiceItem.product_variant == null) {
+                    // bundles
+                    products.value.push({
+                        'invoice_item_id': invoiceItem.id,
+                        'product': invoiceItem.product,
+                        'quantity': invoiceItem.quantity,
+                        'subTotal': invoiceItem.quantity * invoiceItem.product.cost_price,
+                    });
+                } else {
+                    // product variants & single products
+                    products.value.push({
+                        'invoice_item_id': invoiceItem.id,
+                        'product': invoiceItem.product_variant,
+                        'quantity': invoiceItem.quantity,
+                        'subTotal': invoiceItem.quantity * invoiceItem.product_variant.selling_price,
+                    });
+                }
+            });
+            updateTotalPrice();
+        }
+    }
+})
 
 </script>

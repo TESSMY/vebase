@@ -17,10 +17,10 @@
             </nav>
         </div>
         <div class="border my-2 mb-3"></div>
-        <form action="{{ route($routePrefix . '.' . $routeName . '.update', $$routeModel->getRouteKey()) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route($routePrefix . '.' . $routeName . '.update', $invoice->getRouteKey()) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
-            <invoice-form :product-variants="{{ json_encode($productVariants) }}" :sales-orders="{{ json_encode($salesOrders) }}" :tax-rate="{{ $taxRate }}"></invoice-form>
+            <invoice-form :tax-rate="{{ $taxRate }}" :invoice="{{ $invoice }}"></invoice-form>
         </form>
     </div>
 @endsection

@@ -60,13 +60,11 @@ class VeApiController extends ApiController
             }
         }
 
-        if (!empty($search)) {
-            if (!empty($this->model->searchable)) {
-                $models = $models->where(function($query) use ($search) {
-                    foreach ($this->model->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
-                    }
-                });
+        if (!empty($input['relatable'])) {
+            foreach ($input['relatable'] as $relatable) {
+                if (in_array($relatable, $this->model->relatable)) {
+                    $models->with($relatable);
+                }
             }
         }
 

@@ -32,9 +32,10 @@ class VeApiController extends ApiController
 
     public function findModel($id) 
     {
-        $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
+        $routeKey = $this->model->getRouteKey() ?? 'id';
+        $model = $this->model::where($routeKey, $id)->first();
         abort_if(empty($model), 404);
-
+        
         return $model;
     }
 
@@ -126,11 +127,11 @@ class VeApiController extends ApiController
 
         $input = $request->all();
 
-        if (empty($this->model::create)) {
+        if (empty($this->model->updateValidator())) {
             throw new \Exception($this->model . " updateValidator is empty");
         }
 
-        $validator = Validator::make($input, $model::updateValidator);
+        $validator = Validator::make($input, $model->updateValidator());
         if ($validator->fails()) {
             return $this->showValidationError($validator);
         }

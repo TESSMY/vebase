@@ -2,23 +2,31 @@
 @section('content')
     <div class="container-fluid" id="app">
         {{-- header --}}
-        <div class="d-flex justify-content-between p-3" style="border-bottom-width:2px">
-            <div>
-                <span>
-                    <h4><i class="fas fa-store text-identity me-2" style="color: #289983"></i>
-                        @if(isset($product))
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <div class="page-title-box">
+                    <span class="page-title h4">
+                         @if(isset($product))
                             {{ __('Edit Product') }}
                         @else
                             {{ __('Create Product') }}
                         @endif
-                    </h4>
-                </span>
-            </div>
-            <div class="mt-2" style="border-top-width:3px">
-                <div>
-                    <a href="{{ route('admin.products.index') }}" class="btn btn-alt px-5">{{ __('Back') }}</a>
+                    </span>
                 </div>
             </div>
+            <nav class="col-12 col-md-6">
+                <ol class="breadcrumb d-md-flex justify-content-md-end my-auto">
+                    @if(isset($product))
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard.index') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.products.index') }}">Product List</a></li>
+                        <li class="breadcrumb-item active">Edit Product</li>
+                    @else
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard.index') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.products.index') }}">Product List</a></li>
+                        <li class="breadcrumb-item active">Create New Product</li>
+                    @endif
+                </ol>
+            </nav>
         </div>
 
         {{-- form --}}

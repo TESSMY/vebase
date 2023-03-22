@@ -116,9 +116,8 @@ class SalesOrderController extends VeController
         $input = $request->input();
         $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
-        $model = SalesOrder::first();
 
-        $validator = Validator::make($input, $model->updateValidator);
+        $validator = Validator::make($input, $salesOrder->updateValidator);
 
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();

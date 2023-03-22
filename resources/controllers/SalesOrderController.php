@@ -59,7 +59,7 @@ class SalesOrderController extends VeController
         $this->authorize('create', SalesOrder::class);
 
         $input = $request->input();
-        $input['user_id'] = Auth::id();
+        $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
 
         $validator = Validator::make($input, $this->model->createValidator);
@@ -114,7 +114,7 @@ class SalesOrderController extends VeController
         $salesOrder = $this->findModel($id);
         $this->authorize('update', $salesOrder);
         $input = $request->input();
-        $input['user_id'] = Auth::id();
+        $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
         $model = SalesOrder::first();
 

@@ -102,10 +102,10 @@
                                 @search-change="fetchTax"
                                 @input="updateTotalPrice">
                             </multi-select>
-                            <div class="col-5"><input class="form-control" type="number" v-model="taxRate1.tax_rate" min="0" max="100" step="1" required></div>
+                            <div class="col-5" v-if="taxRate1"><input class="form-control" type="number" v-model="taxRate1.tax_rate" min="0" max="100" step="1" required></div>
                         </div>
                     </span>
-                    <!-- <span class="col-4 fw-bold my-auto">Tax %: </span>
+                    <span class="col-4 fw-bold my-auto">Tax %: </span>
                     <span class="col-8">
                         <div class="row">
                             <multi-select class="col-7" placeholder="Search Tax"
@@ -114,9 +114,9 @@
                                 :options="taxArray.options"
                                 @search-change="fetchTax">
                             </multi-select>
-                            <div class="col-5"><input class="form-control" type="number" v-model="taxRate2.tax_rate" min="0" max="100" step="1" required></div>
+                            <div class="col-5" v-if="taxRate2"><input class="form-control" type="number" v-model="taxRate2.tax_rate" min="0" max="100" step="1" required></div>
                         </div>
-                    </span> -->
+                    </span>
                     <div class="border my-2"></div>
                     <span class="col-4 fw-bold my-auto">Total (SGD): </span>
                     <span class="col-8">{{ grandTotal.toFixed(2) }}</span>
@@ -183,10 +183,10 @@ function updateTotalPrice() {
         subTotal.value += item.subTotal;
         grandTotal.value += item.subTotal;
     });
-    if (taxRate1 != '') {
+    if (taxRate1 !== '') {
         grandTotal.value *= 1 + (taxRate1.value.tax_rate / 100);
     }
-    // if (taxRate2 != '') {
+    // if (taxRate2 !== '') {
     //     grandTotal.value *= 1 + (taxRate2.value.tax_rate / 100);
     // }
 }

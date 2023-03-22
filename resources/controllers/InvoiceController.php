@@ -27,7 +27,6 @@ class InvoiceController extends VeController
     public function create()
     {
         $compact = [
-            'taxRate' => 7,
             'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,
             'modelName' => $this->modelName,
@@ -143,7 +142,6 @@ class InvoiceController extends VeController
         $invoice->load('client', 'invoiceItems.product', 'invoiceItems.productVariant');
 
         $compact = [
-            'taxRate' => 7,
             'invoice' => $invoice,
             'model' => $this->model,
             'modelName' => $this->modelName,

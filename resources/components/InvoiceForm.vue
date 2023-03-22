@@ -86,17 +86,40 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-5"></div>
-            <div class="col-12 col-md-3">
+            <div class="col-md-4"></div>
+            <div class="col-12 col-md-4">
                 <div class="row text-end">
-                    <span class="col-7 fw-bold my-auto">Sub Total: </span>
-                    <span class="col-5">{{ subTotal.toFixed(2) }}</span>
+                    <span class="col-4 fw-bold my-auto">Sub Total: </span>
+                    <span class="col-8">{{ subTotal.toFixed(2) }}</span>
                     <div class="border my-2"></div>
-                    <span class="col-7 fw-bold my-auto">Tax %: </span>
-                    <span class="col-5"><input class="form-control" type="number" v-model="taxRate" min="0" max="100" step="1" required></span>
+                    <span class="col-4 fw-bold my-auto">Tax %: </span>
+                    <span class="col-8">
+                        <div class="row">
+                            <multi-select class="col-7" placeholder="Search Tax"
+                                v-model="taxRate1"
+                                label="name"
+                                :options="taxArray.options"
+                                @search-change="fetchTax"
+                                @input="updateTotalPrice">
+                            </multi-select>
+                            <div class="col-5"><input class="form-control" type="number" v-model="taxRate1.tax_rate" min="0" max="100" step="1" required></div>
+                        </div>
+                    </span>
+                    <!-- <span class="col-4 fw-bold my-auto">Tax %: </span>
+                    <span class="col-8">
+                        <div class="row">
+                            <multi-select class="col-7" placeholder="Search Tax"
+                                v-model="taxRate2"
+                                label="name"
+                                :options="taxArray.options"
+                                @search-change="fetchTax">
+                            </multi-select>
+                            <div class="col-5"><input class="form-control" type="number" v-model="taxRate2.tax_rate" min="0" max="100" step="1" required></div>
+                        </div>
+                    </span> -->
                     <div class="border my-2"></div>
-                    <span class="col-7 fw-bold my-auto">Total (SGD): </span>
-                    <span class="col-5">{{ grandTotal.toFixed(2) }}</span>
+                    <span class="col-4 fw-bold my-auto">Total (SGD): </span>
+                    <span class="col-8">{{ grandTotal.toFixed(2) }}</span>
                 </div>
             </div>
         </div>
@@ -115,10 +138,9 @@
 </template>
 
 <script setup>
-import { defineComponent, reactive, ref, onBeforeMount } from 'vue';
+import { defineComponent, reactive, ref, onBeforeMount, computed } from 'vue';
 
 let props = defineProps({
-    taxRate: Number,
     invoice: Object,
 });
 
@@ -128,7 +150,8 @@ const paymentTerm = ref('');
 const client = ref({});
 const subTotal = ref(0);
 const grandTotal = ref(0);
-const taxRate = ref(props.taxRate);
+const taxRate1 = ref('');
+const taxRate2 = ref('');
 const products = ref([{
     'product': '',
     'quantity': 0,
@@ -160,7 +183,12 @@ function updateTotalPrice() {
         subTotal.value += item.subTotal;
         grandTotal.value += item.subTotal;
     });
-    grandTotal.value *= 1 + (props.taxRate / 100);
+    if (taxRate1 != '') {
+        grandTotal.value *= 1 + (taxRate1.value.tax_rate / 100);
+    }
+    // if (taxRate2 != '') {
+    //     grandTotal.value *= 1 + (taxRate2.value.tax_rate / 100);
+    // }
 }
 
 const productArray = reactive({ options: [] });
@@ -195,6 +223,15 @@ const fetchSalesOrder = (query) => {
     if (query) {
         axios.get(`/web/sales-order?search=${query}`).then((response) => {
             salesOrderArray.options = response.data.response.items;
+        });
+    }
+};
+
+const taxArray = reactive({ options: [] });
+const fetchTax = (query) => {
+    if (query) {
+        axios.get(`/web/taxes?search=${query}`).then((response) => {
+            taxArray.options = response.data.response.items
         });
     }
 };

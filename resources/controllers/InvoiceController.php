@@ -26,22 +26,7 @@ class InvoiceController extends VeController
      */
     public function create()
     {
-        $clients = Client::get();
-        $salesOrder = SalesOrder::get();
-        $products = Product::where('type', Product::TYPE_PRODUCT_BUNDLE)->get();
-        $variants = ProductVariant::get();
-        $collection = collect();
-        foreach ($products as $key => $product) {
-            $collection->push($product);
-        }
-        foreach ($variants as $key => $variant) {
-            $collection->push($variant);
-        }
-
         $compact = [
-            'clients' => $clients,
-            'salesOrders' => $salesOrder,
-            'products' => $collection,
             'taxRate' => 7,
             'routeModel' => Str::singular($this->routeName),
             'model' => $this->model,
@@ -128,7 +113,17 @@ class InvoiceController extends VeController
      */
     public function show(Request $request, $invoice)
     {
-        return view('admin.invoices.show');
+        $invoice = $this->findModel($invoice);
+
+        $compact = [
+            'invoice' => $invoice,
+            'model' => $this->model,
+            'modelName' => $this->modelName,
+            'routeName' => $this->routeName,
+            'routePrefix' => $this->folder,
+        ];
+
+        return view('admin.invoices.show', $compact);
     }
 
     /**
@@ -139,16 +134,12 @@ class InvoiceController extends VeController
      */
     public function edit(Request $request, $invoice)
     {
-        $salesOrder = SalesOrder::get(['id']);
-        // $productBundles = Product::get(['id', 'name']);
-        $productVariants = ProductVariant::get(['id', 'name']);
+        $invoice = $this->findModel($invoice);
+        $invoice->load('client', 'invoiceItems.product', 'invoiceItems.productVariant');
 
         $compact = [
-            'salesOrders' => $salesOrder,
-            // 'productBundles' => $productBundles,
-            'productVariants' => $productVariants,
             'taxRate' => 7,
-            'routeModel' => Str::singular($this->routeName),
+            'invoice' => $invoice,
             'model' => $this->model,
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
@@ -167,6 +158,11 @@ class InvoiceController extends VeController
      */
     public function update(Request $request, $invoice)
     {
+        
+        $invoice = $this->findModel($invoice);
+
+        $this->authorize('update', $invoice);
+
         $input = $request->input();
 
         if (empty($invoice->updateValidator())) {
@@ -183,14 +179,60 @@ class InvoiceController extends VeController
 
         try {
             DB::beginTransaction();
+            
 
+            $client = Client::find($input['client_id']);
+            $invoice->update($input + ['client_name' => $client->name, 'created_by' => Auth::id()]);
 
+            foreach ($input['products'] as $product) {
+                if (!empty($product['invoice_item_id'])) {
+                    // existing invoice item
+                    $productModel = Product::find($product['product_id']);
+                    $invoiceItem = InvoiceItem::find($product['invoice_item_id']);
+                    $invoiceItem->update($product + [
+                        'product_variant_id' => !empty($product['product_variant_id']) ? $product['invoice_item_id'] : null, 
+                        'name' => $productModel->name,
+                    ]);
+                } else {
+                    if (isset($product['product_variant_id'])) {
+                        // product variant & single product
+                        $productVariant = ProductVariant::find($product['product_variant_id']);
+    
+                        InvoiceItem::create([
+                            'invoice_id' => $invoice->id,
+                            'product_id' => $productVariant->product_id, 
+                            'product_variant_id' => $productVariant->id,
+                            'name' => $productVariant->name, 
+                            'quantity' => $product['quantity'], 
+                            'unit_price' => $productVariant->selling_price, 
+                            'sub_total' => $productVariant->selling_price * $product['quantity'], 
+                        ]);
+                    } else {
+                        // product bundle
+                        $productModel = Product::find($product['product_id']);
+    
+                        InvoiceItem::create([
+                            'invoice_id' => $invoice->id,
+                            'product_id' => $productModel->id, 
+                            'name' => $productModel->name, 
+                            'quantity' => $product['quantity'], 
+                            'unit_price' => $productModel->cost_price, 
+                            'sub_total' => $productModel->cost_price * $product['quantity'], 
+                        ]);
+                    }
+                }
+            }
+
+            $invoice->item_count = $invoice->invoiceItems->count();
+            $invoice->sub_total = $invoice->invoiceItems->sum('sub_total');
+            $invoice->grand_total = $invoice->sub_total;
+            $invoice->save();
 
             DB::commit();
             flash()->success('Successfully updated invoice');
             return redirect()->route('admin.invoices.index');
         } catch (Exception $exception) {
-            log()::error($exception);
+            Log::error($exception);
             DB::rollBack();
             flash()->error('There was an issue updating invoice');
             return back()->withInput();

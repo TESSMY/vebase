@@ -227,6 +227,7 @@ class InvoiceController extends VeController
             $invoice->sub_total = $invoice->invoiceItems->sum('sub_total');
             $invoice->grand_total = $invoice->sub_total;
             $invoice->save();
+            $invoice->generatePDF();
 
             DB::commit();
             flash()->success('Successfully updated invoice');

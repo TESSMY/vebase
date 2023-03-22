@@ -90,9 +90,14 @@ class InvoiceController extends VeController
                         'unit_price' => $productModel->cost_price, 
                         'sub_total' => $productModel->cost_price * $product['quantity'], 
                     ]);
-                }
-                
+                } 
             }
+
+            $invoice->item_count = $invoice->invoiceItems->count();
+            $invoice->sub_total = $invoice->invoiceItems->sum('sub_total');
+            $invoice->grand_total = $invoice->sub_total;
+            $invoice->save();
+            $invoice->generatePDF();
 
             DB::commit();
             flash()->success('Successfully created invoice');

@@ -113,7 +113,7 @@
 </template>
 
 <script setup>
-import { defineComponent, ref } from 'vue';
+import { computed, defineComponent, ref } from 'vue';
 let props = defineProps({
     purchaseOrder: Object,
     taxRate: Number,
@@ -121,8 +121,26 @@ let props = defineProps({
 const subTotal = ref(0);
 const purchaseOrder = ref(props.purchaseOrder);
 const supplier = ref({});
-const grandTotal = ref(0);
 const taxRate = ref(props.taxRate);
+
+const subTotalItem = computed(() => {
+    let total = 0
+    if (purchaseOrder.value) {
+        for (const item of purchaseOrder.value.items) {
+        total += (parseFloat(item.product_variant.selling_price) * parseInt(item.quantity))
+        }
+    }
+    return total
+});
+
+const grandTotal = computed(() => {
+    if (purchaseOrder.value) {
+        return subTotalItem.value + (subTotalItem.value * purchaseOrder.value.tax_rate / 100) + gst.value - discount.value
+    } else {
+        return 0;
+    }
+});
+
 const products = ref([{
     'productVariant': '',
     'quantity': 0,

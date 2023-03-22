@@ -26,11 +26,6 @@
                     <input v-else class="form-control" type="text" name="payment_terms" placeholder="Payment Term" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Issued By</label>
-                    <input v-if="purchaseOrder" class="form-control" type="text" name="issued_by" v-model="purchaseOrder.issued_by" readonly>
-                    <input v-else class="form-control" type="text" name="issued_by" readonly>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Due</label>
                     <input v-if="purchaseOrder" class="form-control" type="date" name="payment_due" v-model="purchaseOrder.payment_due" required>
                     <input v-else class="form-control" type="date" name="payment_due" required>

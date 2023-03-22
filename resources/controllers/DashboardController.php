@@ -24,7 +24,7 @@ class DashboardController extends Controller
         $purchaseOrders = PurchaseOrder::with('supplier')->limit(10)->orderBy('created_at', 'desc')->get();
         $salesOrders = SalesOrder::limit(10)->orderBy('created_at', 'desc')->get();
 
-        return view('admin.dashboard', compact(
+        return view('admin.dashboard.index', compact(
             'monthlyOrders',
             'purchaseOrders',
             'salesOrders'

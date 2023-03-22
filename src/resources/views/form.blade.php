@@ -56,17 +56,17 @@
                     </textarea>
                 @elseif ($updateField['inputType'] == 'radio' || $updateField['inputType'] == 'checkbox')
                     @if (!empty($updateField['multipleInput']))
-                        @foreach ($updateField['options'] as $option)
+                        @foreach ($updateField['options'] as $key => $option)
                             <div class="form-check mb-2 {{ !empty($updateField['switchType']) && $updateField['switchType'] == 'true' ? 'form-switch' : '' }}">
                                 <input class="form-check-input" type="{{ $option['inputType'] }}" name="{{ $option['name'] }}" id="{{ $option['id'] }}" value="{{ $option['value'] }}" {{ !empty($$routeModel) && $$routeModel[$updateField['name']] == $key ? 'checked' : '' }} {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
                                 <label class="form-check-label" for="{{ $option['id'] }}">{{ $option['displayValue'] }}</label>
                             </div>
                         @endforeach
                     @else
-                        <div>
-                            <input class="form-check-input" type="{{ $updateField['inputType'] }}" name="{{ $updateField['name'] }}" id="{{ $updateField['id'] }}" value="{{ $updateField['value'] }}" {{ !empty($$routeModel) && $$routeModel[$updateField['name']] == $key ? 'checked' : '' }} {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
-                            <label class="form-check-label" for="{{ $updateField['id'] }}">{{ $updateField['displayValue'] }}</label>
-                        </div>
+                    <div>
+                        <input class="form-check-input" type="{{ $updateField['inputType'] }}" name="{{ $updateField['name'] }}" id="{{ $updateField['id'] }}" value="{{ $updateField['value'] }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
+                        <label class="form-check-label" for="{{ $updateField['id'] }}">{{ $updateField['displayValue'] }}</label>
+                    </div>
                     @endif
                 @elseif ($updateField['inputType'] == 'range')
                     <input class="form-range" type="{{ $updateField['inputType'] }}" min={{ $updateField['min'] ?? '' }} max={{ $updateField['max'] ?? '' }} step={{ $updateField['step'] ?? '' }} name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>

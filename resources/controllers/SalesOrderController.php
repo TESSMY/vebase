@@ -82,9 +82,15 @@ class SalesOrderController extends VeController
                         'sales_order_id' => $salesOrder->id,
                         'product_id' => $product->id,
                         'product_variant_id' => $productVariant->id,
+                        'product_name' => $product->name,
+                        'sku' => $product->sku,
+                        'description' => $product->description,
                         'quantity' => $product['quantity'],
                         'unit_price' => $productVariant->selling_price,
-                        'grand_total' => $product['quantity'] * $productVariant->selling_price,
+                        'tax_amount' => (($product['quantity'] * $productVariant->selling_price) * 1.07) - ($product['quantity'] * $productVariant->selling_price),
+                        'tax_rate' => 7,
+                        'sub_total' => $product['quantity'] * $productVariant->selling_price,
+                        'grand_total' => ($product['quantity'] * $productVariant->selling_price) * 1.07,
                     ]);
                 }
             }
@@ -138,9 +144,15 @@ class SalesOrderController extends VeController
                         'sales_order_id' => $salesOrder->id,
                         'product_id' => $product->id,
                         'product_variant_id' => $productVariant->id,
+                        'product_name' => $product->name,
+                        'sku' => $product->sku,
+                        'description' => $product->description,
                         'quantity' => $product['quantity'],
                         'unit_price' => $productVariant->selling_price,
-                        'grand_total' => $product['quantity'] * $productVariant->selling_price,
+                        'tax_amount' => (($product['quantity'] * $productVariant->selling_price) * 1.07) - ($product['quantity'] * $productVariant->selling_price),
+                        'tax_rate' => 7,
+                        'sub_total' => $product['quantity'] * $productVariant->selling_price,
+                        'grand_total' => ($product['quantity'] * $productVariant->selling_price) * 1.07,
                     ]);
                 }
                 $salesOrder->orderItems->save();

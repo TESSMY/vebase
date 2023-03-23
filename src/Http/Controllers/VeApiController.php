@@ -55,9 +55,9 @@ class VeApiController extends ApiController
         }
 
         if (!empty($search)) {
-            if (!empty($this->model::searchable)) {
+            if (!empty($this->model->searchable)) {
                 $models = $models->where(function($query) use ($search) {
-                    foreach ($this->model::searchable as $value) {
+                    foreach ($this->model->searchable as $value) {
                         $query->orWhere($value, 'LIKE', '%' . $search . '%');
                     }
                 });
@@ -84,11 +84,11 @@ class VeApiController extends ApiController
         
         $input = $request->all();
 
-        if (empty($this->model::createValidator)) {
+        if (empty($this->model->createValidator)) {
             throw new \Exception($this->model . " createValidator is empty");
         }
 
-        $validator = Validator::make($input, $this->model::createValidator);
+        $validator = Validator::make($input, $this->model->createValidator);
         if ($validator->fails()) {
             return $this->showValidationError($validator);
         }

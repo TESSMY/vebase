@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\SalesReportExport;
 use App\Models\SalesReport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Vecapital\Vebase\Http\Controllers\VeController;
-use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SalesReportController extends VeController
 {
@@ -57,5 +58,10 @@ class SalesReportController extends VeController
         ];
 
         return view('admin.sales-reports.index', $compact);
+    }
+
+    public function export()
+    {
+        return Excel::download(new SalesReportExport, 'sales-report-export' . now()->toDateString() . '.xlsx');
     }
 }

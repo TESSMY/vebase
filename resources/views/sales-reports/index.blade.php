@@ -55,7 +55,7 @@
                 </div>
                 <div class="row px-2">
                     <button type="submit" class="col-12 col-md-1 mb-3 mb-md-0 me-0 me-md-3 btn btn-success rounded">Generate</button>
-                    <a href="" class="col-12 col-md-1 mb-3 mb-md-0 btn btn-primary rounded">Download</a>
+                    <a href="{{ route('admin.sales-reports.export') }}" class="col-12 col-md-1 mb-3 mb-md-0 btn btn-primary rounded">Download</a>
                 </div>
             </div>
             <div class="bg-white card shadow py-3 px-4">

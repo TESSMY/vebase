@@ -38,6 +38,8 @@ class InstallCommand extends Command
      */
     public function handle()
     {
+        // dd(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Exports');
+
         // views
         $viewDirectories = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'views');
         foreach ($viewDirectories as $viewDirectory) {
@@ -66,7 +68,8 @@ class InstallCommand extends Command
         }
 
         // exports
-        (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Exports', app_path());
+        (new Filesystem)->ensureDirectoryExists(app_path('Exports'));
+        (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Exports', app_path('Exports'));
 
         $this->info('Succesfully installed UI');
     }

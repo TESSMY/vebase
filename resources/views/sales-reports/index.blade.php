@@ -20,16 +20,16 @@
                 <div class="row mb-3">
                     <div class="col-12 col-md-6 mb-2">
                         <label class="form-label">Date (From)</label>
-                        <input class="form-control" type="date" name="date_from">
+                        <input class="form-control" type="date" name="date_from" value="{{ $dateFrom }}">
                     </div>
                     <div class="col-12 col-md-6 mb-2">
                         <label class="form-label">Date (To)</label>
-                        <input class="form-control" type="date" name="date_to">
+                        <input class="form-control" type="date" name="date_to" value="{{ $dateTo }}">
                     </div>
                     <div class="col-12 col-md-6 mb-2">
                         <label class="form-label">Ignore Zero Value?</label>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="true" id="zero_value">
+                            <input class="form-check-input" type="checkbox" value="true" name="zero_value" id="zero_value" {{ !empty($zeroValue) ? 'checked' : '' }}>
                             <label class="form-check-label" for="zero_value">
                                 True
                             </label>
@@ -38,7 +38,7 @@
                     <div class="col-12 col-md-6 mb-2">
                         <label class="form-label">Sort By Total Amount?</label>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="true" id="sort_total_amount">
+                            <input class="form-check-input" type="checkbox" value="true" name="sort_total_amount" id="sort_total_amount">
                             <label class="form-check-label" for="sort_total_amount">
                                 True
                             </label>
@@ -49,13 +49,12 @@
                     </div>
                     <div class="col-12 col-md-6 mb-2">
                         <select class="form-select">
-                            <option value="1">PDF</option>
                             <option value="2">EXCEL</option>
                         </select>
                     </div>
                 </div>
                 <div class="row px-2">
-                    <a href="" class="col-12 col-md-1 mb-3 mb-md-0 me-0 me-md-3 btn btn-success rounded">Generate</a>
+                    <button type="submit" class="col-12 col-md-1 mb-3 mb-md-0 me-0 me-md-3 btn btn-success rounded">Generate</button>
                     <a href="" class="col-12 col-md-1 mb-3 mb-md-0 btn btn-primary rounded">Download</a>
                 </div>
             </div>
@@ -67,9 +66,9 @@
                     <div class="col-12 col-md-2 mb-md-0 d-flex">
                         <span class="my-auto">Display:</span>
                         <select class="form-select mx-2" name="limit">
-                            <option selected>10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
+                            <option value="10" {{ $limit == '10' ? 'selected' : '' }}>10</option>
+                            <option value="25" {{ $limit == '25' ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ $limit == '50' ? 'selected' : '' }}>50</option>
                         </select>
                         <span class="my-auto">entries</span>
                     </div>
@@ -86,23 +85,27 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                @foreach ($model->indexFields as $indexField)
-                                    <th>{{ $indexField['displayName'] }}</th>
-                                @endforeach
+                                <th>Client Name</th>
+                                <th>Total Sales Orders</th>
+                                <th>Total Cost</th>
+                                <th>Total Profit</th>
+                                <th>Total Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($salesReports as $salesReport)
                                 <tr>
-                                    @foreach ($model->indexFields as $indexField)
-                                        @if (strtolower($indexField['columnName']) == 'show') 
-                                            <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $salesReport->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
-                                        @elseif (strtolower($indexField['columnName']) == 'edit') 
-                                            <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $salesReport->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
+                                    <td>
+                                        @if (!empty($salesReport->client->name))
+                                            {{ $salesReport->client->name }}
                                         @else
-                                            <td>{{ $salesReport[$indexField['columnName']] }}</td>
+                                            -
                                         @endif
-                                    @endforeach
+                                    </td>
+                                    <td>{{ $salesReport->total_sales_order }}</td>
+                                    <td>$ {{ $salesReport->total_cost }}</td>
+                                    <td>$ {{ $salesReport->total_profit }}</td>
+                                    <td>$ {{ $salesReport->total_revenue }}</td>
                                 </tr>
                             @empty
                                 <tr>

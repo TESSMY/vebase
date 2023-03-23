@@ -20,7 +20,7 @@
         <form action="{{ route($routePrefix . '.' . $routeName . '.update', $invoice->getRouteKey()) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
-            <invoice-form :tax-rate="{{ $taxRate }}" :invoice="{{ $invoice }}"></invoice-form>
+            <invoice-form :invoice="{{ $invoice }}"></invoice-form>
         </form>
     </div>
 @endsection

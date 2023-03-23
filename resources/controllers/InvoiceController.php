@@ -66,17 +66,20 @@ class InvoiceController extends VeController
             $invoice = Invoice::create($input + ['client_name' => $client->name, 'created_by' => Auth::id()]);
 
             foreach ($input['products'] as $product) {
-                if (isset($product['product_variant_id'])) {
-                    $productVariant = ProductVariant::find($product['product_variant_id']);
 
+                if (isset($product['product_variant_id'])) {
+                    
+                    $productVariant = ProductVariant::find($product['product_variant_id']);
+                    
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
                         'product_id' => $productVariant->product_id, 
                         'product_variant_id' => $productVariant->id,
                         'name' => $productVariant->name, 
+                        'sku' => $productVariant->sku, 
                         'quantity' => $product['quantity'], 
                         'unit_price' => $productVariant->selling_price, 
-                        'sub_total' => $productVariant->selling_price * $product['quantity'], 
+                        'total_price' => $productVariant->selling_price * $product['quantity'], 
                     ]);
                 } else {
                     $productModel = Product::find($product['product_id']);
@@ -85,15 +88,16 @@ class InvoiceController extends VeController
                         'invoice_id' => $invoice->id,
                         'product_id' => $productModel->id, 
                         'name' => $productModel->name, 
+                        'sku' => $productModel->sku, 
                         'quantity' => $product['quantity'], 
                         'unit_price' => $productModel->cost_price, 
-                        'sub_total' => $productModel->cost_price * $product['quantity'], 
+                        'total_price' => $productModel->cost_price * $product['quantity'], 
                     ]);
                 } 
             }
 
             $invoice->item_count = $invoice->invoiceItems->count();
-            $invoice->sub_total = $invoice->invoiceItems->sum('sub_total');
+            $invoice->sub_total = $invoice->invoiceItems->sum('total_price');
             $invoice->grand_total = $invoice->sub_total;
             $invoice->save();
             $invoice->generatePDF();
@@ -206,6 +210,7 @@ class InvoiceController extends VeController
                             'product_id' => $productVariant->product_id, 
                             'product_variant_id' => $productVariant->id,
                             'name' => $productVariant->name, 
+                            'sku' => $productVariant->sku, 
                             'quantity' => $product['quantity'], 
                             'unit_price' => $productVariant->selling_price, 
                             'sub_total' => $productVariant->selling_price * $product['quantity'], 
@@ -217,7 +222,8 @@ class InvoiceController extends VeController
                         InvoiceItem::create([
                             'invoice_id' => $invoice->id,
                             'product_id' => $productModel->id, 
-                            'name' => $productModel->name, 
+                            'name' => $productModel->name,
+                            'sku' => $productModel->sku,
                             'quantity' => $product['quantity'], 
                             'unit_price' => $productModel->cost_price, 
                             'sub_total' => $productModel->cost_price * $product['quantity'], 

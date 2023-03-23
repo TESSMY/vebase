@@ -82,7 +82,7 @@
                     <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                     <div class="px-0">
                         <label class="form-label px-0">Notes and instructions</label>
-                        <textarea class="form-control" name="notes" placeholder="Notes and instructions" rows="5" style="resize: none"></textarea>
+                        <textarea class="form-control" name="notes" placeholder="Notes and instructions" rows="5" style="resize: none">{{ notes }}</textarea>
                     </div>
                 </div>
             </div>
@@ -91,7 +91,7 @@
                 <div class="row text-end">
                     <span class="col-4 fw-bold my-auto">Sub Total: </span>
                     <span class="col-8">{{ subTotal.toFixed(2) }}</span>
-                    <div class="border my-2"></div>
+                    <!-- <div class="border my-2"></div>
                     <span class="col-4 fw-bold my-auto">Tax %: </span>
                     <span class="col-8">
                         <div class="row">
@@ -116,7 +116,7 @@
                             </multi-select>
                             <div class="col-5" v-if="taxRate2"><input class="form-control" type="number" v-model="taxRate2.tax_rate" min="0" max="100" step="1" required></div>
                         </div>
-                    </span>
+                    </span> -->
                     <div class="border my-2"></div>
                     <span class="col-4 fw-bold my-auto">Total (SGD): </span>
                     <span class="col-8">{{ grandTotal.toFixed(2) }}</span>
@@ -147,6 +147,7 @@ let props = defineProps({
 const salesOrder = ref({});
 const date = ref('');
 const paymentTerm = ref('');
+const notes = ref('');
 const client = ref({});
 const subTotal = ref(0);
 const grandTotal = ref(0);
@@ -183,12 +184,6 @@ function updateTotalPrice() {
         subTotal.value += item.subTotal;
         grandTotal.value += item.subTotal;
     });
-    if (taxRate1 !== '') {
-        grandTotal.value *= 1 + (taxRate1.value.tax_rate / 100);
-    }
-    // if (taxRate2 !== '') {
-    //     grandTotal.value *= 1 + (taxRate2.value.tax_rate / 100);
-    // }
 }
 
 const productArray = reactive({ options: [] });
@@ -242,6 +237,7 @@ onBeforeMount(() => {
             client.value = props.invoice.client
             date.value = props.invoice.date
             paymentTerm.value = props.invoice.payment_term
+            notes.value = props.invoice.notes
             products.value = [];
             props.invoice.invoice_items.forEach(invoiceItem => {
                 if (invoiceItem.product_variant == null) {

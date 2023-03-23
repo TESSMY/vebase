@@ -21,6 +21,7 @@
             <div class="row border-bottom mb-2">
                 <span class="h5">Information</span>
             </div>
+            <iframe src="{{ $invoice->url }}" class="w-100 vh-100">Your browser isn't compatible</iframe>
             <div class="row col-12">
                 <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $invoice->getRouteKey()) }}" class="col-12 col-md-1 btn btn-success m-2">Edit</a>
                 <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>

@@ -15,8 +15,9 @@ use Vecapital\Vebase\Http\Controllers\ApiController;
 class VeApiController extends ApiController
 {
     protected $model;
-    protected $tableName;
-    protected $folder;
+    protected $modelName;
+    protected $routeName;
+   
 
     /**
      * creates the model from the request path
@@ -24,9 +25,10 @@ class VeApiController extends ApiController
     public function __construct(Request $request)
     {
         if (!empty($request->segments())) {
-            $this->tableName = $request->segment(2);
-            $class = Str::singular($request->segment(2));
-            $this->model = app('App\\Models\\' . ucfirst($class));
+            $this->routeName = $request->segment(2);
+            $name = Str::singular(Str::camel($this->routeName));
+            $this->model = app('App\\Models\\' . ucfirst($name));
+            $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
         }
     }
 

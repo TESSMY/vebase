@@ -71,6 +71,8 @@ class QuotationRequestController extends VeController
                         'quotation_request_id' => $quotationRequest->id,
                         'product_id' => $product->id,
                         'product_variant_id' => $productVariant->id,
+                        'name' => $productVariant->product->name,
+                        'sku' => $productVariant->product->sku,
                         'quantity' => $quotationProduct['quantity'],
                     ]);
                 }
@@ -154,6 +156,8 @@ class QuotationRequestController extends VeController
                         'quotation_request_id' => $quotationRequest->id,
                         'product_id' => $product->id,
                         'product_variant_id' => $productVariant->id,
+                        'name' => $productVariant->product->name,
+                        'sku' => $productVariant->product->sku,
                         'quantity' => $quotationProduct['quantity'],
                     ]);
                 }

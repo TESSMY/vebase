@@ -196,6 +196,7 @@ class InvoiceController extends VeController
             $invoice->update($input + ['client_name' => $client->name, 'created_by' => Auth::id()]);
             $subTotal = 0;
 
+            $invoiceItemIds = [];
             foreach ($input['products'] as $product) {
                 if (!empty($product['invoice_item_id'])) {
                     // existing invoice item
@@ -205,6 +206,7 @@ class InvoiceController extends VeController
                         'product_variant_id' => !empty($product['product_variant_id']) ? $product['invoice_item_id'] : null, 
                         'name' => $productModel->name,
                     ]);
+                    $invoiceItemIds[] = $invoiceItem->id;
                 } else {
                     if (isset($product['product_variant_id'])) {
                         // product variant & single product
@@ -230,6 +232,7 @@ class InvoiceController extends VeController
                             'unit_price' => $productVariant->selling_price, 
                             'total_price' => $productVariant->selling_price * $product['quantity'], 
                         ]);
+                        $invoiceItemIds[] = $invoiceItem->id;
                     } else {
                         // product bundle
                         $productModel = Product::find($product['product_id']);
@@ -257,10 +260,12 @@ class InvoiceController extends VeController
                             'unit_price' => $productModel->cost_price, 
                             'total_price' => $productModel->cost_price * $product['quantity'], 
                         ]);
+                        $invoiceItemIds[] = $invoiceItem->id;
                     }
                 }
                 $subTotal += $invoiceItem->total_price;
             }
+            $invoice->items()->whereNotIn('invoice_items.id', $invoiceItemIds)->delete();
 
             $invoice->item_count = count($input['products']);
             $invoice->sub_total = $subTotal;

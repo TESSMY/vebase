@@ -66,6 +66,7 @@ class InvoiceController extends VeController
 
             $client = Client::find($input['client_id']);
             $invoice = Invoice::create($input + ['client_name' => $client->name, 'created_by' => Auth::id()]);
+            $subTotal = 0;
 
             foreach ($input['products'] as $product) {
 
@@ -95,10 +96,11 @@ class InvoiceController extends VeController
                         'unit_price' => $productModel->cost_price, 
                         'total_price' => $productModel->cost_price * $product['quantity'], 
                     ]);
-                } 
+                }
+                $subTotal += $invoiceItem->total_price; 
             }
 
-            $invoice->item_count = $invoice->invoiceItems->count();
+            $invoice->item_count = count($input['products']);
             $invoice->sub_total = $invoice->invoiceItems->sum('total_price');
             $invoice->grand_total = $invoice->sub_total;
             $invoice->save();
@@ -171,6 +173,7 @@ class InvoiceController extends VeController
 
             $client = Client::find($input['client_id']);
             $invoice->update($input + ['client_name' => $client->name, 'created_by' => Auth::id()]);
+            $subTotal = 0;
 
             foreach ($input['products'] as $product) {
                 if (!empty($product['invoice_item_id'])) {
@@ -186,7 +189,7 @@ class InvoiceController extends VeController
                         // product variant & single product
                         $productVariant = ProductVariant::find($product['product_variant_id']);
     
-                        InvoiceItem::create([
+                        $invoiceItem = InvoiceItem::create([
                             'invoice_id' => $invoice->id,
                             'product_id' => $productVariant->product_id, 
                             'product_variant_id' => $productVariant->id,
@@ -194,27 +197,28 @@ class InvoiceController extends VeController
                             'sku' => $productVariant->sku, 
                             'quantity' => $product['quantity'], 
                             'unit_price' => $productVariant->selling_price, 
-                            'sub_total' => $productVariant->selling_price * $product['quantity'], 
+                            'total_price' => $productVariant->selling_price * $product['quantity'], 
                         ]);
                     } else {
                         // product bundle
                         $productModel = Product::find($product['product_id']);
     
-                        InvoiceItem::create([
+                        $invoiceItem = InvoiceItem::create([
                             'invoice_id' => $invoice->id,
                             'product_id' => $productModel->id, 
                             'name' => $productModel->name,
                             'sku' => $productModel->sku,
                             'quantity' => $product['quantity'], 
                             'unit_price' => $productModel->cost_price, 
-                            'sub_total' => $productModel->cost_price * $product['quantity'], 
+                            'total_price' => $productModel->cost_price * $product['quantity'], 
                         ]);
                     }
                 }
+                $subTotal += $invoiceItem->total_price;
             }
 
-            $invoice->item_count = $invoice->invoiceItems->count();
-            $invoice->sub_total = $invoice->invoiceItems->sum('sub_total');
+            $invoice->item_count = count($input['products']);
+            $invoice->sub_total = $subTotal;
             $invoice->grand_total = $invoice->sub_total;
             $invoice->save();
             $invoice->generatePDF();

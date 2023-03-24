@@ -41,22 +41,6 @@ class ProductController extends VeController
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        $this->authorize('create', Product::class);
-        $suppliers = Supplier::all();
-        $products = Product::all();
-        $variants = ProductVariant::get(['id', 'name', 'sku' , 'selling_price']);
-        $brands = Brand::all();
-
-        return view('admin.products.form', compact('suppliers', 'products', 'brands', 'variants'));
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -177,9 +161,9 @@ class ProductController extends VeController
         $product = $this->findModel($id);
         $this->authorize('view', $product);
         $bundles = ProductBundle::where('product_id', $product->id)->with('productVariant')->get();
-        $variants = $product->variants;
+        $variants = $product->productVariants;
 
-        return view('admin.products.form', compact('suppliers', 'product', 'brands', 'variants', 'bundles'));
+        return view('admin.products.edit', compact('product',  'variants', 'bundles'));
     }
 
     /**

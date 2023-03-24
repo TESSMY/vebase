@@ -89,7 +89,7 @@ class InvoiceController extends VeController
                         return back();
                     }
 
-                    if ($productModel->status != ProductVariant::STATUS_ACTIVE) {
+                    if ($productModel->status != Product::STATUS_ACTIVE) {
                         flash('Error: Product with ID #' . $productModel['product_id'] . ' is not available')->error();
                         return back();
                     }
@@ -243,7 +243,7 @@ class InvoiceController extends VeController
                             return back();
                         }
     
-                        if ($productModel->status != ProductVariant::STATUS_ACTIVE) {
+                        if ($productModel->status != Product::STATUS_ACTIVE) {
                             flash('Error: Product with ID #' . $productModel['product_id'] . ' is not available')->error();
                             return back();
                         }

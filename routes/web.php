@@ -3,6 +3,16 @@
 use HaydenPierce\ClassFinder\ClassFinder;
 use Illuminate\Support\Facades\Route;
 use Vecapital\Vebase\Http\Controllers\VeController;
+use App\Providers\RouteServiceProvider;
+
+Route::group([
+    'prefix' => 'admin',
+    'as' => 'admin.',
+    'middleware' => (['web', 'admin']),
+], function () {
+    Route::get('/sales-reports/export/', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.export');
+    Route::get('/sales-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.index');
+});
 
 $classes = ClassFinder::getClassesInNamespace('App\Models');
 

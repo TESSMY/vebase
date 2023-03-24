@@ -56,15 +56,6 @@ class InstallCommand extends Command
             }
         }
 
-        // api
-        $apis = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'api');
-        foreach ($apis as $api) {
-            // skip '.' and '..' in dir
-            if (strlen($api) > 2) {
-                copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'api' . DIRECTORY_SEPARATOR . $api, app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . $controller));
-            }
-        }
-
         // vue components
         $components = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'components');
         foreach ($components as $component) {
@@ -73,6 +64,18 @@ class InstallCommand extends Command
                 copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . $component, resource_path('js' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . $component));
             }
         }
+
+        // exports
+        (new Filesystem)->ensureDirectoryExists(app_path('Exports'));
+        (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Exports', app_path('Exports'));
+
+        // helpers
+        (new Filesystem)->ensureDirectoryExists(app_path('Helpers'));
+        (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Helpers', app_path('Helpers'));
+
+        // observers
+        (new Filesystem)->ensureDirectoryExists(app_path('Observers'));
+        (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Observers', app_path('Observers'));
 
         $this->info('Succesfully installed UI');
     }

@@ -116,28 +116,6 @@ class InvoiceController extends VeController
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Invoice  $invoice
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Request $request, $invoice)
-    {
-        $invoice = $this->findModel($invoice);
-        $this->authorize('view', $invoice);
-
-        $compact = [
-            'invoice' => $invoice,
-            'model' => $this->model,
-            'modelName' => $this->modelName,
-            'routeName' => $this->routeName,
-            'routePrefix' => $this->folder,
-        ];
-
-        return view('admin.invoices.show', $compact);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Invoice  $invoice

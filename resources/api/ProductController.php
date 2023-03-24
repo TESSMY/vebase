@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Validator;
 use Vecapital\Vebase\Http\Controllers\VeApiController;
 use Vecapital\Vebase\Http\Controllers\VeController;
 
-
 class ProductController extends VeApiController
 {
     /**
@@ -31,22 +30,21 @@ class ProductController extends VeApiController
     {
         $this->authorize('view', Product::class);
         $limit = min(intval($request->get('limit', 10)), 1000);
-
         $products = Product::query();
-        $products->with('variants');
-
+        $products->with('productVariants');
         $search = $request->input('search');
+        $type = $request->input('type');
         if (!empty($search)) {
             $products = $products->where(function($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%')
-                    ->orWhereHas('variants', function($query) use ($search) {
+                    ->orWhereHas('productVariants', function($query) use ($search) {
                         $query->where('name', 'LIKE', '%' . $search . '%');
                     });
             });
         }
-
-
+        if (!empty($type)) {
+            $products = $products->whereIn('type', $type);
+        }
         return $this->respondPagination($request, $products->paginate($limit));
     }
-
 }

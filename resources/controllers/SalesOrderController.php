@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
+use App\Models\Client;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use Exception;
@@ -61,6 +62,8 @@ class SalesOrderController extends VeController
         $input = $request->input();
         $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
+        $client = Client::find($input['client_id']);
+        $input['customer_po'] = $client->address_1;
 
         $validator = Validator::make($input, $this->model->createValidator);
 
@@ -72,6 +75,10 @@ class SalesOrderController extends VeController
         DB::beginTransaction();
         try {
             $salesOrder = SalesOrder::create($input);
+
+            $subtotal = 0;
+            $grandTotal = 0;
+            $totalCost = 0;
 
             if (!empty($input['products'])) {
                 foreach ($input['products'] as $product) {
@@ -93,8 +100,19 @@ class SalesOrderController extends VeController
                         'sub_total' => $product['quantity'] * $productVariant->selling_price,
                         'grand_total' => ($product['quantity'] * $productVariant->selling_price) * 1.07,
                     ]);
+
+                    $subtotal += $product['quantity'] * $productVariant->selling_price;
+                    $grandTotal += ($product['quantity'] * $productVariant->selling_price) * 1.07;
+                    $totalCost += $product['quantity'] * $productVariant->cost_price;
                 }
             }
+
+            $salesOrder->tax_amount = $grandTotal - $subtotal;
+            $salesOrder->tax_rate = 7;
+            $salesOrder->sub_total = $subtotal;
+            $salesOrder->grand_total = $grandTotal;
+            $salesOrder->total_cost = $grandTotal;
+            $salesOrder->save();
 
             DB::commit();
             flash()->success('Successfully created the sales order.');
@@ -123,6 +141,8 @@ class SalesOrderController extends VeController
         $input = $request->input();
         $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
+        $client = Client::find($input['client_id']);
+        $input['customer_po'] = $client->address_1;
 
         $validator = Validator::make($input, $salesOrder->updateValidator);
 
@@ -134,6 +154,10 @@ class SalesOrderController extends VeController
         DB::beginTransaction();
         try {
             $salesOrder->update($input);
+
+            $subtotal = 0;
+            $grandTotal = 0;
+            $totalCost = 0;
 
             if (!empty($input['products'])) {
                 $salesOrder->orderItems->delete();
@@ -150,14 +174,25 @@ class SalesOrderController extends VeController
                         'description' => $product->description,
                         'quantity' => $product['quantity'],
                         'unit_price' => $productVariant->selling_price,
-                        'cost_price' => $productVariant->cost_price,
                         'tax_amount' => (($product['quantity'] * $productVariant->selling_price) * 1.07) - ($product['quantity'] * $productVariant->selling_price),
                         'tax_rate' => 7,
                         'sub_total' => $product['quantity'] * $productVariant->selling_price,
                         'grand_total' => ($product['quantity'] * $productVariant->selling_price) * 1.07,
                     ]);
+
+                    $subtotal += $product['quantity'] * $productVariant->selling_price;
+                    $grandTotal += ($product['quantity'] * $productVariant->selling_price) * 1.07;
+                    $totalCost += $product['quantity'] * $productVariant->cost_price;
                 }
+
                 $salesOrder->orderItems->save();
+
+                $salesOrder->tax_amount = $grandTotal - $subtotal;
+                $salesOrder->tax_rate = 7;
+                $salesOrder->sub_total = $subtotal;
+                $salesOrder->grand_total = $grandTotal;
+                $salesOrder->total_cost = $grandTotal;
+                $salesOrder->save();
             }
 
             DB::commit();

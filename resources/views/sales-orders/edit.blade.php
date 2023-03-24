@@ -9,8 +9,10 @@
             </div>
             <nav class="col-12 col-md-6">
                 <ol class="breadcrumb d-md-flex justify-content-md-end my-auto">
-                  <li class="breadcrumb-item"><a href="{{ route('admin.sales-orders.edit', [$salesOrder->getRouteKey()]) }}">Sales Order</a></li>
-                  <li class="breadcrumb-item active">Edit Sales Order</li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('admin.sales-orders.edit', [$salesOrder->getRouteKey()]) }}">Sales Order</a>
+                    </li>
+                    <li class="breadcrumb-item active">Edit Sales Order</li>
                 </ol>
             </nav>
         </div>

@@ -19,30 +19,25 @@
                     <input v-if="salesOrder" class="form-control" type="date" name="date" placeholder="date" v-model="salesOrder.date" required>
                     <input v-else class="form-control" type="date" name="date" placeholder="date" required>
                 </div>
-                <div class="col-12 col-md-6 mb-md-0 mb-2">
+                <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Customer PO</label>
-                    <input v-if="salesOrder" class="form-control" type="text" name="customer_po" placeholder="Enter Customer P.O" v-model="salesOrder.customer_po" required>
-                    <input v-else class="form-control" type="text" name="customer_po" placeholder="Enter Customer P.O" required>
+                    <input v-if="salesOrder" class="form-control" type="text" name="client_address" placeholder="Enter Customer P.O" v-model="salesOrder.client.address_1" required>
+                    <input v-else class="form-control" type="text" name="client_address" placeholder="Enter Customer P.O" required>
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Customer Name</label>
+                    <input v-if="salesOrder" class="form-control" type="text" name="client_name" placeholder="Enter Customer Name" v-model="salesOrder.client.name" required>
+                    <input v-else class="form-control" type="text" name="client_name" placeholder="Enter Customer Name" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Term</label>
-                    <input v-if="salesOrder" class="form-control" type="text" name="payment_terms" placeholder="Payment Term" v-model="salesOrder.payment_terms" required>
-                    <input v-else class="form-control" type="text" name="payment_terms" placeholder="Payment Term" required>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Branch Code</label>
-                    <input v-if="salesOrder" class="form-control" type="text" name="banch_code" v-model="salesOrder.branch_code" readonly>
-                    <input v-else class="form-control" type="text" name="banch_code" readonly>
+                    <input v-if="salesOrder" class="form-control" type="text" name="payment_terms" placeholder="Payment Term" v-model="salesOrder.payment_terms">
+                    <input v-else class="form-control" type="text" name="payment_terms" placeholder="Payment Term">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Due</label>
                     <input v-if="salesOrder" class="form-control" type="date" name="payment_due" v-model="salesOrder.payment_due">
                     <input v-else class="form-control" type="date" name="payment_due">
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Issued By</label>
-                    <input v-if="salesOrder" class="form-control" type="text" name="issued_by" v-model="salesOrder.issued_by" readonly>
-                    <input v-else class="form-control" type="text" name="issued_by" readonly>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Packed By Date</label>
@@ -177,6 +172,10 @@
     function fetchClients(query) {
         if (query) {
             axios.get(`/web/clients?search=${query}`).then((response) => {
+                this.clientArray = response.data.response.items;
+            });
+        } else {
+            axios.get(`/web/clients`).then((response) => {
                 this.clientArray = response.data.response.items;
             });
         }

@@ -81,8 +81,8 @@ class SalesOrderController extends VeController
             $totalCost = 0;
 
             if (!empty($input['products'])) {
-                foreach ($input['products'] as $product) {
-                    $productVariant = ProductVariant::find($product['product_variant_id']);
+                foreach ($input['products'] as $selectedProduct) {
+                    $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
                     $product = $productVariant->product;
 
                     SalesOrderItem::create([
@@ -92,18 +92,19 @@ class SalesOrderController extends VeController
                         'product_name' => $product->name,
                         'sku' => $product->sku,
                         'description' => $product->description,
-                        'quantity' => $product['quantity'],
+                        'quantity' => $selectedProduct['quantity'],
                         'unit_price' => $productVariant->selling_price,
                         'cost_price' => $productVariant->cost_price,
-                        'tax_amount' => (($product['quantity'] * $productVariant->selling_price) * 1.07) - ($product['quantity'] * $productVariant->selling_price),
+                        'tax_amount' => (($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07) - ($selectedProduct['quantity'] * $productVariant->selling_price),
                         'tax_rate' => 7,
-                        'sub_total' => $product['quantity'] * $productVariant->selling_price,
-                        'grand_total' => ($product['quantity'] * $productVariant->selling_price) * 1.07,
+                        'sub_total' => $selectedProduct['quantity'] * $productVariant->selling_price,
+                        'total_cost' => $product['quantity'] * $productVariant->cost_price,
+                        'grand_total' => ($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07,
                     ]);
 
-                    $subtotal += $product['quantity'] * $productVariant->selling_price;
-                    $grandTotal += ($product['quantity'] * $productVariant->selling_price) * 1.07;
-                    $totalCost += $product['quantity'] * $productVariant->cost_price;
+                    $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
+                    $grandTotal += ($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07;
+                    $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
                 }
             }
 
@@ -161,8 +162,8 @@ class SalesOrderController extends VeController
 
             if (!empty($input['products'])) {
                 $salesOrder->orderItems->delete();
-                foreach ($input['products'] as $product) {
-                    $productVariant = ProductVariant::find($product['product_variant_id']);
+                foreach ($input['products'] as $selectedProduct) {
+                    $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
                     $product = $productVariant->product;
 
                     SalesOrderItem::create([
@@ -172,17 +173,18 @@ class SalesOrderController extends VeController
                         'product_name' => $product->name,
                         'sku' => $product->sku,
                         'description' => $product->description,
-                        'quantity' => $product['quantity'],
+                        'quantity' => $selectedProduct['quantity'],
                         'unit_price' => $productVariant->selling_price,
-                        'tax_amount' => (($product['quantity'] * $productVariant->selling_price) * 1.07) - ($product['quantity'] * $productVariant->selling_price),
+                        'tax_amount' => (($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07) - ($selectedProduct['quantity'] * $productVariant->selling_price),
                         'tax_rate' => 7,
-                        'sub_total' => $product['quantity'] * $productVariant->selling_price,
-                        'grand_total' => ($product['quantity'] * $productVariant->selling_price) * 1.07,
+                        'sub_total' => $selectedProduct['quantity'] * $productVariant->selling_price,
+                        'total_cost' => $selectedProduct['quantity'] * $productVariant->cost_price,
+                        'grand_total' => ($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07,
                     ]);
 
-                    $subtotal += $product['quantity'] * $productVariant->selling_price;
-                    $grandTotal += ($product['quantity'] * $productVariant->selling_price) * 1.07;
-                    $totalCost += $product['quantity'] * $productVariant->cost_price;
+                    $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
+                    $grandTotal += ($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07;
+                    $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
                 }
 
                 $salesOrder->orderItems->save();

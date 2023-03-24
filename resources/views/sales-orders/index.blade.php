@@ -59,7 +59,7 @@
                         @forelse ($salesOrders as $salesOrder)
                             <tr>
                                 <td>{{ $salesOrder->id }}</td>
-                                <td>{{ $salesOrder->user->name }}</td>
+                                <td>{{ $salesOrder->user?->name }}</td>
                                 <td>{{ $salesOrder->date }}</td>
                                 <td>{{ $salesOrder->status }}</td>
                                 <td>{{ $salesOrder->amount }}({{ $salesOrder->currency }})</td>

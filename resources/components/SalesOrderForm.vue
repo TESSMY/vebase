@@ -104,7 +104,7 @@
                         <span class="col-5">{{ subTotal.toFixed(2) }}</span>
                         <div class="border my-2"></div>
                         <span class="col-7 fw-bold my-auto">Tax %: </span>
-                        <span class="col-5"><input class="form-control" type="number" v-model="taxRate" min="0" max="100" step="1" required></span>
+                        <span class="col-5"><input class="form-control" type="number" v-model="tax_rate" min="0" max="100" step="1" required></span>
                         <span class="col-7 fw-bold my-auto">GST: </span>
                         <span class="col-5">0.00</span>
                         <div class="border my-2"></div>
@@ -127,14 +127,14 @@
 
     let props = defineProps({
         salesOrder: Object,
-        taxRate: Number,
+        tax_rate: Number,
     });
 
     const subTotal = ref(0);
     const salesOrder = ref(props.salesOrder);
     const client = ref({});
     const grandTotal = ref(0);
-    const taxRate = ref(props.taxRate);
+    const tax_rate = ref(props.taxRate);
     const clientArray = ref([]);
     const selectedClient = ref('');
     const products = ref([{

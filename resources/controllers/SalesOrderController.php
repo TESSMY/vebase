@@ -77,7 +77,6 @@ class SalesOrderController extends VeController
             $salesOrder = SalesOrder::create($input);
 
             $subtotal = 0;
-            $grandTotal = 0;
             $totalCost = 0;
 
             if (!empty($input['products'])) {
@@ -95,24 +94,20 @@ class SalesOrderController extends VeController
                         'quantity' => $selectedProduct['quantity'],
                         'unit_price' => $productVariant->selling_price,
                         'cost_price' => $productVariant->cost_price,
-                        'tax_amount' => (($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07) - ($selectedProduct['quantity'] * $productVariant->selling_price),
-                        'tax_rate' => 7,
-                        'sub_total' => $selectedProduct['quantity'] * $productVariant->selling_price,
+                        'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
                         'total_cost' => $product['quantity'] * $productVariant->cost_price,
-                        'grand_total' => ($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07,
                     ]);
 
                     $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
-                    $grandTotal += ($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07;
                     $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
                 }
             }
 
-            $salesOrder->tax_amount = $grandTotal - $subtotal;
-            $salesOrder->tax_rate = 7;
+            $salesOrder->tax_amount = $subtotal * ($input['tax_rate'] ?? 0) / 100;
+            $salesOrder->tax_rate = $input['tax_rate'];
             $salesOrder->sub_total = $subtotal;
-            $salesOrder->grand_total = $grandTotal;
-            $salesOrder->total_cost = $grandTotal;
+            $salesOrder->grand_total = $subtotal - $salesOrder->discount_amount + $salesOrder->tax_amount;
+            $salesOrder->total_cost = $totalCost;
             $salesOrder->save();
 
             DB::commit();
@@ -157,7 +152,6 @@ class SalesOrderController extends VeController
             $salesOrder->update($input);
 
             $subtotal = 0;
-            $grandTotal = 0;
             $totalCost = 0;
 
             if (!empty($input['products'])) {
@@ -175,25 +169,22 @@ class SalesOrderController extends VeController
                         'description' => $product->description,
                         'quantity' => $selectedProduct['quantity'],
                         'unit_price' => $productVariant->selling_price,
-                        'tax_amount' => (($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07) - ($selectedProduct['quantity'] * $productVariant->selling_price),
-                        'tax_rate' => 7,
-                        'sub_total' => $selectedProduct['quantity'] * $productVariant->selling_price,
+                        'cost_price' => $productVariant->cost_price,
+                        'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
                         'total_cost' => $selectedProduct['quantity'] * $productVariant->cost_price,
-                        'grand_total' => ($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07,
                     ]);
 
                     $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
-                    $grandTotal += ($selectedProduct['quantity'] * $productVariant->selling_price) * 1.07;
                     $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
                 }
 
                 $salesOrder->orderItems->save();
 
-                $salesOrder->tax_amount = $grandTotal - $subtotal;
-                $salesOrder->tax_rate = 7;
+                $salesOrder->tax_amount = $subtotal * ($input['tax_rate'] ?? 0) / 100;
+                $salesOrder->tax_rate = $input['tax_rate'];
                 $salesOrder->sub_total = $subtotal;
-                $salesOrder->grand_total = $grandTotal;
-                $salesOrder->total_cost = $grandTotal;
+                $salesOrder->grand_total = $subtotal - $salesOrder->discount_amount + $salesOrder->tax_amount;
+                $salesOrder->total_cost = $totalCost;
                 $salesOrder->save();
             }
 

@@ -15,8 +15,9 @@ use Vecapital\Vebase\Http\Controllers\ApiController;
 class VeApiController extends ApiController
 {
     protected $model;
-    protected $tableName;
-    protected $folder;
+    protected $modelName;
+    protected $routeName;
+   
 
     /**
      * creates the model from the request path
@@ -24,17 +25,19 @@ class VeApiController extends ApiController
     public function __construct(Request $request)
     {
         if (!empty($request->segments())) {
-            $this->tableName = $request->segment(2);
-            $class = Str::singular($request->segment(2));
-            $this->model = app('App\\Models\\' . ucfirst($class));
+            $this->routeName = $request->segment(2);
+            $name = Str::singular(Str::camel($this->routeName));
+            $this->model = app('App\\Models\\' . ucfirst($name));
+            $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
         }
     }
 
     public function findModel($id) 
     {
-        $model = $this->model::where($this->model->getRouteKey(), '$id')->first();
+        $routeKey = $this->model->getRouteKey() ?? 'id';
+        $model = $this->model::where($routeKey, $id)->first();
         abort_if(empty($model), 404);
-
+        
         return $model;
     }
 
@@ -54,9 +57,9 @@ class VeApiController extends ApiController
         }
 
         if (!empty($search)) {
-            if (!empty($this->model::searchable)) {
+            if (!empty($this->model->searchable)) {
                 $models = $models->where(function($query) use ($search) {
-                    foreach ($this->model::searchable as $value) {
+                    foreach ($this->model->searchable as $value) {
                         $query->orWhere($value, 'LIKE', '%' . $search . '%');
                     }
                 });
@@ -83,11 +86,11 @@ class VeApiController extends ApiController
         
         $input = $request->all();
 
-        if (empty($this->model::createValidator)) {
+        if (empty($this->model->createValidator)) {
             throw new \Exception($this->model . " createValidator is empty");
         }
 
-        $validator = Validator::make($input, $this->model::createValidator);
+        $validator = Validator::make($input, $this->model->createValidator);
         if ($validator->fails()) {
             return $this->showValidationError($validator);
         }
@@ -126,11 +129,11 @@ class VeApiController extends ApiController
 
         $input = $request->all();
 
-        if (empty($this->model::create)) {
+        if (empty($this->model->updateValidator())) {
             throw new \Exception($this->model . " updateValidator is empty");
         }
 
-        $validator = Validator::make($input, $model::updateValidator);
+        $validator = Validator::make($input, $model->updateValidator());
         if ($validator->fails()) {
             return $this->showValidationError($validator);
         }

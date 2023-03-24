@@ -52,7 +52,11 @@
                                     @elseif (strtolower($indexField['columnName']) == 'edit') 
                                         <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
                                     @else
-                                        <td>{{ $$routeModel[$indexField['columnName']] }}</td>
+                                        @if (empty($$routeModel[$indexField['columnName']]))
+                                            <td>-</td>
+                                        @else
+                                            <td>{{ $$routeModel[$indexField['columnName']] }}</td>
+                                        @endif
                                     @endif
                                 @endforeach
                             </tr>

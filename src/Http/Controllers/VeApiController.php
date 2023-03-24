@@ -52,10 +52,6 @@ class VeApiController extends ApiController
 
         $models = $this->model::query();
 
-        if (!empty($this->model->relatable)) {
-            $models->with($this->model->relatable);
-        }
-
         if (!empty($search)) {
             if (!empty($this->model->searchable)) {
                 $models = $models->where(function($query) use ($search) {
@@ -63,6 +59,14 @@ class VeApiController extends ApiController
                         $query->orWhere($value, 'LIKE', '%' . $search . '%');
                     }
                 });
+            }
+        }
+
+        if (!empty($input['relatable'])) {
+            foreach ($input['relatable'] as $relatable) {
+                if (in_array($relatable, $this->model->relatable)) {
+                    $models->with($relatable);
+                }
             }
         }
 

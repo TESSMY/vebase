@@ -94,7 +94,19 @@ class InvoiceController extends VeController
 
             $invoice->item_count = count($input['products']);
             $invoice->sub_total = $subTotal;
-            $invoice->grand_total = $invoice->sub_total;
+            $grandTotal = 0;
+            if (!empty($input['tax_amount_1'])) {
+                $grandTotal = $invoice->sub_total * (1 + ($input['tax_amount_1'] / 100));
+            } else {
+                $grandTotal = $invoice->sub_total;
+            }
+            if (!empty($input['tax_amount_2'])) {
+                $grandTotal = $invoice->sub_total * (1 + ($input['tax_amount_2'] / 100));
+            }
+            if (!empty($input['discount_amount'])) {
+                $grandTotal = $grandTotal - $input['discount_amount'];
+            }
+            $invoice->grand_total = $grandTotal;
             $invoice->save();
             $invoice->generatePDF();
 
@@ -211,7 +223,19 @@ class InvoiceController extends VeController
 
             $invoice->item_count = count($input['products']);
             $invoice->sub_total = $subTotal;
-            $invoice->grand_total = $invoice->sub_total;
+            $grandTotal = 0;
+            if (!empty($input['tax_amount_1'])) {
+                $grandTotal = $invoice->sub_total * (1 + ($input['tax_amount_1'] / 100));
+            } else {
+                $grandTotal = $invoice->sub_total;
+            }
+            if (!empty($input['tax_amount_2'])) {
+                $grandTotal = $invoice->sub_total * (1 + ($input['tax_amount_2'] / 100));
+            }
+            if (!empty($input['discount_amount'])) {
+                $grandTotal = $grandTotal - $input['discount_amount'];
+            }
+            $invoice->grand_total = $grandTotal;
             $invoice->save();
             $invoice->generatePDF();
 

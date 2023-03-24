@@ -71,6 +71,14 @@ class InstallCommand extends Command
         (new Filesystem)->ensureDirectoryExists(app_path('Exports'));
         (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Exports', app_path('Exports'));
 
+        // helpers
+        (new Filesystem)->ensureDirectoryExists(app_path('Helpers'));
+        (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Helpers', app_path('Helpers'));
+
+        // observers
+        (new Filesystem)->ensureDirectoryExists(app_path('Observers'));
+        (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'Observers', app_path('Observers'));
+
         $this->info('Succesfully installed UI');
     }
 }

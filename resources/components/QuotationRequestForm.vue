@@ -55,7 +55,6 @@
                     <thead>
                         <tr>
                             <th>Product Details</th>
-                            <th>Description</th>
                             <th>Quantity</th>
                             <th>Action</th>
                         </tr>
@@ -63,13 +62,23 @@
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
-                                <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.productVariant.id">
-                                <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.id">
-                                <multi-select v-model="item.productVariant" track-by="name" label="name" :options="props.productVariants"></multi-select>
+                                <input type="hidden" :name="'products[' + index + '][invoice_item_id]'" :value="item.invoice_item_id">
+                                <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
+                                    <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
+                                </template>
+                                <template v-else>
+                                    <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.product_id">
+                                    <input type="hidden" :name="'products[' + index + '][product_variant_id]'" :value="item.product.id">
+                                </template>
+                                <multi-select placeholder="Search Products"
+                                    v-model="item.product"
+                                    label="name"
+                                    :options="productArray.options"
+                                    @search-change="fetchProducts">
+                                </multi-select>
                             </td>
-                            <td>{{ item.description }}</td>
                             <td>
-                                <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                                <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
                             </td>
                             <td>
                                 <span class="btn" @click="removeProduct(index)">
@@ -112,11 +121,9 @@ let props = defineProps({
     quotationRequest: Object,
     taxRate: Number,
 });
-const subTotal = ref(0);
 const quotationRequest = ref(props.quotationRequest);
 const supplier = ref({});
-const taxRate = ref(props.taxRate);
-const status =ref(0);
+const status = ref(0);
 const supplierArray = ref([]);
 const selectedSupplier = ref('');
 
@@ -139,7 +146,7 @@ const grandTotal = computed(() => {
 });
 
 // const products = ref([{
-//     'productVariant': '',
+//     'product': '',
 //     'quantity': 0,
 //     'subTotal': 0,
 // }]);

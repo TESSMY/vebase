@@ -20,36 +20,6 @@ use Vecapital\Vebase\Http\Controllers\VeController;
 
 class QuotationRequestController extends VeController
 {
-    public function index(Request $request)
-    {
-        $this->authorize('viewAny', QuotationRequest::class);
-        $search = $request->input('search');
-        $orderColumn = $request->input('order_column');
-        $orderBy = $request->input('order_by');
-        $quotationRequests = QuotationRequest::query();
-        if (!empty($search)) {
-            if (!empty($this->model->searchable)) {
-                $quotationRequests = $quotationRequests->where(function($query) use ($search) {
-                    foreach ($this->model->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
-                    }
-                });
-            }
-        }
-        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
-            $quotationRequests = $quotationRequests->orderBy($orderColumn, $orderBy);
-        }
-        $quotationRequests = $quotationRequests->latest()->paginate(10)->withQueryString();
-        return view('admin.quotation-requests.index', compact('quotationRequests'));
-    }
-
-    public function create()
-    {
-        $this->authorize('create', QuotationRequest::class);
-        $taxRate = 7;
-        return view('admin.quotation-requests.create', compact('taxRate'));
-    }
-
     public function store(Request $request)
     {
         $this->authorize('create', QuotationRequest::class);
@@ -90,7 +60,7 @@ class QuotationRequestController extends VeController
                     foreach ($input['products'] as $purchaseOrderProduct) {
                         $productVariant = ProductVariant::find($purchaseOrderProduct['product_variant_id']);
                         $product = $productVariant->product;
-                        PurchaseOrderItem::create($input + [
+                        PurchaseOrderItem::create([
                             'purchase_order_id' => $purchaseOrder->id,
                             'product_id' => $product->id,
                             'product_variant_id' => $productVariant->id,
@@ -185,7 +155,7 @@ class QuotationRequestController extends VeController
                     foreach ($input['products'] as $purchaseOrderProduct) {
                         $productVariant = ProductVariant::find($purchaseOrderProduct['product_variant_id']);
                         $product = $productVariant->product;
-                        PurchaseOrderItem::create($input + [
+                        PurchaseOrderItem::create([
                             'purchase_order_id' => $purchaseOrder->id,
                             'product_id' => $product->id,
                             'product_variant_id' => $productVariant->id,

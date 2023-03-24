@@ -18,7 +18,7 @@
         <div class="bg-white card shadow py-3 px-4">
             <form action="{{ route('admin.quotation-requests.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <quotation-request-form :taxRate="{{ $taxRate }}"></quotation-request-form>
+                <quotation-request-form :taxRate="7"></quotation-request-form>
             </form>
         </div>
     </div>

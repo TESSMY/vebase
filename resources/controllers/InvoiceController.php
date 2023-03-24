@@ -26,9 +26,9 @@ class InvoiceController extends VeController
      */
     public function create()
     {
+        $this->authorize('create', $this->model);
+
         $compact = [
-            'routeModel' => Str::singular($this->routeName),
-            'model' => $this->model,
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
@@ -45,6 +45,8 @@ class InvoiceController extends VeController
      */
     public function store(Request $request)
     {
+        $this->authorize('create', $this->model);
+        
         $input = $request->input();
 
         if (empty($this->model->createValidator)) {
@@ -122,6 +124,7 @@ class InvoiceController extends VeController
     public function show(Request $request, $invoice)
     {
         $invoice = $this->findModel($invoice);
+        $this->authorize('view', $invoice);
 
         $compact = [
             'invoice' => $invoice,
@@ -143,6 +146,7 @@ class InvoiceController extends VeController
     public function edit(Request $request, $invoice)
     {
         $invoice = $this->findModel($invoice);
+        $this->authorize('update', $invoice);
         $invoice->load('client', 'invoiceItems.product', 'invoiceItems.productVariant');
 
         $compact = [
@@ -165,7 +169,6 @@ class InvoiceController extends VeController
      */
     public function update(Request $request, $invoice)
     {
-        
         $invoice = $this->findModel($invoice);
 
         $this->authorize('update', $invoice);

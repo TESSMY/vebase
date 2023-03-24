@@ -93,7 +93,7 @@ class SalesOrderController extends VeController
                         'description' => $product->description,
                         'quantity' => $selectedProduct['quantity'],
                         'unit_price' => $productVariant->selling_price,
-                        'cost_price' => $productVariant->cost_price,
+                        'unit_cost' => $productVariant->cost_price,
                         'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
                         'total_cost' => $product['quantity'] * $productVariant->cost_price,
                     ]);
@@ -169,7 +169,7 @@ class SalesOrderController extends VeController
                         'description' => $product->description,
                         'quantity' => $selectedProduct['quantity'],
                         'unit_price' => $productVariant->selling_price,
-                        'cost_price' => $productVariant->cost_price,
+                        'unit_cost' => $productVariant->cost_price,
                         'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
                         'total_cost' => $selectedProduct['quantity'] * $productVariant->cost_price,
                     ]);

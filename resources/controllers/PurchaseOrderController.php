@@ -20,7 +20,7 @@ class PurchaseOrderController extends VeController
 {
     public function index(Request $request)
     {
-        $this->authorize('view', PurchaseOrder::class);
+        $this->authorize('viewAny', PurchaseOrder::class);
 
         $search = $request->input('search');
         $orderColumn = $request->input('order_column');
@@ -58,7 +58,7 @@ class PurchaseOrderController extends VeController
     {
         $this->authorize('create', PurchaseOrder::class);
         $input = $request->input();
-        $input['user_id'] = Auth::id();
+        $input['created_by'] = Auth::id();
 
         $validator = Validator::make($input, $this->model->createValidator);
 
@@ -75,7 +75,7 @@ class PurchaseOrderController extends VeController
                 foreach ($input['products'] as $product) {
                     $productVariant = ProductVariant::find($product['product_variant_id']);
                     $product = $productVariant->product;
-                    PurchaseOrderItem::create($input + [
+                    PurchaseOrderItem::create([
                         'purchase_order_id' => $purchaseOrder->id,
                         'product_id' => $product->id,
                         'product_variant_id' => $productVariant->id,
@@ -113,7 +113,7 @@ class PurchaseOrderController extends VeController
         $purchaseOrder = $this->findModel($id);
         $this->authorize('update', $purchaseOrder);
         $input = $request->input();
-        $input['user_id'] = Auth::id();
+        $input['created_by'] = Auth::id();
 
         $validator = Validator::make($input, $this->model->updateValidator);
 
@@ -131,7 +131,7 @@ class PurchaseOrderController extends VeController
                 foreach ($input['products'] as $product) {
                     $productVariant = ProductVariant::find($product['product_variant_id']);
                     $product = $productVariant->product;
-                    PurchaseOrderItem::create($input + [
+                    PurchaseOrderItem::create([
                         'purchase_order_id' => $purchaseOrder->id,
                         'product_id' => $product->id,
                         'product_variant_id' => $productVariant->id,
@@ -157,16 +157,10 @@ class PurchaseOrderController extends VeController
         }
     }
 
-    public function show(Request $request, $id)
-    {
-        $purchaseOrder = $this->findModel($id);
-        $this->authorize('view', $purchaseOrder);
-
-        return view('admin.purchase-orders.show', compact('purchaseOrder'));
-    }
-
     public function send(Request $request, PurchaseOrder $purchaseOrder)
     {
+        $this->authorize('sendEmail', $purchaseOrder);
+
         try {
             $data["email"] = $request->input('to_email');
             $data["title"] = 'Purchase Order' . ' ' . $purchaseOrder->id;
@@ -176,6 +170,9 @@ class PurchaseOrderController extends VeController
                         ->subject($data["title"])
                         ->attach(Storage::url($purchaseOrder->file_url));
             });
+
+            $purchaseOrder->status = PurchaseOrder::STATUS_COMPLETED;
+            $purchaseOrder->save();
 
             flash()->success('Mail sent successfully!');
             return redirect()->route('admin.purchase-orders.index');

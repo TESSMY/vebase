@@ -99,8 +99,12 @@
                     </div>
                 </div>
             </div>
+
+            <input type="hidden" name="status" v-model="status">
+
             <div class="row col-12">
-                <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
+                <button type="submit" @click="status = 10" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
+                <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
                 <a href="/admin/purchase-orders" class="col-12 col-md-1 btn btn-dark m-2">Close</a>
             </div>
         </div>
@@ -117,6 +121,7 @@ const subTotal = ref(0);
 const purchaseOrder = ref(props.purchaseOrder);
 const supplier = ref({});
 const taxRate = ref(props.taxRate);
+const status = ref(0);
 
 const subTotalItem = computed(() => {
     let total = 0

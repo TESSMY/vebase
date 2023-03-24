@@ -10,14 +10,3 @@ Run the command below to install all the UI, Controllers, Vue Components, Blade 
 ```
 php artisan vebase:install
 ```
-
-Add this to the `admin.php` routes
-```
-...
-
-Route::get('/sales-reports/export/', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.export'); // make sure this line is  before the classfinder
-
-$classes = ClassFinder::getClassesInNamespace('App\Models');
-
-...
-```

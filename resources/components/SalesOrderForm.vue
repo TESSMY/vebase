@@ -5,10 +5,14 @@
                 <span class="h5">SALES ORDER DETAILS</span>
             </div>
             <div class="row">
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Client</label>
-                    <!-- <input type="hidden" name="client_id" :value="client.id">
-                    <multi-select v-model="client" track-by="id" label="id" :options="clients"></multi-select> -->
+                <div class="col-md-6">
+                    <div class="form-group row mb-3">
+                        <label class="col-md-4 text-right form-label text-sm-start">Client</label>
+                        <div class="col-md-12">
+                            <input type="hidden" name="client_id" :value="selectedClient.id">
+                            <multi-select placeholder="Search Client" v-model="selectedClient" label="name" :options="clientArray" @search-change="fetchClients"></multi-select>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Date</label>
@@ -68,12 +72,13 @@
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
-                                <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.productVariant.id">
+                                <input type="hidden" :name="'products[' + index + '][product_variant_id]'" :value="item.productVariant.id">
+                                <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.id">
                                 <multi-select v-model="item.productVariant" track-by="name" label="name" :options="props.productVariants"></multi-select>
                             </td>
                             <td>{{ item.description }}</td>
                             <td>
-                                <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                                <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
                             </td>
                             <td>{{ item.productVariant.unit_price }}</td>
                             <td>Taxes</td>
@@ -119,28 +124,30 @@
             </div>
         </div>
     </div>
-    
+
     </template>
-    
+
     <script setup>
     import { defineComponent, ref } from 'vue';
-    
+
     let props = defineProps({
         salesOrder: Object,
         taxRate: Number,
     });
-    
+
     const subTotal = ref(0);
     const salesOrder = ref(props.salesOrder);
     const client = ref({});
     const grandTotal = ref(0);
     const taxRate = ref(props.taxRate);
+    const clientArray = ref([]);
+    const selectedClient = ref('');
     const products = ref([{
         'productVariant': '',
         'quantity': 0,
         'subTotal': 0,
     }]);
-    
+
     function addProducts() {
         this.products.push({
             'productVariant': '',
@@ -152,7 +159,7 @@
         this.products.splice(index, 1);
         this.updateTotalPrice();
     }
-    
+
     function updateProductSubTotal(item) {
         item.subTotal = item.productVariant.unit_price * item.quantity;
         this.updateTotalPrice();
@@ -166,5 +173,12 @@
         });
         this.grandTotal *= 1 + (props.taxRate / 100);
     }
-    </script>
-    
+
+    function fetchClients(query) {
+        if (query) {
+            axios.get(`/web/clients?search=${query}`).then((response) => {
+                this.clientArray = response.data.response.items;
+            });
+        }
+    }
+</script>

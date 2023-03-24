@@ -35,7 +35,7 @@ class ProductController extends VeController
             });
         }
 
-        $products = $products->latest()->paginate(10)->withQueryString();
+        $products = $products->paginate(10);
 
         return view('admin.products.index', compact('search', 'products'));
     }
@@ -89,10 +89,7 @@ class ProductController extends VeController
                 $url = Storage::url($request->file('image')->store('products/' . $product->id));
                 $product->image = $url;
                 $product->save();
-            }
-            $product->save();
-
-            if ($product->type == Product::TYPE_SINGLE_PRODUCT) {
+            } elseif ($product->type == Product::TYPE_SINGLE_PRODUCT) {
                 ProductVariant::create([
                     'product_id' => $product->id,
                     'image' => $product->image,
@@ -108,25 +105,23 @@ class ProductController extends VeController
                     'total_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
-            }
-
-            if ($product->type == Product::TYPE_VARIANT_PRODUCT) {
+            } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
                 foreach($input['variants'] as $variantData) {
-                    $option_1 = '';
-                    $option_2 = '';
-                    $option_3 = '';
+                    $option1 = '';
+                    $option2 = '';
+                    $option3 = '';
                     $explodedValue = explode('-', $variantData['sku']);
                     if (count($explodedValue) > 0) {
-                        $option_1 = $explodedValue[1] ?? null;
-                        $option_2 = $explodedValue[2] ?? null;
-                        $option_3 = $explodedValue[3] ?? null;
+                        $option1 = $explodedValue[1] ?? null;
+                        $option2 = $explodedValue[2] ?? null;
+                        $option3 = $explodedValue[3] ?? null;
                     }
                     ProductVariant::create([
                         'product_id' => $product->id,
                         'image' => $variantData['image'] ?? null,
-                        'option_1' => $option_1,
-                        'option_2' => $option_2,
-                        'option_3' => $option_3,
+                        'option_1' => $option1,
+                        'option_2' => $option2,
+                        'option_3' => $option3,
                         'name' => $variantData['name'],
                         'barcode' => $product->barcode,
                         'cost_price' => $variantData['unit_cost'],
@@ -181,26 +176,10 @@ class ProductController extends VeController
     {
         $product = $this->findModel($id);
         $this->authorize('view', $product);
-        $suppliers = Supplier::all();
         $bundles = ProductBundle::where('product_id', $product->id)->with('productVariant')->get();
         $variants = $product->variants;
-        $brands = Brand::all();
 
         return view('admin.products.form', compact('suppliers', 'product', 'brands', 'variants', 'bundles'));
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Request $request, $id)
-    {
-        $product = $this->findModel($id);
-        $this->authorize('view', $product);
-
-        return view('admin.products.view', compact('product'));
     }
 
     /**
@@ -236,6 +215,7 @@ class ProductController extends VeController
             }
             $product->update($input);
             if (!empty($input['variants'])) {
+                $variantId = [];
                 foreach ($input['variants'] as $variant) {
                     $currentVariant = $product->variants->where('id', $variant['product_variant_id'])->first();
                     if ($currentVariant) {
@@ -243,7 +223,9 @@ class ProductController extends VeController
                     } else {
                         ProductVariant::create($variant + ['product_id' => $product->id]);
                     }
+                    $variantId[] = $currentVariant->id;
                 }
+                $product->variants()->whereNotIn('id', $variantId)->delete();
             }
             if (!empty($input['bundles'])) {
                 foreach ($input['bundles'] as $bundle) {

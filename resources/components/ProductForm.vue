@@ -35,10 +35,8 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Brand</label>
             <div class="col-md-12">
-              <select name="brand_id" class="form-select" v-model="selectedBrand">
-                <option class="text-muted" disabled>-- Please Select --</option>
-                <option v-for="brand in brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
-              </select>
+              <input type="hidden" name="brand_id" :value="selectedBrand.id">
+              <multi-select placeholder="Search Brand" v-model="selectedBrand" label="name" :options="brandArray" @search-change="fetchBrands"></multi-select>
             </div>
           </div>
         </div>
@@ -48,10 +46,8 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
             <div class="col-md-12">
-              <select class="form-select" name="supplier_id" v-model="selectedSupplier">
-                <option class="text-muted" disabled>-- Please Select --</option>
-                <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">{{ supplier.name }}</option>
-              </select>
+              <input type="hidden" name="supplier_id" :value="selectedSupplier.id">
+              <multi-select placeholder="Search Supplier" v-model="selectedSupplier" label="name" :options="supplierArray" @search-change="fetchSuppliers"></multi-select>
             </div>
           </div>
         </div>
@@ -146,7 +142,7 @@
           <div class="form-group row mb-4">
             <label class="col-md-4 text-right form-label text-sm-start">Product Type</label>
             <div class="col-md-12">
-              <select name="type" v-model="type" class="form-select">
+              <select name="type" v-model="type" class="form-select" @change="fetchVariants()">
                 <option class="text-muted" disabled>-- Please Select --</option>
                 <option value="1">Single Product</option>
                 <option value="2">Product Variation</option>
@@ -171,9 +167,8 @@
             <div class="col-md-12">
               <select name="status" class="form-select" v-model="product.status">
                 <option class="text-muted" disabled>-- Please Select --</option>
-                <option value="0">Inactive</option>
-                <option value="1">Active</option>
-                <option value="2">Draft</option>
+                <option value="0">Active</option>
+                <option value="1">Inactive</option>
               </select>
             </div>
           </div>
@@ -280,7 +275,7 @@
             <tbody class="align-middle">
             <tr v-for="(bundle, i) in bundles" :key="i">
               <td>
-                <multi-select v-model="bundle.product_variant" track-by="name" label="name" :options="variants"></multi-select>
+                <multi-select placeholder="Search Variant" v-model="bundle.product_variant" track-by="name" label="name" :options="variantArray" @search-change="fetchVariants"></multi-select>
                 <input type="hidden" :name="'bundles[' + i + '][product_variant_id]'" :value="bundle.product_variant.id">
                 <input type="hidden" :name="'bundles[' + i + '][product_bundle_id]'" :value="bundle.id">
               </td>
@@ -304,7 +299,7 @@ import Swal from "sweetalert2";
 
 export default {
   name: "ProductForm",
-  props: ['suppliers', 'products', 'edit_product', 'brands', 'variants', 'product_bundles'],
+  props: ['products', 'edit_product', 'variants', 'product_bundles'],
   data() {
     return {
       isEdit: false,
@@ -314,9 +309,11 @@ export default {
         subtotal: 0
       }],
       bundle_value: 0,
-      suppliers: this.suppliers,
+      supplierArray: [],
       selectedSupplier: '',
-      brands: this.brands,
+      brandArray: [],
+      variantArray: [],
+      selectedVariant: '',
       selectedBrand: '',
       options: [],
       type: 1,
@@ -346,6 +343,8 @@ export default {
   },
 
   created() {
+    this.fetchBrands();
+    this.fetchSuppliers();
     if (typeof(this.edit_product) != 'undefined') {
       this.isEdit = true;
       this.product = this.edit_product;
@@ -502,8 +501,49 @@ export default {
       })
       this.product.total_stock = total;
     },
+
+    fetchBrands(query) {
+      let parameter = {
+        'search' : query,
+      }
+      axios.get(`/web/brands`, {
+        params: parameter
+      }).then((response) => {
+        this.brandArray = response.data.response.items;
+      });
+    },
+
+    fetchSuppliers(query) {
+      let parameter = {
+        'search' : query,
+      }
+      axios.get(`/web/suppliers`, {
+        params: parameter
+      }).then((response) => {
+        this.supplierArray = response.data.response.items;
+      });
+    },
+
+    fetchVariants (query) {
+      let variants = [];
+      let parameter = {
+        'search' : query,
+        'type' : [1,2]
+      }
+      axios.get(`/web/products`, {
+        params: parameter
+      }).then((response) => {
+        response.data.response.items.forEach(product => {
+          product.product_variants.forEach(variant => {
+            variants.push(variant)
+          });
+        });
+        this.variantArray = variants
+      });
+    }
   }
 }
 </script>
+
 
 

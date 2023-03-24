@@ -20,24 +20,6 @@ use Illuminate\Support\Str;
 class InvoiceController extends VeController
 {
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        $this->authorize('create', $this->model);
-
-        $compact = [
-            'modelName' => $this->modelName,
-            'routeName' => $this->routeName,
-            'routePrefix' => $this->folder,
-        ];
-
-        return view('admin.invoices.create', $compact);
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request

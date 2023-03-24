@@ -41,5 +41,4 @@ class SalesOrderObserver
         $salesReportHelper->recalculateYearly();
         $salesReportHelper->recalculateOverall();
     }
-    }
 }

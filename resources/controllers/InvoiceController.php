@@ -81,16 +81,16 @@ class InvoiceController extends VeController
                     $productModel = Product::find($product['product_id']);
 
                     if (empty($productModel)) {
-                        flash('Error: Product with ID #' . $productModel['product_id'] . ' not found')->error();
+                        flash('Error: Product with ID #' . $product['product_id'] . ' not found')->error();
                         return back();
                     }
                     if ($productModel->type != Product::TYPE_PRODUCT_BUNDLE) {
-                        flash('Error: Product with ID #' . $productModel['product_id'] . ' is not a product bundle')->error();
+                        flash('Error: Product with ID #' . $product['product_id'] . ' is not a product bundle')->error();
                         return back();
                     }
 
                     if ($productModel->status != Product::STATUS_ACTIVE) {
-                        flash('Error: Product with ID #' . $productModel['product_id'] . ' is not available')->error();
+                        flash('Error: Product with ID #' . $product['product_id'] . ' is not available')->error();
                         return back();
                     }
 
@@ -111,15 +111,15 @@ class InvoiceController extends VeController
             $invoice->sub_total = $subTotal;
             $grandTotal = $invoice->sub_total;
             if (!empty($input['discount_amount'])) {
-                $grandTotal -= $input['discount_amount'];
+                $subTotal -= $input['discount_amount'];
             }
             if (!empty($input['tax_rate_1'])) {
-                $tax1 = $invoice->sub_total * ($input['tax_rate_1'] / 100);
+                $tax1 = $subTotal * ($input['tax_rate_1'] / 100);
                 $grandTotal += $tax1;
                 $invoice->tax_amount_1 = $tax1;
             }
             if (!empty($input['tax_rate_2'])) {
-                $tax2 = $invoice->sub_total * ($input['tax_rate_2'] / 100);
+                $tax2 = $subTotal * ($input['tax_rate_2'] / 100);
                 $grandTotal += $tax2;
                 $invoice->tax_amount_2 = $tax2;
             }
@@ -235,16 +235,16 @@ class InvoiceController extends VeController
                         $productModel = Product::find($product['product_id']);
 
                         if (empty($productModel)) {
-                            flash('Error: Product with ID #' . $productModel['product_id'] . ' not found')->error();
+                            flash('Error: Product with ID #' . $product['product_id'] . ' not found')->error();
                             return back();
                         }
                         if ($productModel->type != Product::TYPE_PRODUCT_BUNDLE) {
-                            flash('Error: Product with ID #' . $productModel['product_id'] . ' is not a product bundle')->error();
+                            flash('Error: Product with ID #' . $product['product_id'] . ' is not a product bundle')->error();
                             return back();
                         }
     
                         if ($productModel->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product with ID #' . $productModel['product_id'] . ' is not available')->error();
+                            flash('Error: Product with ID #' . $product['product_id'] . ' is not available')->error();
                             return back();
                         }
     
@@ -266,15 +266,15 @@ class InvoiceController extends VeController
             $invoice->sub_total = $subTotal;
             $grandTotal = $invoice->sub_total;
             if (!empty($input['discount_amount'])) {
-                $grandTotal -= $input['discount_amount'];
+                $subTotal -= $input['discount_amount'];
             }
             if (!empty($input['tax_rate_1'])) {
-                $tax1 = $invoice->sub_total * ($input['tax_rate_1'] / 100);
+                $tax1 = $subTotal * ($input['tax_rate_1'] / 100);
                 $grandTotal += $tax1;
                 $invoice->tax_amount_1 = $tax1;
             }
             if (!empty($input['tax_rate_2'])) {
-                $tax2 = $invoice->sub_total * ($input['tax_rate_2'] / 100);
+                $tax2 = $subTotal * ($input['tax_rate_2'] / 100);
                 $grandTotal += $tax2;
                 $invoice->tax_amount_2 = $tax2;
             }

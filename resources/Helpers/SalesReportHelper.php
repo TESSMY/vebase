@@ -112,7 +112,7 @@ class SalesReportHelper
             'week_of_year' => null,  
         ]);
 
-        $monthlySalesOrder = SalesReport::whereNull('client_id')->where('year', $this->date->year)->where('month', $this->date->month)->whereNotNull('week_of_year')->whereNull('day')->get();
+        $monthlySalesOrder = SalesReport::whereNull('client_id')->where('year', $this->date->year)->where('month', $this->date->month)->whereNull('day')->get();
         $cost = $monthlySalesOrder->sum('total_cost');
         $revenue = $monthlySalesOrder->sum('sub_total');
         $discount = $monthlySalesOrder->sum('discount_amount');
@@ -132,7 +132,7 @@ class SalesReportHelper
             'week_of_year' => null,  
         ]);
 
-        $monthlySalesOrder = SalesOrder::where('client_id', $this->salesOrder->client_id)->where('year', $this->date->year)->where('month', $this->date->month)->whereNotNull('week_of_year')->whereNull('day')->get();
+        $monthlySalesOrder = SalesOrder::where('client_id', $this->salesOrder->client_id)->where('year', $this->date->year)->where('month', $this->date->month)->whereNull('day')->get();
         $cost = $monthlySalesOrder->sum('total_cost');
         $revenue = $monthlySalesOrder->sum('sub_total');
         $discount = $monthlySalesOrder->sum('discount_amount');

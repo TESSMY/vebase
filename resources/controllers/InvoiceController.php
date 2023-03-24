@@ -105,17 +105,19 @@ class InvoiceController extends VeController
 
             $invoice->item_count = count($input['products']);
             $invoice->sub_total = $subTotal;
-            $grandTotal = 0;
-            if (!empty($input['tax_amount_1'])) {
-                $grandTotal = $invoice->sub_total * (1 + ($input['tax_amount_1'] / 100));
-            } else {
-                $grandTotal = $invoice->sub_total;
-            }
-            if (!empty($input['tax_amount_2'])) {
-                $grandTotal = $invoice->sub_total * (1 + ($input['tax_amount_2'] / 100));
-            }
+            $grandTotal = $invoice->sub_total;
             if (!empty($input['discount_amount'])) {
-                $grandTotal = $grandTotal - $input['discount_amount'];
+                $grandTotal -= $input['discount_amount'];
+            }
+            if (!empty($input['tax_rate_1'])) {
+                $tax1 = $invoice->sub_total * ($input['tax_rate_1'] / 100);
+                $grandTotal += $tax1;
+                $invoice->tax_amount_1 = $tax1;
+            }
+            if (!empty($input['tax_rate_2'])) {
+                $tax2 = $invoice->sub_total * ($input['tax_rate_2'] / 100);
+                $grandTotal += $tax2;
+                $invoice->tax_amount_2 = $tax2;
             }
             $invoice->grand_total = $grandTotal;
             $invoice->save();
@@ -254,17 +256,19 @@ class InvoiceController extends VeController
 
             $invoice->item_count = count($input['products']);
             $invoice->sub_total = $subTotal;
-            $grandTotal = 0;
-            if (!empty($input['tax_amount_1'])) {
-                $grandTotal = $invoice->sub_total * (1 + ($input['tax_amount_1'] / 100));
-            } else {
-                $grandTotal = $invoice->sub_total;
-            }
-            if (!empty($input['tax_amount_2'])) {
-                $grandTotal = $invoice->sub_total * (1 + ($input['tax_amount_2'] / 100));
-            }
+            $grandTotal = $invoice->sub_total;
             if (!empty($input['discount_amount'])) {
-                $grandTotal = $grandTotal - $input['discount_amount'];
+                $grandTotal -= $input['discount_amount'];
+            }
+            if (!empty($input['tax_rate_1'])) {
+                $tax1 = $invoice->sub_total * ($input['tax_rate_1'] / 100);
+                $grandTotal += $tax1;
+                $invoice->tax_amount_1 = $tax1;
+            }
+            if (!empty($input['tax_rate_2'])) {
+                $tax2 = $invoice->sub_total * ($input['tax_rate_2'] / 100);
+                $grandTotal += $tax2;
+                $invoice->tax_amount_2 = $tax2;
             }
             $invoice->grand_total = $grandTotal;
             $invoice->save();

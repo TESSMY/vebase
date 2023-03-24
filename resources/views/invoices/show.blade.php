@@ -21,12 +21,12 @@
             <div class="row border-bottom mb-2">
                 <span class="h5">Information</span>
             </div>
-            <iframe src="{{ $invoice->url }}" class="w-100 vh-100">Your browser isn't compatible</iframe>
+            <iframe src="{{ $$routeModel->url }}" class="w-100 vh-100">Your browser isn't compatible</iframe>
             <div class="row col-12">
-                <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $invoice->getRouteKey()) }}" class="col-12 col-md-1 btn btn-success m-2">Edit</a>
+                <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}" class="col-12 col-md-1 btn btn-success m-2">Edit</a>
                 <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
                 @if (Auth::user()->hasPermissionTo('delete-invoice'))
-                    <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $invoice->getRouteKey()) }}" class="col-12 col-md-1 m-2 px-0" method="POST">
+                    <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $$routeModel->getRouteKey()) }}" class="col-12 col-md-1 m-2 px-0" method="POST">
                         @method('DELETE')
                         @csrf
                         <button class="col-12 btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete? You cannot revert this.')">

@@ -55,6 +55,11 @@ class InvoiceController extends VeController
                 if (isset($product['product_variant_id'])) {
                     
                     $productVariant = ProductVariant::find($product['product_variant_id']);
+
+                    if (empty($productVariant)) {
+                        flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
+                        return back();
+                    }
                     
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
@@ -68,6 +73,11 @@ class InvoiceController extends VeController
                     ]);
                 } else {
                     $productModel = Product::find($product['product_id']);
+
+                    if (empty($productModel)) {
+                        flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
+                        return back();
+                    }
 
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
@@ -83,7 +93,7 @@ class InvoiceController extends VeController
             }
 
             $invoice->item_count = count($input['products']);
-            $invoice->sub_total = $invoice->invoiceItems->sum('total_price');
+            $invoice->sub_total = $subTotal;
             $invoice->grand_total = $invoice->sub_total;
             $invoice->save();
             $invoice->generatePDF();

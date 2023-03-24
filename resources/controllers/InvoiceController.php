@@ -60,6 +60,11 @@ class InvoiceController extends VeController
                         flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
                         return back();
                     }
+
+                    if ($productVariant->status != ProductVariant::STATUS_ACTIVE) {
+                        flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' is not available')->error();
+                        return back();
+                    }
                     
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
@@ -77,6 +82,11 @@ class InvoiceController extends VeController
 
                     if (empty($productModel)) {
                         flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
+                        return back();
+                    }
+
+                    if ($productModel->status != ProductVariant::STATUS_ACTIVE) {
+                        flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' is not available')->error();
                         return back();
                     }
 
@@ -193,6 +203,16 @@ class InvoiceController extends VeController
                     if (isset($product['product_variant_id'])) {
                         // product variant & single product
                         $productVariant = ProductVariant::find($product['product_variant_id']);
+
+                        if (empty($productVariant)) {
+                            flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
+                            return back();
+                        }
+
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE) {
+                            flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' is not available')->error();
+                            return back();
+                        }
     
                         $invoiceItem = InvoiceItem::create([
                             'invoice_id' => $invoice->id,
@@ -207,6 +227,16 @@ class InvoiceController extends VeController
                     } else {
                         // product bundle
                         $productModel = Product::find($product['product_id']);
+
+                        if (empty($productModel)) {
+                            flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
+                            return back();
+                        }
+    
+                        if ($productModel->status != ProductVariant::STATUS_ACTIVE) {
+                            flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' is not available')->error();
+                            return back();
+                        }
     
                         $invoiceItem = InvoiceItem::create([
                             'invoice_id' => $invoice->id,

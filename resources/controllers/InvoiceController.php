@@ -53,7 +53,7 @@ class InvoiceController extends VeController
             foreach ($input['products'] as $product) {
 
                 if (isset($product['product_variant_id'])) {
-                    
+                    // product variant & single product
                     $productVariant = ProductVariant::find($product['product_variant_id']);
 
                     if (empty($productVariant)) {
@@ -72,6 +72,7 @@ class InvoiceController extends VeController
                         'total_price' => $productVariant->selling_price * $product['quantity'], 
                     ]);
                 } else {
+                    // product bundle
                     $productModel = Product::find($product['product_id']);
 
                     if (empty($productModel)) {

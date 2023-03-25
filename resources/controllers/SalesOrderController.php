@@ -200,6 +200,7 @@ class SalesOrderController extends VeController
                                 'total_cost' => $product['quantity'] * $productVariant->cost_price,
                             ]);
                         }
+                        $salesOrderItemIds[] = $salesOrderItem->id;
                         $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
                     } else {
@@ -247,10 +248,12 @@ class SalesOrderController extends VeController
                                 'total_cost' => $product['quantity'] * $product->cost_price,
                             ]);
                         }
+                        $salesOrderItemIds[] = $salesOrderItem->id;
                         $subtotal += $selectedProduct['quantity'] * $product->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $product->cost_price;
                     }
                 }
+                $salesOrder->salesOrderItems()->whereNotIn('quotation_request_items.id', $salesOrderItemIds)->delete();
 
                 $salesOrder->tax_amount = $subtotal * ($input['tax_rate'] ?? 0) / 100;
                 $salesOrder->tax_rate = $input['tax_rate'];

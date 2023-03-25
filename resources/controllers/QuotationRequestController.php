@@ -40,18 +40,40 @@ class QuotationRequestController extends VeController
         try {
             $quotationRequest = QuotationRequest::create($input);
             if (!empty($input['products'])) {
+                $quotationRequestItemIds = [];
                 foreach ($input['products'] as $quotationProduct) {
                     if (!empty($quotationProduct['product_variant_id'])) {
                         $productVariant = ProductVariant::find($quotationProduct['product_variant_id']);
                         $product = $productVariant->product;
-                        QuotationRequestItem::create([
-                            'quotation_request_id' => $quotationRequest->id,
-                            'product_id' => $product->id,
-                            'product_variant_id' => $productVariant->id,
-                            'name' => $productVariant->product->name,
-                            'sku' => $productVariant->product->sku,
-                            'quantity' => $quotationProduct['quantity'],
-                        ]);
+
+                        if (empty($productVariant)) {
+                            flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' not found')->error();
+                            return back();
+                        }
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
+                            flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' is not available')->error();
+                            return back();
+                        }
+
+                        $quotationRequestItem = $quotationRequest->quotationRequestItems()->where('quotation_request_items.id', $quotationProduct['product_variant_id'])->first();
+
+                        if (!empty($quotationRequestItem)) {
+                            $quotationRequestItem->update([
+                                'name' => $productVariant->product->name,
+                                'sku' => $productVariant->product->sku,
+                                'quantity' => $quotationProduct['quantity'],
+                            ]);
+                        } else {
+                            $quotationRequestItem = QuotationRequestItem::create([
+                                'quotation_request_id' => $quotationRequest->id,
+                                'product_id' => $product->id,
+                                'product_variant_id' => $productVariant->id,
+                                'name' => $productVariant->product->name,
+                                'sku' => $productVariant->product->sku,
+                                'quantity' => $quotationProduct['quantity'],
+                            ]);
+                        }
+                        $quotationRequestItemIds[] = $quotationRequestItem->id;
                     } else {
                         $product = Product::find($quotationProduct['product_id']);
 
@@ -70,15 +92,27 @@ class QuotationRequestController extends VeController
                             return back();
                         }
 
-                        QuotationRequestItem::create([
-                            'quotation_request_id' => $quotationRequest->id,
-                            'product_id' => $product->id,
-                            'name' => $product->name,
-                            'sku' => $product->sku,
-                            'quantity' => $quotationProduct['quantity'],
-                        ]);
+                        $quotationRequestItem = $quotationRequest->quotationRequestItems()->where('quotation_request_items.id', $quotationProduct['product_id'])->first();
+
+                        if (!empty($quotationRequestItem)) {
+                            $quotationRequestItem->update([
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'quantity' => $quotationProduct['quantity'],
+                            ]);
+                        } else {
+                            $quotationRequestItem = QuotationRequestItem::create([
+                                'quotation_request_id' => $quotationRequest->id,
+                                'product_id' => $product->id,
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'quantity' => $quotationProduct['quantity'],
+                            ]);
+                        }
+                        $quotationRequestItemIds[] = $quotationRequestItem->id;
                     }
                 }
+                $quotationRequest->quotationRequestItems()->whereNotIn('quotation_request_items.id', $quotationRequestItemIds)->delete();
             }
 
             if ($input['status'] == QuotationRequest::STATUS_COMPLETED) {
@@ -133,14 +167,35 @@ class QuotationRequestController extends VeController
                     if (!empty($quotationProduct['product_variant_id'])) {
                         $productVariant = ProductVariant::find($quotationProduct['product_variant_id']);
                         $product = $productVariant->product;
-                        $quotationRequestItem = QuotationRequestItem::create([
-                            'quotation_request_id' => $quotationRequest->id,
-                            'product_id' => $product->id,
-                            'product_variant_id' => $productVariant->id,
-                            'name' => $productVariant->product->name,
-                            'sku' => $productVariant->product->sku,
-                            'quantity' => $quotationProduct['quantity'],
-                        ]);
+
+                        if (empty($productVariant)) {
+                            flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' not found')->error();
+                            return back();
+                        }
+
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
+                            flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' is not available')->error();
+                            return back();
+                        }
+
+                        $quotationRequestItem = $quotationRequest->quotationRequestItems()->where('quotation_request_items.id', $quotationProduct['product_variant_id'])->first();
+
+                        if (!empty($quotationRequestItem)) {
+                            $quotationRequestItem->update([
+                                'name' => $productVariant->product->name,
+                                'sku' => $productVariant->product->sku,
+                                'quantity' => $quotationProduct['quantity'],
+                            ]);
+                        } else {
+                            $quotationRequestItem = QuotationRequestItem::create([
+                                'quotation_request_id' => $quotationRequest->id,
+                                'product_id' => $product->id,
+                                'product_variant_id' => $productVariant->id,
+                                'name' => $productVariant->product->name,
+                                'sku' => $productVariant->product->sku,
+                                'quantity' => $quotationProduct['quantity'],
+                            ]);
+                        }
                         $quotationRequestItemIds[] = $quotationRequestItem->id;
                     } else {
                         $product = Product::find($quotationProduct['product_id']);
@@ -160,13 +215,23 @@ class QuotationRequestController extends VeController
                             return back();
                         }
 
-                        $quotationRequestItem = QuotationRequestItem::create([
-                            'quotation_request_id' => $quotationRequest->id,
-                            'product_id' => $product->id,
-                            'name' => $product->name,
-                            'sku' => $product->sku,
-                            'quantity' => $quotationProduct['quantity'],
-                        ]);
+                        $quotationRequestItem = $quotationRequest->quotationRequestItems()->where('quotation_request_items.id', $quotationProduct['product_id'])->first();
+
+                        if (!empty($quotationRequestItem)) {
+                            $quotationRequestItem->update([
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'quantity' => $quotationProduct['quantity'],
+                            ]);
+                        } else {
+                            $quotationRequestItem = QuotationRequestItem::create([
+                                'quotation_request_id' => $quotationRequest->id,
+                                'product_id' => $product->id,
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'quantity' => $quotationProduct['quantity'],
+                            ]);
+                        }
                         $quotationRequestItemIds[] = $quotationRequestItem->id;
                     }
                 }

@@ -9,8 +9,8 @@
                     <div class="form-group row mb-3">
                         <label class="col-md-4 text-right form-label text-sm-start">Client</label>
                         <div class="col-md-12">
-                            <input type="hidden" name="client_id" :value="selectedClient.id">
-                            <multi-select placeholder="Search Client" v-model="selectedClient" label="name" :options="clientArray" @search-change="fetchClients"></multi-select>
+                            <input type="hidden" name="client_id" :value="client.id">
+                            <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients"></multi-select>
                         </div>
                     </div>
                 </div>
@@ -59,25 +59,33 @@
                             <th>Description</th>
                             <th>Quantity</th>
                             <th>Unit Price</th>
-                            <th>Taxes</th>
-                            <th>Total Amount</th>
+                            <th>Sub Total</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
-                                <input type="hidden" :name="'products[' + index + '][product_variant_id]'" :value="item.productVariant.id">
-                                <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.id">
-                                <multi-select v-model="item.productVariant" track-by="name" label="name" :options="props.productVariants"></multi-select>
+                                <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
+                                    <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
+                                </template>
+                                <template v-else>
+                                    <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.product_id">
+                                    <input type="hidden" :name="'products[' + index + '][product_variant_id]'" :value="item.product.id">
+                                </template>
+                                <multi-select placeholder="Search Products"
+                                    v-model="item.product"
+                                    label="name"
+                                    :options="productArray.options"
+                                    @search-change="fetchProducts">
+                                </multi-select>
                             </td>
                             <td>{{ item.description }}</td>
                             <td>
                                 <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
                             </td>
-                            <td>{{ item.productVariant.unit_price }}</td>
-                            <td>Taxes</td>
-                            <td>{{ item.grandTotal }}</td>
+                            <td>{{ item.product.selling_price }}</td>
+                            <td>{{ item.subTotal.toFixed(2) }}</td>
                             <td>
                                 <span class="btn" @click="removeProduct(index)">
                                     <i class="uil-trash" style="color: red"></i>
@@ -90,26 +98,47 @@
             <div class="row container-fluid">
                 <div class="col-12 col-md-4 mb-md-0 mb-3">
                     <div class="row px-0">
-                        <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProducts()">Add another line</span>
+                        <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                         <div class="px-0">
                             <label class="form-label px-0">Notes and instructions</label>
                             <textarea class="form-control" placeholder="Will be displayed on Sales Order" rows="5" style="resize: none" name="notes_and_instructions"></textarea>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-5"></div>
-                <div class="col-12 col-md-3">
+                <div class="col-md-4"></div>
+                <div class="col-12 col-md-4">
                     <div class="row text-end">
-                        <span class="col-7 fw-bold my-auto">Sub Total: </span>
-                        <span class="col-5">{{ subTotal.toFixed(2) }}</span>
+                        <span class="col-4 fw-bold my-auto">Sub Total: </span>
+                        <span class="col-8">{{ subTotal.toFixed(2) }}</span>
+                        <!-- <div class="border my-2"></div>
+                        <span class="col-4 fw-bold my-auto">Tax %: </span>
+                        <span class="col-8">
+                            <div class="row">
+                                <multi-select class="col-7" placeholder="Search Tax"
+                                    v-model="taxRate1"
+                                    label="name"
+                                    :options="taxArray.options"
+                                    @search-change="fetchTax"
+                                    @input="updateTotalPrice">
+                                </multi-select>
+                                <div class="col-5" v-if="taxRate1"><input class="form-control" type="number" v-model="taxRate1.tax_rate" min="0" max="100" step="1" required></div>
+                            </div>
+                        </span>
+                        <span class="col-4 fw-bold my-auto">Tax %: </span>
+                        <span class="col-8">
+                            <div class="row">
+                                <multi-select class="col-7" placeholder="Search Tax"
+                                    v-model="taxRate2"
+                                    label="name"
+                                    :options="taxArray.options"
+                                    @search-change="fetchTax">
+                                </multi-select>
+                                <div class="col-5" v-if="taxRate2"><input class="form-control" type="number" v-model="taxRate2.tax_rate" min="0" max="100" step="1" required></div>
+                            </div>
+                        </span> -->
                         <div class="border my-2"></div>
-                        <span class="col-7 fw-bold my-auto">Tax %: </span>
-                        <span class="col-5"><input class="form-control" type="number" v-model="tax_rate" min="0" max="100" step="1" required></span>
-                        <span class="col-7 fw-bold my-auto">GST: </span>
-                        <span class="col-5">0.00</span>
-                        <div class="border my-2"></div>
-                        <span class="col-7 fw-bold my-auto">Total (SGD): </span>
-                        <span class="col-5">{{ grandTotal.toFixed(2) }}</span>
+                        <span class="col-4 fw-bold my-auto">Total (SGD): </span>
+                        <span class="col-8">{{ grandTotal.toFixed(2) }}</span>
                     </div>
                 </div>
             </div>
@@ -119,65 +148,81 @@
             </div>
         </div>
     </div>
+    <input type="hidden" name="tax_rate" v-model="tax_rate">
+</template>
+<script setup>
+import { defineComponent, reactive, ref, onBeforeMount, computed } from 'vue';
 
-    </template>
+let props = defineProps({
+    salesOrder: Object,
+    tax_rate: Number,
+});
 
-    <script setup>
-    import { defineComponent, ref } from 'vue';
+const subTotal = ref(0);
+const salesOrder = ref(props.salesOrder);
+const client = ref({});
+const grandTotal = ref(0);
+const tax_rate = ref(props.tax_rate);
+const taxRate1 = ref('');
+const taxRate2 = ref('');
+const products = ref([{
+    'product': '',
+    'quantity': 0,
+    'subTotal': 0,
+}]);
 
-    let props = defineProps({
-        salesOrder: Object,
-        tax_rate: Number,
-    });
-
-    const subTotal = ref(0);
-    const salesOrder = ref(props.salesOrder);
-    const client = ref({});
-    const grandTotal = ref(0);
-    const tax_rate = ref(props.taxRate);
-    const clientArray = ref([]);
-    const selectedClient = ref('');
-    const products = ref([{
-        'productVariant': '',
+function addProduct() {
+    products.value.push({
+        'product': '',
         'quantity': 0,
         'subTotal': 0,
-    }]);
+    })
+}
 
-    function addProducts() {
-        this.products.push({
-            'productVariant': '',
-            'quantity': 0,
-            'subTotal': 0,
-        })
-    }
-    function removeProduct(index) {
-        this.products.splice(index, 1);
-        this.updateTotalPrice();
-    }
+function removeProduct(index) {
+    products.value.splice(index, 1);
+    updateTotalPrice();
+}
 
-    function updateProductSubTotal(item) {
-        item.subTotal = item.productVariant.unit_price * item.quantity;
-        this.updateTotalPrice();
-    }
-    function updateTotalPrice() {
-        this.subTotal = 0;
-        this.grandTotal = 0;
-        this.products.forEach(item => {
-            this.subTotal += item.subTotal;
-            this.grandTotal += item.subTotal;
+function updateProductSubTotal(item) {
+    item.subTotal = item.product.selling_price * item.quantity;
+    updateTotalPrice();
+}
+
+function updateTotalPrice() {
+    subTotal.value = 0;
+    grandTotal.value = 0;
+    products.value.forEach(item => {
+        subTotal.value += item.subTotal;
+        grandTotal.value += item.subTotal;
+    });
+}
+
+const productArray = reactive({ options: [] });
+const fetchProducts = (query) => {
+    if (query) {
+        axios.get(`/web/products?search=${query}`).then((response) => {
+            productArray.options = []
+            response.data.response.items.forEach(product => {
+                if (product.type == 3) { // bundle type
+                    productArray.options.push(product);
+                } else {
+                    product.variants.forEach(variant => {
+                        productArray.options.push(variant)
+                    });
+                }
+            });
         });
-        this.grandTotal *= 1 + (props.taxRate / 100);
     }
+};
 
-    function fetchClients(query) {
-        if (query) {
-            axios.get(`/web/clients?search=${query}`).then((response) => {
-                this.clientArray = response.data.response.items;
-            });
-        } else {
-            axios.get(`/web/clients`).then((response) => {
-                this.clientArray = response.data.response.items;
-            });
-        }
+const clientArray = reactive({ options: [] });
+const fetchClients = (query) => {
+    if (query) {
+        axios.get(`/web/clients?search=${query}`).then((response) => {
+            clientArray.options = response.data.response.items;
+        });
     }
+};
+
 </script>

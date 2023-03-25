@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
@@ -18,43 +19,6 @@ use Vecapital\Vebase\Http\Controllers\VeController;
 
 class SalesOrderController extends VeController
 {
-    public function index(Request $request)
-    {
-        $this->authorize('view', SalesOrder::class);
-
-        $search = $request->input('search');
-        $orderColumn = $request->input('order_column');
-        $orderBy = $request->input('order_by');
-
-        $salesOrders = SalesOrder::query();
-
-        if (!empty($search)) {
-            if (!empty($this->model->searchable)) {
-                $salesOrders = $salesOrders->where(function($query) use ($search) {
-                    foreach ($this->model->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
-                    }
-                });
-            }
-        }
-
-        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
-            $salesOrders = $salesOrders->orderBy($orderColumn, $orderBy);
-        }
-
-        $salesOrders = $salesOrders->latest()->paginate(10)->withQueryString();
-
-        return view('admin.sales-orders.index', compact('salesOrders'));
-    }
-
-    public function create()
-    {
-        $this->authorize('create', SalesOrder::class);
-
-        $taxRate = 7;
-        return view('admin.sales-orders.create', compact('taxRate'));
-    }
-
     public function store(Request $request)
     {
         $this->authorize('create', SalesOrder::class);
@@ -81,25 +45,70 @@ class SalesOrderController extends VeController
 
             if (!empty($input['products'])) {
                 foreach ($input['products'] as $selectedProduct) {
-                    $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
-                    $product = $productVariant->product;
+                    if (!empty($selectedProduct['product_variant_id'])) {
+                        $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
+                        $product = $productVariant->product;
 
-                    SalesOrderItem::create([
-                        'sales_order_id' => $salesOrder->id,
-                        'product_id' => $product->id,
-                        'product_variant_id' => $productVariant->id,
-                        'product_name' => $product->name,
-                        'sku' => $product->sku,
-                        'description' => $product->description,
-                        'quantity' => $selectedProduct['quantity'],
-                        'unit_price' => $productVariant->selling_price,
-                        'unit_cost' => $productVariant->cost_price,
-                        'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
-                        'total_cost' => $product['quantity'] * $productVariant->cost_price,
-                    ]);
+                        if (empty($productVariant)) {
+                            flash('Error: Product variant with ID #' . $selectedProduct['product_variant_id'] . ' not found')->error();
+                            return back();
+                        }
 
-                    $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
-                    $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
+                            flash('Error: Product variant with ID #' . $selectedProduct['product_variant_id'] . ' is not available')->error();
+                            return back();
+                        }
+
+                        SalesOrderItem::create([
+                            'sales_order_id' => $salesOrder->id,
+                            'product_id' => $product->id,
+                            'product_variant_id' => $productVariant->id,
+                            'product_name' => $product->name,
+                            'sku' => $product->sku,
+                            'description' => $product->description,
+                            'quantity' => $selectedProduct['quantity'],
+                            'unit_price' => $productVariant->selling_price,
+                            'unit_cost' => $productVariant->cost_price,
+                            'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
+                            'total_cost' => $product['quantity'] * $productVariant->cost_price,
+                        ]);
+
+                        $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
+                        $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
+                    } else {
+                        $product = Product::find($selectedProduct['product_id']);
+
+                        if (empty($product)) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' not found')->error();
+                            return back();
+                        }
+
+                        if ($product->type != Product::TYPE_PRODUCT_BUNDLE) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' is not a product bundle')->error();
+                            return back();
+                        }
+
+                        if ($product->status != Product::STATUS_ACTIVE) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' is not available')->error();
+                            return back();
+                        }
+
+                        SalesOrderItem::create([
+                            'sales_order_id' => $salesOrder->id,
+                            'product_id' => $product->id,
+                            'product_name' => $product->name,
+                            'sku' => $product->sku,
+                            'description' => $product->description,
+                            'quantity' => $selectedProduct['quantity'],
+                            'unit_price' => $product->selling_price,
+                            'unit_cost' => $product->cost_price,
+                            'total_amount' => $selectedProduct['quantity'] * $product->selling_price,
+                            'total_cost' => $product['quantity'] * $product->cost_price,
+                        ]);
+
+                        $subtotal += $selectedProduct['quantity'] * $product->selling_price;
+                        $totalCost += $selectedProduct['quantity'] * $product->cost_price;
+                    }
                 }
             }
 
@@ -120,14 +129,6 @@ class SalesOrderController extends VeController
             flash('Error: ' . $exception->getMessage());
             return redirect()->route('admin.sales-orders.create')->withInput($request->input());
         }
-    }
-
-    public function edit(Request $request, $id)
-    {
-        $salesOrder = $this->findModel($id);
-        $this->authorize('update', $salesOrder);
-        $taxRate = 7;
-        return view('admin.sales-orders.edit', compact('taxRate', 'salesOrder'));
     }
 
     public function update(Request $request, $id)
@@ -155,30 +156,101 @@ class SalesOrderController extends VeController
             $totalCost = 0;
 
             if (!empty($input['products'])) {
-                $salesOrder->orderItems->delete();
+                $salesOrderItemIds = [];
                 foreach ($input['products'] as $selectedProduct) {
-                    $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
-                    $product = $productVariant->product;
+                    if (!empty($selectedProduct['product_variant_id'])) {
+                        $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
+                        $product = $productVariant->product;
 
-                    SalesOrderItem::create([
-                        'sales_order_id' => $salesOrder->id,
-                        'product_id' => $product->id,
-                        'product_variant_id' => $productVariant->id,
-                        'product_name' => $product->name,
-                        'sku' => $product->sku,
-                        'description' => $product->description,
-                        'quantity' => $selectedProduct['quantity'],
-                        'unit_price' => $productVariant->selling_price,
-                        'unit_cost' => $productVariant->cost_price,
-                        'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
-                        'total_cost' => $selectedProduct['quantity'] * $productVariant->cost_price,
-                    ]);
+                        if (empty($productVariant)) {
+                            flash('Error: Product variant with ID #' . $selectedProduct['product_variant_id'] . ' not found')->error();
+                            return back();
+                        }
 
-                    $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
-                    $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
+                            flash('Error: Product variant with ID #' . $selectedProduct['product_variant_id'] . ' is not available')->error();
+                            return back();
+                        }
+
+                        $salesOrderItem = $salesOrder->salesOrderItems()->where('sales_order_items.id', $selectedProduct['product_variant_id'])->first();
+
+                        if (!empty($salesOrderItem)) {
+                            $salesOrderItem->update([
+                                'product_name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
+                                'quantity' => $selectedProduct['quantity'],
+                                'unit_price' => $productVariant->selling_price,
+                                'unit_cost' => $productVariant->cost_price,
+                                'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
+                                'total_cost' => $product['quantity'] * $productVariant->cost_price,
+                            ]);
+                        } else {
+                            $salesOrderItem = SalesOrderItem::create([
+                                'sales_order_id' => $salesOrder->id,
+                                'product_id' => $product->id,
+                                'product_variant_id' => $productVariant->id,
+                                'product_name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
+                                'quantity' => $selectedProduct['quantity'],
+                                'unit_price' => $productVariant->selling_price,
+                                'unit_cost' => $productVariant->cost_price,
+                                'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
+                                'total_cost' => $product['quantity'] * $productVariant->cost_price,
+                            ]);
+                        }
+                        $subtotal += $selectedProduct['quantity'] * $productVariant->selling_price;
+                        $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
+                    } else {
+                        $product = Product::find($selectedProduct['product_id']);
+
+                        if (empty($product)) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' not found')->error();
+                            return back();
+                        }
+
+                        if ($product->type != Product::TYPE_PRODUCT_BUNDLE) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' is not a product bundle')->error();
+                            return back();
+                        }
+
+                        if ($product->status != Product::STATUS_ACTIVE) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' is not available')->error();
+                            return back();
+                        }
+
+                        $salesOrderItem = $salesOrder->salesOrderItems()->where('sales_order_items.id', $selectedProduct['product_id'])->first();
+
+                        if (!empty($salesOrderItem)) {
+                            $salesOrderItem->update([
+                                'product_name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
+                                'quantity' => $selectedProduct['quantity'],
+                                'unit_price' => $product->selling_price,
+                                'unit_cost' => $product->cost_price,
+                                'total_amount' => $selectedProduct['quantity'] * $product->selling_price,
+                                'total_cost' => $product['quantity'] * $product->cost_price,
+                            ]);
+                        } else {
+                            $salesOrderItem = SalesOrderItem::create([
+                                'sales_order_id' => $salesOrder->id,
+                                'product_id' => $product->id,
+                                'product_name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
+                                'quantity' => $selectedProduct['quantity'],
+                                'unit_price' => $product->selling_price,
+                                'unit_cost' => $product->cost_price,
+                                'total_amount' => $selectedProduct['quantity'] * $product->selling_price,
+                                'total_cost' => $product['quantity'] * $product->cost_price,
+                            ]);
+                        }
+                        $subtotal += $selectedProduct['quantity'] * $product->selling_price;
+                        $totalCost += $selectedProduct['quantity'] * $product->cost_price;
+                    }
                 }
-
-                $salesOrder->orderItems->save();
 
                 $salesOrder->tax_amount = $subtotal * ($input['tax_rate'] ?? 0) / 100;
                 $salesOrder->tax_rate = $input['tax_rate'];

@@ -82,13 +82,14 @@ class QuotationRequestController extends VeController
             }
 
             if ($input['status'] == QuotationRequest::STATUS_COMPLETED) {
-                if (!empty($input['products'])) {
-                    $quotationRequest->createPurchaseOrder($input['products']);
+                if (empty($input['products'])) {
+                    flash('Please select at least one product.')->error();
+                    return back();
                 }
 
-                DB::commit();
-                flash()->success('Successfully created the purchase order.');
+                $quotationRequest->createOrUpdatePurchaseOrder($input['products']);
 
+                flash()->success('Successfully created the purchase order.');
                 return redirect()->route('admin.purchase-orders.index');
             }
 
@@ -127,12 +128,12 @@ class QuotationRequestController extends VeController
             $quotationRequest->update($input);
 
             if (!empty($input['products'])) {
-                $quotationRequest->items->delete();
+                $quotationRequestItemIds = [];
                 foreach ($input['products'] as $quotationProduct) {
                     if (!empty($quotationProduct['product_variant_id'])) {
                         $productVariant = ProductVariant::find($quotationProduct['product_variant_id']);
                         $product = $productVariant->product;
-                        QuotationRequestItem::create([
+                        $quotationRequestItem = QuotationRequestItem::create([
                             'quotation_request_id' => $quotationRequest->id,
                             'product_id' => $product->id,
                             'product_variant_id' => $productVariant->id,
@@ -140,6 +141,7 @@ class QuotationRequestController extends VeController
                             'sku' => $productVariant->product->sku,
                             'quantity' => $quotationProduct['quantity'],
                         ]);
+                        $quotationRequestItemIds[] = $quotationRequestItem->id;
                     } else {
                         $product = Product::find($quotationProduct['product_id']);
 
@@ -158,72 +160,28 @@ class QuotationRequestController extends VeController
                             return back();
                         }
 
-                        QuotationRequestItem::create([
+                        $quotationRequestItem = QuotationRequestItem::create([
                             'quotation_request_id' => $quotationRequest->id,
                             'product_id' => $product->id,
                             'name' => $product->name,
                             'sku' => $product->sku,
                             'quantity' => $quotationProduct['quantity'],
                         ]);
+                        $quotationRequestItemIds[] = $quotationRequestItem->id;
                     }
                 }
-                $quotationRequest->items->save();
+                $quotationRequest->quotationRequestItems()->whereNotIn('quotation_request_items.id', $quotationRequestItemIds)->delete();
             }
 
             if ($input['status'] == QuotationRequest::STATUS_COMPLETED) {
-                $quotationRequest->purchaseOrder->items->delete();
-                $quotationRequest->purchaseOrder->delete();
-
-                $purchaseOrder = PurchaseOrder::create($input);
-
-                if (!empty($input['products'])) {
-                    foreach ($input['products'] as $purchaseOrderProduct) {
-                        if (!empty($quotationProduct['product_variant_id'])) {
-                            $productVariant = ProductVariant::find($purchaseOrderProduct['product_variant_id']);
-                            $product = $productVariant->product;
-                            PurchaseOrderItem::create([
-                                'purchase_order_id' => $purchaseOrder->id,
-                                'product_id' => $product->id,
-                                'product_variant_id' => $productVariant->id,
-                                'quantity' => $purchaseOrderProduct['quantity'],
-                                'unit_price' => $productVariant->cost_price,
-                                'total_amount' => $purchaseOrderProduct['quantity'] * $productVariant->cost_price,
-                            ]);
-                        } else {
-                            $product = Product::find($quotationProduct['product_id']);
-
-                            if (empty($productModel)) {
-                                flash('Error: Product with ID #' . $product['product_id'] . ' not found')->error();
-                                return back();
-                            }
-
-                            if ($productModel->type != Product::TYPE_PRODUCT_BUNDLE) {
-                                flash('Error: Product with ID #' . $product['product_id'] . ' is not a product bundle')->error();
-                                return back();
-                            }
-
-                            if ($productModel->status != Product::STATUS_ACTIVE) {
-                                flash('Error: Product with ID #' . $product['product_id'] . ' is not available')->error();
-                                return back();
-                            }
-
-                            PurchaseOrderItem::create([
-                                'purchase_order_id' => $purchaseOrder->id,
-                                'product_id' => $product->id,
-                                'quantity' => $purchaseOrderProduct['quantity'],
-                                'unit_price' => $productVariant->cost_price,
-                                'grand_total' => $purchaseOrderProduct['quantity'] * $productVariant->cost_price,
-                            ]);
-                        }
-                    }
+                if (empty($input['products'])) {
+                    flash('Please select at least one product.')->error();
+                    return back();
                 }
 
-                $purchaseOrder->file_url = $purchaseOrder->generatePdf();
-                $purchaseOrder->save();
+                $quotationRequest->createOrUpdatePurchaseOrder($input['products']);
 
-                DB::commit();
                 flash()->success('Successfully created the purchase order.');
-
                 return redirect()->route('admin.purchase-orders.index');
             }
 

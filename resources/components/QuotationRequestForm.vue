@@ -9,8 +9,8 @@
                     <div class="form-group row mb-3">
                         <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
                         <div class="col-md-12">
-                            <input type="hidden" name="supplier_id" :value="selectedSupplier.id">
-                            <multi-select placeholder="Search Supplier" v-model="selectedSupplier" label="name" :options="supplierArray" @search-change="fetchSuppliers"></multi-select>
+                            <input type="hidden" name="supplier_id" :value="supplier.id">
+                            <multi-select placeholder="Search Supplier" v-model="supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers"></multi-select>
                         </div>
                     </div>
                 </div>
@@ -62,8 +62,7 @@
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
-                                <input type="hidden" :name="'products[' + index + '][invoice_item_id]'" :value="item.invoice_item_id">
-                                <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
+                                <template v-if="item.product.product_id === undefined">
                                     <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
                                 </template>
                                 <template v-else>
@@ -78,7 +77,7 @@
                                 </multi-select>
                             </td>
                             <td>
-                                <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                                <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" required>
                             </td>
                             <td>
                                 <span class="btn" @click="removeProduct(index)">
@@ -92,7 +91,7 @@
             <div class="row container-fluid">
                 <div class="col-12 col-md-4 mb-md-0 mb-3">
                     <div class="row px-0">
-                        <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProducts()">Add another line</span>
+                        <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                         <div class="px-0">
                             <label class="form-label px-0">Notes and Instructions</label>
                             <textarea class="form-control" placeholder="Will be displayed on Quotation Request" rows="5" style="resize: none" name="notes_and_instructions"></textarea>
@@ -116,7 +115,7 @@
 </template>
 
 <script setup>
-import { computed, defineComponent, ref } from 'vue';
+import { defineComponent, reactive, ref, onBeforeMount, computed } from 'vue';
 let props = defineProps({
     quotationRequest: Object,
     taxRate: Number,
@@ -124,66 +123,49 @@ let props = defineProps({
 const quotationRequest = ref(props.quotationRequest);
 const supplier = ref({});
 const status = ref(0);
-const supplierArray = ref([]);
-const selectedSupplier = ref('');
+const products = ref([{
+    'product': '',
+    'quantity': 0,
+    'subTotal': 0,
+}]);
 
-const subTotalItem = computed(() => {
-    let total = 0
-    if (quotationRequest.value) {
-        for (const item of quotationRequest.value.items) {
-        total += (parseFloat(item.product_variant.selling_price) * parseInt(item.quantity))
-        }
-    }
-    return total
-});
-
-const grandTotal = computed(() => {
-    if (quotationRequest.value) {
-        return subTotalItem.value + (subTotalItem.value * quotationRequest.value.tax_rate / 100) + gst.value - discount.value
-    } else {
-        return 0;
-    }
-});
-
-// const products = ref([{
-//     'product': '',
-//     'quantity': 0,
-//     'subTotal': 0,
-// }]);
-
-function addProducts() {
-    this.products.push({
-        'productVariant': '',
+function addProduct() {
+    products.value.push({
+        'product': '',
         'quantity': 0,
         'subTotal': 0,
     })
 }
 
 function removeProduct(index) {
-    this.products.splice(index, 1);
-    this.updateTotalPrice();
+    products.value.splice(index, 1);
+    updateTotalPrice();
 }
 
-function updateProductSubTotal(item) {
-    item.subTotal = item.productVariant.unit_price * item.quantity;
-    this.updateTotalPrice();
-}
-
-function updateTotalPrice() {
-    this.subTotal = 0;
-    this.grandTotal = 0;
-    this.products.forEach(item => {
-        this.subTotal += item.subTotal;
-        this.grandTotal += item.subTotal;
-    });
-    this.grandTotal *= 1 + (props.taxRate / 100);
-}
-
-function fetchSuppliers(query) {
+const productArray = reactive({ options: [] });
+const fetchProducts = (query) => {
     if (query) {
-        axios.get(`/web/suppliers?search=${query}`).then((response) => {
-            this.supplierArray = response.data.response.items;
+        axios.get(`/web/products?search=${query}`).then((response) => {
+            productArray.options = []
+            response.data.response.items.forEach(product => {
+                if (product.type == 3) { // bundle type
+                    productArray.options.push(product);
+                } else {
+                    product.variants.forEach(variant => {
+                        productArray.options.push(variant)
+                    });
+                }
+            });
         });
     }
-}
+};
+
+const supplierArray = reactive({ options: [] });
+const fetchSupplliers = (query) => {
+    if (query) {
+        axios.get(`/web/suppliers?search=${query}`).then((response) => {
+            supplierArray.options = response.data.response.items;
+        });
+    }
+};
 </script>

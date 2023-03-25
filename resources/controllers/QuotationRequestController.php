@@ -103,14 +103,6 @@ class QuotationRequestController extends VeController
         }
     }
 
-    public function edit(Request $request, $id)
-    {
-        $quotationRequest = $this->findModel($id);
-        $this->authorize('update', $quotationRequest);
-        $taxRate = 7;
-        return view('admin.quotation-requests.edit', compact('taxRate', 'quotationRequest'));
-    }
-
     public function update(Request $request, $id)
     {
         $quotationRequest = $this->findModel($id);

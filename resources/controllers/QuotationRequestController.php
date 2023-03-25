@@ -40,7 +40,6 @@ class QuotationRequestController extends VeController
         try {
             $quotationRequest = QuotationRequest::create($input);
             if (!empty($input['products'])) {
-                $quotationRequestItemIds = [];
                 foreach ($input['products'] as $quotationProduct) {
                     if (!empty($quotationProduct['product_variant_id'])) {
                         $productVariant = ProductVariant::find($quotationProduct['product_variant_id']);
@@ -56,25 +55,14 @@ class QuotationRequestController extends VeController
                             return back();
                         }
 
-                        $quotationRequestItem = $quotationRequest->quotationRequestItems()->where('quotation_request_items.id', $quotationProduct['product_variant_id'])->first();
-
-                        if (!empty($quotationRequestItem)) {
-                            $quotationRequestItem->update([
-                                'name' => $productVariant->product->name,
-                                'sku' => $productVariant->product->sku,
-                                'quantity' => $quotationProduct['quantity'],
-                            ]);
-                        } else {
-                            $quotationRequestItem = QuotationRequestItem::create([
-                                'quotation_request_id' => $quotationRequest->id,
-                                'product_id' => $product->id,
-                                'product_variant_id' => $productVariant->id,
-                                'name' => $productVariant->product->name,
-                                'sku' => $productVariant->product->sku,
-                                'quantity' => $quotationProduct['quantity'],
-                            ]);
-                        }
-                        $quotationRequestItemIds[] = $quotationRequestItem->id;
+                        QuotationRequestItem::create([
+                            'quotation_request_id' => $quotationRequest->id,
+                            'product_id' => $product->id,
+                            'product_variant_id' => $productVariant->id,
+                            'name' => $productVariant->product->name,
+                            'sku' => $productVariant->product->sku,
+                            'quantity' => $quotationProduct['quantity'],
+                        ]);
                     } else {
                         $product = Product::find($quotationProduct['product_id']);
 
@@ -93,27 +81,15 @@ class QuotationRequestController extends VeController
                             return back();
                         }
 
-                        $quotationRequestItem = $quotationRequest->quotationRequestItems()->where('quotation_request_items.id', $quotationProduct['product_id'])->first();
-
-                        if (!empty($quotationRequestItem)) {
-                            $quotationRequestItem->update([
-                                'name' => $product->name,
-                                'sku' => $product->sku,
-                                'quantity' => $quotationProduct['quantity'],
-                            ]);
-                        } else {
-                            $quotationRequestItem = QuotationRequestItem::create([
-                                'quotation_request_id' => $quotationRequest->id,
-                                'product_id' => $product->id,
-                                'name' => $product->name,
-                                'sku' => $product->sku,
-                                'quantity' => $quotationProduct['quantity'],
-                            ]);
-                        }
-                        $quotationRequestItemIds[] = $quotationRequestItem->id;
+                        QuotationRequestItem::create([
+                            'quotation_request_id' => $quotationRequest->id,
+                            'product_id' => $product->id,
+                            'name' => $product->name,
+                            'sku' => $product->sku,
+                            'quantity' => $quotationProduct['quantity'],
+                        ]);
                     }
                 }
-                $quotationRequest->quotationRequestItems()->whereNotIn('quotation_request_items.id', $quotationRequestItemIds)->delete();
             }
 
             if ($input['status'] == QuotationRequest::STATUS_COMPLETED) {

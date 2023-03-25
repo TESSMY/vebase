@@ -19,7 +19,7 @@
             <form action="{{ route('admin.quotation-requests.update', [$quotationRequest->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                 @method('PUT')
                 @csrf
-                <quotation-request-form :taxRate="{{ $taxRate }}" :quotationRequest="{{ $quotationRequest }}"></quotation-request-form>
+                <quotation-request-form :taxRate="7" :quotationRequest="{{ $quotationRequest }}"></quotation-request-form>
             </form>
         </div>
     </div>

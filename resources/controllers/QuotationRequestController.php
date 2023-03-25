@@ -50,6 +50,7 @@ class QuotationRequestController extends VeController
                             flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' not found')->error();
                             return back();
                         }
+
                         if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
                             flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' is not available')->error();
                             return back();
@@ -77,18 +78,18 @@ class QuotationRequestController extends VeController
                     } else {
                         $product = Product::find($quotationProduct['product_id']);
 
-                        if (empty($productModel)) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' not found')->error();
+                        if (empty($product)) {
+                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' not found')->error();
                             return back();
                         }
 
-                        if ($productModel->type != Product::TYPE_PRODUCT_BUNDLE) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' is not a product bundle')->error();
+                        if ($product->type != Product::TYPE_PRODUCT_BUNDLE) {
+                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' is not a product bundle')->error();
                             return back();
                         }
 
-                        if ($productModel->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' is not available')->error();
+                        if ($product->status != Product::STATUS_ACTIVE) {
+                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' is not available')->error();
                             return back();
                         }
 
@@ -200,18 +201,18 @@ class QuotationRequestController extends VeController
                     } else {
                         $product = Product::find($quotationProduct['product_id']);
 
-                        if (empty($productModel)) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' not found')->error();
+                        if (empty($product)) {
+                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' not found')->error();
                             return back();
                         }
 
-                        if ($productModel->type != Product::TYPE_PRODUCT_BUNDLE) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' is not a product bundle')->error();
+                        if ($product->type != Product::TYPE_PRODUCT_BUNDLE) {
+                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' is not a product bundle')->error();
                             return back();
                         }
 
-                        if ($productModel->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' is not available')->error();
+                        if ($product->status != Product::STATUS_ACTIVE) {
+                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' is not available')->error();
                             return back();
                         }
 

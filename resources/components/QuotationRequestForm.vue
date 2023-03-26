@@ -102,14 +102,44 @@
             <input type="hidden" name="status" v-model="status">
             <div class="row">
                 <div class="row col-6">
-                    <button type="button" class="col-12 col-md-1 btn btn-primary m-2">Send Email</button>
-                    <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Save as Draft</button>
-                    <a href="/admin/quotation-requests" class="col-12 col-md-1 btn btn-dark m-2">Close</a>
+                    <button type="button" @click="status = 30" data-bs-toggle="modal" data-bs-target="#sendEmailModal" class="col-12 col-md-2 btn btn-primary m-2">Send Email</button>
+                    <button type="submit" class="col-12 col-md-2 btn btn-success m-2">Save as Draft</button>
+                    <a href="/admin/quotation-requests" class="col-12 col-md-2"><button class="btn btn-dark m-2">Close</button></a>
                 </div>
                 <div class="row col-6">
-                    <button type="submit" @click="status = 2" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
+                    <button type="submit" @click="status = 20" class="col-12 col-md-2 btn btn-success m-2">Generate P.O.</button>
                 </div>
             </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="sendEmailModal" tabindex="-1" aria-labelledby="sendEmailModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Send Quotation Request</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row p-2">
+                                <div class="col-md-4 md:text-right">
+                                    <label class="py-2">To Email: </label>
+                                </div>
+                                <div class="col-md-8">
+                                    <input type="email" name="to_email" class="form-control"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-bs-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary ml-auto">
+                                Submit Quotation Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </template>

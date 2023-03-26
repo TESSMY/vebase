@@ -16,7 +16,7 @@
         </div>
         <div class="row">
             <div class="col-12 col-md-1">
-                <button class="btn btn-success" data-toggle="modal" data-target="#quotation-request-modal">Send R.F.Q</button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#quotation-request-modal">Send R.F.Q</button>
                 <div class="modal fade" id="quotation-request-modal" role="dialog">
                     <div class="modal-dialog">
                         <form action="{{ route('admin.quotation-requests.send', [$quotationRequest->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
@@ -32,7 +32,7 @@
                                             <label class="py-2">Customer Name: </label>
                                         </div>
                                         <div class="col-md-8">
-                                            {{-- <input type="text" class="form-control" value="{{ $quotationRequest->supplier->name }}" readonly disabled /> --}}
+                                            <input type="text" class="form-control" value="{{ $quotationRequest->supplier->name }}" readonly disabled />
                                         </div>
                                     </div>
                                     <div class="row p-2">
@@ -45,7 +45,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                                    <button type="button" class="btn btn-default" data-bs-dismiss="modal">
                                         Close
                                     </button>
                                     <button type="submit" class="btn btn-primary ml-auto">

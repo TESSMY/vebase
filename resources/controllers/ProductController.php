@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\ProductBundle;
 use App\Models\ProductVariant;
 use App\Models\Product;
+use App\Models\QuotationItem;
 use App\Models\Supplier;
 use Exception;
 use Illuminate\Http\Request;
@@ -73,7 +74,8 @@ class ProductController extends VeController
                 $url = Storage::url($request->file('image')->store('products/' . $product->id));
                 $product->image = $url;
                 $product->save();
-            } elseif ($product->type == Product::TYPE_SINGLE_PRODUCT) {
+            }
+            if ($product->type == Product::TYPE_SINGLE_PRODUCT) {
                 ProductVariant::create([
                     'product_id' => $product->id,
                     'image' => $product->image,
@@ -119,9 +121,7 @@ class ProductController extends VeController
                         'status' => $input['status']
                     ]);
                 }
-            }
-
-            if ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
+            } elseif ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
                 $productCost = 0;
                 foreach($input['bundles'] as $bundle) {
                     $productVariant = ProductVariant::find($bundle['product_variant_id']);
@@ -138,6 +138,8 @@ class ProductController extends VeController
                 $product->cost_price = $productCost;
                 $product->bundle_value = $product->bundles->sum('grand_total');
                 $product->save();
+            } else {
+                throw new Exception('Unhandled product type.');
             }
 
             DB::commit();
@@ -160,7 +162,7 @@ class ProductController extends VeController
     {
         $product = $this->findModel($id);
         $this->authorize('view', $product);
-        $bundles = ProductBundle::where('product_id', $product->id)->with('productVariant')->get();
+        $bundles = $product->bundles()->with('productVariant')->get();
         $variants = $product->productVariants;
 
         return view('admin.products.edit', compact('product',  'variants', 'bundles'));
@@ -176,7 +178,7 @@ class ProductController extends VeController
     public function update(Request $request, $id)
     {
         $product = $this->findModel($id);
-        $this->authorize('edit', $product);
+//        $this->authorize('edit', $product);
         $input = $request->all();
         if (!empty($input['options'])) {
             foreach ($input['options'] as $index => $option) {
@@ -198,10 +200,10 @@ class ProductController extends VeController
                 $product->save();
             }
             $product->update($input);
-            if (!empty($input['variants'])) {
+            if (!empty($input['variants']) && Product::TYPE_VARIANT_PRODUCT) {
                 $variantId = [];
                 foreach ($input['variants'] as $variant) {
-                    $currentVariant = $product->variants->where('id', $variant['product_variant_id'])->first();
+                    $currentVariant = $product->productVariants->where('id', $variant['product_variant_id'])->first();
                     if ($currentVariant) {
                         $currentVariant->update($variant);
                     } else {
@@ -209,18 +211,42 @@ class ProductController extends VeController
                     }
                     $variantId[] = $currentVariant->id;
                 }
-                $product->variants()->whereNotIn('id', $variantId)->delete();
+
+                $productBundleVariants = ProductBundle::whereIn('product_variant_id', $variantId)->get();
+                if ($productBundleVariants->isNotEmpty()) {
+                    throw new Exception('Product Variants associated with a Product Bundle cannot be deleted.');
+                }
+
+                $quotationItemVariants = QuotationItem::whereIn('product_variant_id', $variantId)->get();
+                if ($quotationItemVariants->isNotEmpty()) {
+                    throw new Exception('Product Variants associated with a Quotation cannot be deleted.');
+                }
+
+                $product->productVariants()->whereNotIn('id', $variantId)->delete();
             }
-            if (!empty($input['bundles'])) {
+            if (!empty($input['bundles']) && Product::TYPE_PRODUCT_BUNDLE) {
+                $bundleId = [];
                 foreach ($input['bundles'] as $bundle) {
                     $currentBundle = $product->bundles()->where('id', $bundle['product_bundle_id'])->first();
                     if ($currentBundle) {
                         $currentBundle->update($bundle);
                     } else {
-                        ProductBundle::create($bundle + ['product_id' => $product->id]);
+                        $currentBundle = ProductBundle::create($bundle + ['product_id' => $product->id]);
                     }
+                    $bundleId[] = $currentBundle->id;
                 }
+
+                $quotationItems = QuotationItem::whereHas('product', function ($query) use ($bundleId) {
+                    $query->whereIn('id', $bundleId);
+                })->get();
+
+                if ($quotationItems->isNotEmpty()) {
+                    throw new Exception('Product Bundles or their Items associated with a Quotation Item cannot be deleted.');
+                }
+
+                $product->bundles()->whereNotIn('id', $bundleId)->delete();
             }
+
             DB::commit();
             flash()->success($product->name . ' updated successfully!');
             return redirect()->route('admin.products.index');

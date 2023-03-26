@@ -5,10 +5,14 @@
                 <span class="h5">PURCHASE ORDER DETAILS</span>
             </div>
             <div class="row">
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Supplier</label>
-                    <!-- <input type="hidden" name="supplier_id" :value="supplier.id">
-                    <multi-select v-model="supplier" track-by="id" label="id" :options="suppliers"></multi-select> -->
+                <div class="col-md-6">
+                    <div class="form-group row mb-3">
+                        <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
+                        <div class="col-md-12">
+                            <input type="hidden" name="supplier_id" :value="supplier.id">
+                            <multi-select placeholder="Search Supplier" v-model="supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers"></multi-select>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Date</label>
@@ -45,25 +49,33 @@
                             <th>Description</th>
                             <th>Quantity</th>
                             <th>Unit Price</th>
-                            <th>Taxes</th>
-                            <th>Total Amount</th>
+                            <th>Sub Total</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
-                                <input type="hidden" :name="'product[' + index + '][product_variant_id]'" :value="item.productVariant.id">
-                                <input type="hidden" :name="'product[' + index + '][product_id]'" :value="item.id">
-                                <multi-select v-model="item.productVariant" track-by="name" label="name" :options="props.productVariants"></multi-select>
+                                <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
+                                    <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
+                                </template>
+                                <template v-else>
+                                    <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.product_id">
+                                    <input type="hidden" :name="'products[' + index + '][product_variant_id]'" :value="item.product.id">
+                                </template>
+                                <multi-select placeholder="Search Products"
+                                    v-model="item.product"
+                                    label="name"
+                                    :options="productArray.options"
+                                    @search-change="fetchProducts">
+                                </multi-select>
                             </td>
                             <td>{{ item.description }}</td>
                             <td>
-                                <input class="form-control" type="number" min="0" :name="'product[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                                <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
                             </td>
-                            <td>{{ item.productVariant.unit_price }}</td>
-                            <td>Taxes</td>
-                            <td>{{ item.grandTotal }}</td>
+                            <td>{{ item.product.selling_price }}</td>
+                            <td>{{ item.subTotal.toFixed(2) }}</td>
                             <td>
                                 <span class="btn" @click="removeProduct(index)">
                                     <i class="uil-trash" style="color: red"></i>
@@ -76,31 +88,53 @@
             <div class="row container-fluid">
                 <div class="col-12 col-md-4 mb-md-0 mb-3">
                     <div class="row px-0">
-                        <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProducts()">Add another line</span>
+                        <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                         <div class="px-0">
                             <label class="form-label px-0">Notes and instructions</label>
                             <textarea class="form-control" placeholder="Will be displayed on Purchase Order" rows="5" style="resize: none" name="notes_and_instructions"></textarea>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-5"></div>
-                <div class="col-12 col-md-3">
+                <div class="col-md-4"></div>
+                <div class="col-12 col-md-4">
                     <div class="row text-end">
-                        <span class="col-7 fw-bold my-auto">Sub Total: </span>
-                        <span class="col-5">{{ subTotal.toFixed(2) }}</span>
+                        <span class="col-4 fw-bold my-auto">Sub Total: </span>
+                        <span class="col-8">{{ subTotal.toFixed(2) }}</span>
+                        <!-- <div class="border my-2"></div>
+                        <span class="col-4 fw-bold my-auto">Tax %: </span>
+                        <span class="col-8">
+                            <div class="row">
+                                <multi-select class="col-7" placeholder="Search Tax"
+                                    v-model="taxRate1"
+                                    label="name"
+                                    :options="taxArray.options"
+                                    @search-change="fetchTax"
+                                    @input="updateTotalPrice">
+                                </multi-select>
+                                <div class="col-5" v-if="taxRate1"><input class="form-control" type="number" v-model="taxRate1.tax_rate" min="0" max="100" step="1" required></div>
+                            </div>
+                        </span>
+                        <span class="col-4 fw-bold my-auto">Tax %: </span>
+                        <span class="col-8">
+                            <div class="row">
+                                <multi-select class="col-7" placeholder="Search Tax"
+                                    v-model="taxRate2"
+                                    label="name"
+                                    :options="taxArray.options"
+                                    @search-change="fetchTax">
+                                </multi-select>
+                                <div class="col-5" v-if="taxRate2"><input class="form-control" type="number" v-model="taxRate2.tax_rate" min="0" max="100" step="1" required></div>
+                            </div>
+                        </span> -->
                         <div class="border my-2"></div>
-                        <span class="col-7 fw-bold my-auto">Tax %: </span>
-                        <span class="col-5"><input class="form-control" type="number" v-model="taxRate" min="0" max="100" step="1" required></span>
-                        <span class="col-7 fw-bold my-auto">GST: </span>
-                        <span class="col-5">0.00</span>
-                        <div class="border my-2"></div>
-                        <span class="col-7 fw-bold my-auto">Total (SGD): </span>
-                        <span class="col-5">{{ grandTotal.toFixed(2) }}</span>
+                        <span class="col-4 fw-bold my-auto">Total (SGD): </span>
+                        <span class="col-8">{{ grandTotal.toFixed(2) }}</span>
                     </div>
                 </div>
             </div>
 
             <input type="hidden" name="status" v-model="status">
+            <input type="hidden" name="tax_rate" v-model="tax_rate">
 
             <div class="row col-12">
                 <button type="submit" @click="status = 10" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
@@ -112,62 +146,78 @@
 </template>
 
 <script setup>
-import { computed, defineComponent, ref } from 'vue';
+import { defineComponent, reactive, ref, onBeforeMount, computed } from 'vue';
+
 let props = defineProps({
     purchaseOrder: Object,
-    taxRate: Number,
+    tax_rate: Number,
 });
+
 const subTotal = ref(0);
 const purchaseOrder = ref(props.purchaseOrder);
 const supplier = ref({});
-const taxRate = ref(props.taxRate);
+const grandTotal = ref(0);
+const tax_rate = ref(props.tax_rate);
+const taxRate1 = ref('');
+const taxRate2 = ref('');
 const status = ref(0);
 
-const subTotalItem = computed(() => {
-    let total = 0
-    if (purchaseOrder.value) {
-        for (const item of purchaseOrder.value.items) {
-        total += (parseFloat(item.product_variant.selling_price) * parseInt(item.quantity))
-        }
-    }
-    return total
-});
-
-const grandTotal = computed(() => {
-    if (purchaseOrder.value) {
-        return subTotalItem.value + (subTotalItem.value * purchaseOrder.value.tax_rate / 100) + gst.value - discount.value
-    } else {
-        return 0;
-    }
-});
-
 const products = ref([{
-    'productVariant': '',
+    'product': '',
     'quantity': 0,
     'subTotal': 0,
 }]);
-function addProducts() {
-    this.products.push({
-        'productVariant': '',
+
+function addProduct() {
+    products.value.push({
+        'product': '',
         'quantity': 0,
         'subTotal': 0,
     })
 }
+
 function removeProduct(index) {
-    this.products.splice(index, 1);
-    this.updateTotalPrice();
+    products.value.splice(index, 1);
+    updateTotalPrice();
 }
+
 function updateProductSubTotal(item) {
-    item.subTotal = item.productVariant.unit_price * item.quantity;
-    this.updateTotalPrice();
+    item.subTotal = item.product.selling_price * item.quantity;
+    updateTotalPrice();
 }
+
 function updateTotalPrice() {
-    this.subTotal = 0;
-    this.grandTotal = 0;
-    this.products.forEach(item => {
-        this.subTotal += item.subTotal;
-        this.grandTotal += item.subTotal;
+    subTotal.value = 0;
+    grandTotal.value = 0;
+    products.value.forEach(item => {
+        subTotal.value += item.subTotal;
+        grandTotal.value += item.subTotal;
     });
-    this.grandTotal *= 1 + (props.taxRate / 100);
 }
+const productArray = reactive({ options: [] });
+const fetchProducts = (query) => {
+    if (query) {
+        axios.get(`/web/products?search=${query}`).then((response) => {
+            productArray.options = []
+            response.data.response.items.forEach(product => {
+                if (product.type == 3) { // bundle type
+                    productArray.options.push(product);
+                } else {
+                    product.variants.forEach(variant => {
+                        productArray.options.push(variant)
+                    });
+                }
+            });
+        });
+    }
+};
+
+const supplierArray = reactive({ options: [] });
+const fetchSuppliers = (query) => {
+    if (query) {
+        axios.get(`/web/suppliers?search=${query}`).then((response) => {
+            supplierArray.options = response.data.response.items;
+        });
+    }
+};
 </script>

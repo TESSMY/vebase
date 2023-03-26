@@ -1,5 +1,7 @@
 @extends('layouts/layout')
+
 @section('content')
+
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 col-md-6">
@@ -19,7 +21,7 @@
             <form action="{{ route('admin.purchase-orders.update', [$purchaseOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                 @method('PUT')
                 @csrf
-                <purchase-order-form :taxRate="{{ $taxRate }}" :purchaseOrder="{{ $purchaseOrder }}"></purchase-order-form>
+                <purchase-order-form :tax_rate="7" :purchaseOrder="{{ $purchaseOrder }}"></purchase-order-form>
             </form>
         </div>
     </div>

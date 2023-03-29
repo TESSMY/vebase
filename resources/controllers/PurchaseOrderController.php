@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Vecapital\Vebase\Http\Controllers\VeController;
 
-class PurchaseOrderController extends Controller
+class PurchaseOrderController extends VeController
 {
     public function store(Request $request)
     {
@@ -36,7 +36,7 @@ class PurchaseOrderController extends Controller
         try {
             $purchaseOrder = PurchaseOrder::create($input);
 
-            $subtotal = 0;
+            $subTotal = 0;
             $totalCost = 0;
 
             if (!empty($input['products'])) {
@@ -50,7 +50,7 @@ class PurchaseOrderController extends Controller
                             return back();
                         }
 
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $product->status != Product::STATUS_ACTIVE) {
                             flash('Error: Product variant with ID #' . $purchaseOrderProduct['product_variant_id'] . ' is not available')->error();
                             return back();
                         }
@@ -59,11 +59,16 @@ class PurchaseOrderController extends Controller
                             'purchase_order_id' => $purchaseOrder->id,
                             'product_id' => $product->id,
                             'product_variant_id' => $productVariant->id,
+                            'name' => $product->name,
+                            'sku' => $product->sku,
+                            'description' => $product->description,
                             'quantity' => $purchaseOrderProduct['quantity'],
-                            'unit_price' => $productVariant->cost_price,
-                            'grand_total' => $purchaseOrderProduct['quantity'] * $productVariant->cost_price,
+                            'unit_price' => $productVariant->selling_price,
+                            'unit_cost' => $productVariant->cost_price,
+                            'total_amount' => $purchaseOrderProduct['quantity'] * $productVariant->selling_price,
+                            'total_cost' => $purchaseOrderProduct['quantity'] * $productVariant->cost_price,
                         ]);
-                        $subtotal += $purchaseOrderProduct['quantity'] * $productVariant->selling_price;
+                        $subTotal += $purchaseOrderProduct['quantity'] * $productVariant->selling_price;
                         $totalCost += $purchaseOrderProduct['quantity'] * $productVariant->cost_price;
                     } else {
                         $product = Product::find($purchaseOrderProduct['product_id']);
@@ -86,20 +91,27 @@ class PurchaseOrderController extends Controller
                         PurchaseOrderItem::create([
                             'purchase_order_id' => $purchaseOrder->id,
                             'product_id' => $product->id,
+                            'name' => $product->name,
+                            'sku' => $product->sku,
+                            'description' => $product->description,
                             'quantity' => $purchaseOrderProduct['quantity'],
-                            'unit_price' => $product->cost_price,
-                            'grand_total' => $purchaseOrderProduct['quantity'] * $product->cost_price,
+                            'unit_price' => $product->selling_price,
+                            'unit_cost' => $product->cost_price,
+                            'total_amount' => $purchaseOrderProduct['quantity'] * $product->selling_price,
+                            'total_cost' => $purchaseOrderProduct['quantity'] * $product->cost_price,
                         ]);
-                        $subtotal += $purchaseOrderProduct['quantity'] * $product->selling_price;
+                        $subTotal += $purchaseOrderProduct['quantity'] * $product->selling_price;
                         $totalCost += $purchaseOrderProduct['quantity'] * $product->cost_price;
                     }
                 }
+                $purchaseOrder->item_count = count($input['products']);
             }
 
-            $purchaseOrder->tax_amount = $subtotal * ($input['tax_rate'] ?? 0) / 100;
-            $purchaseOrder->tax_rate = $input['tax_rate'];
-            $purchaseOrder->sub_total = $subtotal;
-            $purchaseOrder->grand_total = $subtotal - $purchaseOrder->discount + $purchaseOrder->tax_amount;
+            $purchaseOrder->tax_amount = $subTotal * ($input['tax_rate'] ?? 0) / 100;
+            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $purchaseOrder->sub_total = $subTotal;
+            $purchaseOrder->total_amount = $subTotal - $purchaseOrder->discount_amount + $purchaseOrder->tax_amount;
+            $purchaseOrder->total_cost = $totalCost;
             $purchaseOrder->file_url = $purchaseOrder->generatePdf();
             $purchaseOrder->save();
 
@@ -131,7 +143,7 @@ class PurchaseOrderController extends Controller
         try {
             $purchaseOrder->update($input);
 
-            $subtotal = 0;
+            $subTotal = 0;
             $totalCost = 0;
 
             if (!empty($input['products'])) {
@@ -146,7 +158,7 @@ class PurchaseOrderController extends Controller
                             return back();
                         }
 
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $product->status != Product::STATUS_ACTIVE) {
                             flash('Error: Product variant with ID #' . $purchaseOrderProduct['product_variant_id'] . ' is not available')->error();
                             return back();
                         }
@@ -155,21 +167,31 @@ class PurchaseOrderController extends Controller
 
                         if (!empty($purchaseOrderItem)) {
                             $purchaseOrderItem->update([
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
                                 'quantity' => $product['quantity'],
-                                'unit_price' => $productVariant->cost_price,
-                                'grand_total' => $product['quantity'] * $productVariant->cost_price,
+                                'unit_price' => $productVariant->selling_price,
+                                'unit_cost' => $productVariant->cost_price,
+                                'total_amount' => $product['quantity'] * $productVariant->selling_price,
+                                'total_cost' => $product['quantity'] * $productVariant->cost_price,
                             ]);
                         } else {
                             $purchaseOrderItem = PurchaseOrderItem::create([
                                 'purchase_order_id' => $purchaseOrder->id,
                                 'product_id' => $product->id,
                                 'product_variant_id' => $productVariant->id,
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
                                 'quantity' => $product['quantity'],
-                                'unit_price' => $productVariant->cost_price,
-                                'grand_total' => $product['quantity'] * $productVariant->cost_price,
+                                'unit_price' => $productVariant->selling_price,
+                                'unit_cost' => $productVariant->cost_price,
+                                'total_amount' => $product['quantity'] * $productVariant->selling_price,
+                                'total_cost' => $product['quantity'] * $productVariant->cost_price,
                             ]);
                         }
-                        $subtotal += $purchaseOrderProduct['quantity'] * $productVariant->selling_price;
+                        $subTotal += $purchaseOrderProduct['quantity'] * $productVariant->selling_price;
                         $totalCost += $purchaseOrderProduct['quantity'] * $productVariant->cost_price;
                         $purchaseOrderItemIds[] = $purchaseOrderItem->id;
                     } else {
@@ -194,31 +216,43 @@ class PurchaseOrderController extends Controller
 
                         if (!empty($purchaseOrderItem)) {
                             $purchaseOrderItem->update([
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
                                 'quantity' => $product['quantity'],
-                                'unit_price' => $product->cost_price,
-                                'grand_total' => $product['quantity'] * $product->cost_price,
+                                'unit_price' => $product->selling_price,
+                                'unit_cost' => $product->cost_price,
+                                'total_amount' => $product['quantity'] * $product->selling_price,
+                                'total_cost' => $product['quantity'] * $product->cost_price,
                             ]);
                         } else {
                             $purchaseOrderItem = PurchaseOrderItem::create([
                                 'purchase_order_id' => $purchaseOrder->id,
                                 'product_id' => $product->id,
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
                                 'quantity' => $product['quantity'],
-                                'unit_price' => $product->cost_price,
-                                'grand_total' => $product['quantity'] * $product->cost_price,
+                                'unit_price' => $product->selling_price,
+                                'unit_cost' => $product->cost_price,
+                                'total_amount' => $product['quantity'] * $product->selling_price,
+                                'total_cost' => $product['quantity'] * $product->cost_price,
                             ]);
                         }
-                        $subtotal += $purchaseOrderProduct['quantity'] * $product->selling_price;
+                        $subTotal += $purchaseOrderProduct['quantity'] * $product->selling_price;
                         $totalCost += $purchaseOrderProduct['quantity'] * $product->cost_price;
                         $purchaseOrderItemIds[] = $purchaseOrderItem->id;
                     }
                 }
+                $purchaseOrder->item_count = count($input['products']);
                 $purchaseOrder->purchaseOrderItems()->whereNotIn('purchase_order_items.id', $purchaseOrderItemIds)->delete();
             }
 
-            $purchaseOrder->tax_amount = $subtotal * ($input['tax_rate'] ?? 0) / 100;
-            $purchaseOrder->tax_rate = $input['tax_rate'];
-            $purchaseOrder->sub_total = $subtotal;
-            $purchaseOrder->grand_total = $subtotal - $purchaseOrder->discount + $purchaseOrder->tax_amount;
+            $purchaseOrder->tax_amount = $subTotal * ($input['tax_rate'] ?? 0) / 100;
+            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $purchaseOrder->sub_total = $subTotal;
+            $purchaseOrder->total_amount = $subTotal - $purchaseOrder->discount_amount + $purchaseOrder->tax_amount;
+            $purchaseOrder->total_cost = $totalCost;
             $purchaseOrder->file_url = $purchaseOrder->generatePdf();
             $purchaseOrder->save();
 

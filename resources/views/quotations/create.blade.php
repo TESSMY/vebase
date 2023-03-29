@@ -21,8 +21,8 @@
                     @csrf
                     <quotation-form></quotation-form>
                     <div class="mt-3">
-{{--                        <button class="btn btn-light me-2" type="submit">{{  __('Create') }}</button>--}}
-{{--                        <button class="btn btn-secondary">{{ __('Close') }}</button>--}}
+                        <button class="btn btn-primary me-2" type="submit">{{  __('Create') }}</button>
+                        <button class="btn btn-secondary">{{ __('Close') }}</button>
                     </div>
                 </form>
             @endcan

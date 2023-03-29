@@ -20,7 +20,7 @@
                 <form action="{{ route('admin.quotations.update', [$quotation->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                     @method('PUT')
                     @csrf
-                    <quotation-form :quotation="{{ $quotation }}" :quotation-items="{{ $quotationItems }}"></quotation-form>
+                    <quotation-form :quotation="{{ $quotation }}" :quotation-items="{{ $quotation->quotationItems }}" :quotation-client="{{ $quotation->client }}"></quotation-form>
                     <div class="mt-3">
                         <button class="btn btn-primary me-2" type="submit">{{  __('Update') }}</button>
                         <button class="btn btn-secondary">{{ __('Close') }}</button>

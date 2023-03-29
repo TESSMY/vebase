@@ -74,19 +74,7 @@
                             <td>{{ $quotation->client->name }}</td>
                             <td>$ {{ $quotation->grand_total }}</td>
                             <td>
-                                @if($quotation->status == \App\Models\Quotation::STATUS_DRAFT)
-                                    Draft
-                                @elseif($quotation->status == \App\Models\Quotation::STATUS_PENDING)
-                                    Pending
-                                @elseif($quotation->status == \App\Models\Quotation::STATUS_APPROVED)
-                                    Approved
-                                @elseif($quotation->status == \App\Models\Quotation::STATUS_SENT)
-                                    Sent
-                                @elseif($quotation->status == \App\Models\Quotation::STATUS_ORDER_CONFIRMED)
-                                    Order Confirmed
-                                @elseif($quotation->status == \App\Models\Quotation::STATUS_EXPIRED)
-                                    Expired
-                                @endif
+                                {{ $quotation->status_text }}
                             </td>
                             <td>{{ $quotation->created_at }}</td>
                             <td>

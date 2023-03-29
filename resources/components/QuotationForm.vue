@@ -104,13 +104,20 @@
                 </div>
             </div>
         </div>
+
+        <input type="hidden" name="status" v-model="status">
+        <div class="row col-md-12 text-end">
+            <div class="col-md-12 text-end">
+                <button type="submit" @click="status = 20" class="btn btn-success m-4">Generate S.O.</button>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
 export default {
     name: "QuotationForm",
-    props: ["quotation", "quotationItems"],
+    props: ["quotation", "quotationItems", "quotationClient"],
 
     watch: {
         taxRate: function (newVal, oldVal) {
@@ -136,6 +143,7 @@ export default {
             grandTotal: '',
             taxRate: '',
             notes: '',
+            status: 10,
             products: [{
                 product: '',
                 quantity: 0,
@@ -151,13 +159,17 @@ export default {
 
     mounted() {
         if (this.quotation !== undefined) {
-            this.selectedClient = this.quotation.client_id;
+            this.selectedClient = this.quotationClient;
+            this.deliveryDate = this.quotation.delivery_date;
+            let delivery_date = new Date(this.quotation.delivery_date);
+            this.deliveryDate = delivery_date.toISOString().split('T')[0];
             this.expirationDate = this.quotation.expirationDate;
+            let expiration_date = new Date(this.quotation.expiration_date);
+            this.expirationDate = expiration_date.toISOString().split('T')[0];
             this.name = this.quotation.name;
             this.paymentTerm = this.quotation.payment_term;
             this.billingAddress = this.quotation.billing_address;
             this.deliveryAddress = this.quotation.delivery_address;
-            this.deliveryDate = this.quotation.delivery_date;
             this.notes = this.quotation.notes;
             this.taxRate = this.quotation.tax_rate;
             this.subTotal = this.quotation.sub_total;
@@ -182,6 +194,7 @@ export default {
 
             this.products = products;
         }
+        this.updateTotalPrice();
     },
 
     methods: {
@@ -217,7 +230,7 @@ export default {
                 this.itemTotal = item.product.selling_price * item.quantity;
                 this.subTotal += this.itemTotal;
             });
-            this.grandTotal += this.subTotal + (this.subTotal * (this.taxRate / 100));
+            this.grandTotal += parseFloat(this.subTotal) + (parseFloat(this.subTotal) * (this.taxRate / 100));
         },
 
         updateItemTotalPrice() {

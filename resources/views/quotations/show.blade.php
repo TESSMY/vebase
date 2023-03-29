@@ -16,12 +16,12 @@
         </div>
         <div class="row">
             <div class="col-12 col-md-1">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="quotationModal">
                     Send Quotation Email
                 </button>
 
                 <!-- Modal -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal fade" id="quotationModal" tabindex="-1" aria-labelledby="quotationModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <form action="{{ route('admin.quotations.send', [$quotation->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                             @csrf

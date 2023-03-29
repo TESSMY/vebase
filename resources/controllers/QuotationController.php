@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Client;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
-use http\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +27,7 @@ class QuotationController extends VeController
      */
     public function index(Request $request)
     {
-        // $this->authorize('viewAny', Quotation::class);
+        $this->authorize('viewAny', Quotation::class);
         $search = $request->input('search');
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
@@ -50,18 +50,6 @@ class QuotationController extends VeController
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        $this->authorize('create', Quotation::class);
-
-        return view('admin.quotations.create');
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
@@ -80,8 +68,7 @@ class QuotationController extends VeController
 
         DB::beginTransaction();
         try {
-            $client = \App\Models\Client::find($input['client_id']);
-            $quotation = Quotation::create($input + ['client_name' => $client->name, 'created_by' => Auth::id()]);
+            $quotation = Quotation::create($input + ['created_by' => Auth::id()]);
             $subTotal = 0;
 
             if (!empty($input['products'])) {
@@ -153,16 +140,12 @@ class QuotationController extends VeController
                 $quotation->tax_amount = $tax;
             }
             $quotation->grand_total = $grandTotal;
-            $fileUrl = $quotation->generatePdf();
-            $quotation->file_url = $fileUrl;
             $quotation->save();
+            $quotation->generatePdf();
 
             if ($input['status'] == Quotation::STATUS_APPROVED) {
-                if (empty($input['products'])) {
-                    flash('Please select at least one product.')->error();
-                    return back();
-                }
                 $quotation->createOrUpdateSalesOrder($input['products']);
+                DB::commit();
                 flash()->success('Successfully created the sales order.');
                 return redirect()->route('admin.sales-orders.index');
             }
@@ -176,21 +159,6 @@ class QuotationController extends VeController
             flash('Error: ' . $exception->getMessage());
             return redirect()->route('admin.quotations.create')->withInput($request->input());
         }
-    }
-
-    public function show(Request $request, $id)
-    {
-        $quotation = $this->findModel($id);
-
-        return view('admin.quotations.show', compact('quotation'));
-    }
-
-    public function edit(Request $request, $id)
-    {
-        $quotation = $this->findModel($id);
-        $quotationItems = $quotation->quotationItems;
-
-        return view('admin.quotations.edit', compact('quotation', 'quotationItems'));
     }
 
     /**
@@ -210,18 +178,22 @@ class QuotationController extends VeController
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
+        if ($quotation->salesOrder->status == SalesOrder::STATUS_COMPLETED) {
+            flash('Error: Unable to edit due to sales order being completed.');
+            return back();
+        }
         try {
             DB::beginTransaction();
 
-            $client = \App\Models\Client::find($input['client_id']);
-            $quotation->update($input + ['client_name' => $client->name, 'created_by' => Auth::id()]);
+            $client = Client::find($input['client_id']);
+            $quotation->update($input + ['client_id' => $client->id]);
             $subTotal = 0;
             $quotationItemIds = [];
             foreach ($input['products'] as $product) {
                 if (!empty($product['quotation_item_id'])) {
                     // existing invoice item
                     $productModel = Product::find($product['product_id']);
-                    $quotationItem = QuotationItem::find($product['quotation_item_id']);
+                    $quotationItem = $quotation->quotationItem()->find($product['quotation_item_id']);
                     $quotationItem->update($product + [
                             'product_variant_id' => !empty($product['product_variant_id']) ? $product['quotation_item_id'] : null,
                             'name' => $productModel->name,
@@ -294,6 +266,7 @@ class QuotationController extends VeController
             $quotation->grand_total = $grandTotal;
             $quotation->save();
             $quotation->generatePDF();
+            $quotation->createOrUpdateSalesOrder($input['products']);
             DB::commit();
             flash()->success('Successfully updated quotation');
             return redirect()->route('admin.quotations.index');
@@ -307,15 +280,15 @@ class QuotationController extends VeController
 
     public function send(Request $request, Quotation $quotation)
     {
-//        $this->authorize('sendEmail', $quotation);
+        $this->authorize('create', $quotation);
         try {
             $data["email"] = $request->input('to_email');
             $data["title"] = 'Quotation' . ' ' . $quotation->id;
             $data["quotationRequest"] = $quotation;
             Mail::send('admin.quotations.message', $data, function ($message) use ($data, $quotation) {
-                $message->to($data["email"], $data["email"])
-                    ->subject($data["title"]);
-//                    ->attach(Storage::url($quotation->file_url));
+                $message->to($data["email"])
+                    ->subject($data["title"])
+                    ->attach($quotation->file_url);
             });
             $quotation->status = Quotation::STATUS_SENT;
             $quotation->save();

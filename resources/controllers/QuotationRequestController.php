@@ -58,7 +58,7 @@ class QuotationRequestController extends VeController
                             return back();
                         }
 
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $product->status != Product::STATUS_ACTIVE) {
                             flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' is not available')->error();
                             return back();
                         }
@@ -106,7 +106,7 @@ class QuotationRequestController extends VeController
                     return back();
                 }
 
-                $quotationRequest->createOrUpdatePurchaseOrder($input['products']);
+                $quotationRequest->createPurchaseOrder($input['products']);
 
                 DB::commit();
                 flash()->success('Successfully created the purchase order.');
@@ -164,7 +164,7 @@ class QuotationRequestController extends VeController
                             return back();
                         }
 
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $product->status != Product::STATUS_ACTIVE) {
                             flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' is not available')->error();
                             return back();
                         }
@@ -235,7 +235,7 @@ class QuotationRequestController extends VeController
                     return back();
                 }
 
-                $quotationRequest->createOrUpdatePurchaseOrder($input['products']);
+                $quotationRequest->createPurchaseOrder($input['products']);
 
                 flash()->success('Successfully created the purchase order.');
                 return redirect()->route('admin.purchase-orders.index');

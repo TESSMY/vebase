@@ -279,8 +279,7 @@
                 <th class="grey">Vendor</th>
             </tr>
             <tr>
-                <th>hoho</th>
-                {{-- <th>{{ $invoice->getCustomData()[0]->supplier->address }}</th> --}}
+                <th>{{ $invoice->getCustomData()[0]->billing_address }}</th>
             </tr>
         </table>
     </div>
@@ -291,27 +290,10 @@
                 <th class="grey">Ship To</th>
             </tr>
             <tr>
-                <th>{{ $invoice->getCustomData()[0]->ship_to }}</th>
+                <th>{{ $invoice->getCustomData()[0]->shipping_address }}</th>
             </tr>
         </table>
     </div>
-</div>
-
-<div class="pt-100">
-    <table>
-        <thead>
-            <tr class="grey bold">
-                <th>Payment Terms</th>
-                <th>Delivery Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>{{ $invoice->getCustomData()[0]->payment_term }}</td>
-                <td>{{ $invoice->getCustomData()[0]->delivery_date->format('d/m/Y') }}</td>
-            </tr>
-        </tbody>
-    </table>
 </div>
 
 <div class="pt-100">
@@ -335,6 +317,12 @@
             @endforeach
         </tbody>
     </table>
+</div>
+
+<div class="pt-100">
+    <textarea cols="30" rows="10">
+        {{ $invoice->getCustomData()[0]->notes_and_instructions }}
+    </textarea>
 </div>
 
 <script type="text/php">

@@ -67,8 +67,9 @@ class QuotationRequestController extends VeController
                             'quotation_request_id' => $quotationRequest->id,
                             'product_id' => $product->id,
                             'product_variant_id' => $productVariant->id,
-                            'name' => $productVariant->product->name,
-                            'sku' => $productVariant->product->sku,
+                            'name' => $product->name,
+                            'sku' => $product->sku,
+                            'description' => $product->description,
                             'quantity' => $quotationProduct['quantity'],
                         ]);
                     } else {
@@ -94,11 +95,15 @@ class QuotationRequestController extends VeController
                             'product_id' => $product->id,
                             'name' => $product->name,
                             'sku' => $product->sku,
+                            'description' => $product->description,
                             'quantity' => $quotationProduct['quantity'],
                         ]);
                     }
                 }
             }
+
+            $quotationRequest->file_url = $quotationRequest->generatePdf();
+            $quotationRequest->save();
 
             if ($input['status'] == QuotationRequest::STATUS_APPROVED) {
                 if (empty($input['products'])) {
@@ -112,7 +117,8 @@ class QuotationRequestController extends VeController
                 flash()->success('Successfully created the purchase order.');
                 return redirect()->route('admin.purchase-orders.index');
             } elseif ($input['status'] == QuotationRequest::STATUS_SENT) {
-                $this->send($request, $quotationRequest);
+                DB::commit();
+                return $this->send($request, $quotationRequest);
             } else {
                 DB::commit();
                 flash()->success('Successfully created the quotation request.');
@@ -173,8 +179,9 @@ class QuotationRequestController extends VeController
 
                         if (!empty($quotationRequestItem)) {
                             $quotationRequestItem->update([
-                                'name' => $productVariant->product->name,
-                                'sku' => $productVariant->product->sku,
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
                                 'quantity' => $quotationProduct['quantity'],
                             ]);
                         } else {
@@ -182,8 +189,9 @@ class QuotationRequestController extends VeController
                                 'quotation_request_id' => $quotationRequest->id,
                                 'product_id' => $product->id,
                                 'product_variant_id' => $productVariant->id,
-                                'name' => $productVariant->product->name,
-                                'sku' => $productVariant->product->sku,
+                                'name' => $product->name,
+                                'sku' => $product->sku,
+                                'description' => $product->description,
                                 'quantity' => $quotationProduct['quantity'],
                             ]);
                         }
@@ -212,6 +220,7 @@ class QuotationRequestController extends VeController
                             $quotationRequestItem->update([
                                 'name' => $product->name,
                                 'sku' => $product->sku,
+                                'description' => $product->description,
                                 'quantity' => $quotationProduct['quantity'],
                             ]);
                         } else {
@@ -220,6 +229,7 @@ class QuotationRequestController extends VeController
                                 'product_id' => $product->id,
                                 'name' => $product->name,
                                 'sku' => $product->sku,
+                                'description' => $product->description,
                                 'quantity' => $quotationProduct['quantity'],
                             ]);
                         }
@@ -228,6 +238,9 @@ class QuotationRequestController extends VeController
                 }
                 $quotationRequest->quotationRequestItems()->whereNotIn('quotation_request_items.id', $quotationRequestItemIds)->delete();
             }
+
+            $quotationRequest->file_url = $quotationRequest->generatePdf();
+            $quotationRequest->save();
 
             if ($input['status'] == QuotationRequest::STATUS_APPROVED) {
                 if (empty($input['products'])) {
@@ -240,7 +253,8 @@ class QuotationRequestController extends VeController
                 flash()->success('Successfully created the purchase order.');
                 return redirect()->route('admin.purchase-orders.index');
             } elseif ($input['status'] == QuotationRequest::STATUS_SENT) {
-                $this->send($request, $quotationRequest);
+                DB::commit();
+                return $this->send($request, $quotationRequest);
             } else {
                 DB::commit();
                 flash()->success('Successfully created the quotation request.');

@@ -63,7 +63,11 @@
         </div>
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow py-3 px-4">
-            <iframe src="{{ $quotationRequest->file_url }}" frameborder="0" class="w-100 mx-auto" height="800px"></iframe>
+            @if (!empty($quotationRequest->file_url))
+                <iframe src="{{ $quotationRequest->file_url }}" frameborder="0" class="w-100 mx-auto" height="800px"></iframe>
+            @else
+                No file
+            @endif
         </div>
     </div>
 @endsection

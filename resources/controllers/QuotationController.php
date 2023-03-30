@@ -21,35 +21,6 @@ use Vecapital\Vebase\Http\Controllers\VeController;
 class QuotationController extends VeController
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
-    {
-        $this->authorize('viewAny', Quotation::class);
-        $search = $request->input('search');
-        $orderColumn = $request->input('order_column');
-        $orderBy = $request->input('order_by');
-        $limit = $request->input('limit') ?? 10;
-        $quotations = Quotation::query();
-        if (!empty($search)) {
-            if (!empty($this->model->searchable)) {
-                $quotations = $quotations->where(function($query) use ($search) {
-                    foreach ($this->model->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
-                    }
-                });
-            }
-        }
-        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
-            $quotations = $quotations->orderBy($orderColumn, $orderBy);
-        }
-        $quotations = $quotations->latest()->paginate(10)->withQueryString();
-        return view('admin.quotations.index', compact('quotations', 'limit'));
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request

@@ -16,17 +16,17 @@ class ClientImport implements ToModel
     {
         return new Client([
             'name' => $row[0],
-            'code' => $row[1],
-            'email' => $row[2],
-            'address' => $row[3],
-            'city' => $row[4],
-            'state' => $row[5],
-            'zip' => $row[6],
-            'country' => $row[7],
-            'pic_name' => $row[8],
-            'pic_email' => $row[9],
-            'pic_phone' => $row[10],
-            'phone' => $row[11],
+            'email' => $row[1],
+            'company_name' => $row[2],
+            'phone' => $row[3],
+            'address_1' => $row[4],
+            'address_2' => $row[5],
+            'city' => $row[6],
+            'state' => $row[7],
+            'postcode' => $row[8],
+            'country' => $row[9],
+            'image' => $row[10],
+            'status' => $row[11],
         ]);
     }
 }

@@ -16,33 +16,27 @@
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Date</label>
-                    <input v-if="salesOrder" class="form-control" type="date" name="date" placeholder="date" v-model="salesOrder.date" required>
-                    <input v-else class="form-control" type="date" name="date" placeholder="date" required>
+                    <input class="form-control" type="date" name="date" v-model="date" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Customer PO</label>
-                    <input v-if="salesOrder" class="form-control" type="text" name="client_address" placeholder="Enter Customer P.O" v-model="salesOrder.client.address_1" required>
-                    <input v-else class="form-control" type="text" name="client_address" placeholder="Enter Customer P.O" required>
+                    <input class="form-control" type="text" name="client_address" placeholder="Enter Customer P.O" v-model="customerPo" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Customer Name</label>
-                    <input v-if="salesOrder" class="form-control" type="text" name="client_name" placeholder="Enter Customer Name" v-model="salesOrder.client.name" required>
-                    <input v-else class="form-control" type="text" name="client_name" placeholder="Enter Customer Name" required>
+                    <input class="form-control" type="text" name="client_name" placeholder="Enter Customer Name" v-model="customerName" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Term</label>
-                    <input v-if="salesOrder" class="form-control" type="text" name="payment_terms" placeholder="Payment Term" v-model="salesOrder.payment_terms">
-                    <input v-else class="form-control" type="text" name="payment_terms" placeholder="Payment Term">
+                    <input class="form-control" type="text" name="payment_terms" placeholder="Payment Term" v-model="paymentTerm" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Due</label>
-                    <input v-if="salesOrder" class="form-control" type="date" name="payment_due" v-model="salesOrder.payment_due">
-                    <input v-else class="form-control" type="date" name="payment_due">
+                    <input class="form-control" type="date" name="payment_due" v-model="paymentDue" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Packed By Date</label>
-                    <input v-if="salesOrder" class="form-control" type="date" name="packed_by_date" v-model="salesOrder.packed_by_date" required>
-                    <input v-else class="form-control" type="date" name="packed_by_date" required>
+                    <input class="form-control" type="date" name="packed_by_date" v-model="packedByDate" required>
                 </div>
             </div>
         </div>
@@ -66,6 +60,7 @@
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
+                                <input type="hidden" :name="'products[' + index + '][sales_order_item_id]'" :value="item.sales_order_item_id">
                                 <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
                                     <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
                                 </template>
@@ -101,7 +96,7 @@
                         <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                         <div class="px-0">
                             <label class="form-label px-0">Notes and instructions</label>
-                            <textarea class="form-control" placeholder="Will be displayed on Sales Order" rows="5" style="resize: none" name="notes_and_instructions"></textarea>
+                            <textarea class="form-control" placeholder="Will be displayed on Sales Order" rows="5" style="resize: none" name="notes_and_instructions">{{ notes }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -161,6 +156,13 @@ let props = defineProps({
 const subTotal = ref(0);
 const salesOrder = ref(props.salesOrder);
 const client = ref({});
+const date = ref('');
+const customerPo = ref('');
+const customerName = ref('');
+const paymentTerm = ref('');
+const paymentDue = ref('');
+const packedByDate = ref('');
+const notes = ref('');
 const grandTotal = ref(0);
 const tax_rate = ref(props.tax_rate);
 const taxRate1 = ref('');
@@ -224,5 +226,41 @@ const fetchClients = (query) => {
         });
     }
 };
+
+onBeforeMount(() => {
+    if (props.salesOrder !== undefined) {
+        if (props.salesOrder.sales_order_items !== undefined) {
+            client.value = props.salesOrder.client
+            date.value = props.salesOrder.date
+            customerPo.value = props.salesOrder.client_address
+            customerName.value = props.salesOrder.client_name
+            paymentTerm.value = props.salesOrder.payment_terms
+            paymentDue.value = props.salesOrder.payment_due
+            packedByDate.value = props.salesOrder.packed_by_date
+            notes.value = props.salesOrder.notes_and_instructions
+            products.value = [];
+
+            props.salesOrder.sales_order_items.forEach(salesOrderItem => {
+                if (salesOrderItem.product_variant == null) {
+                    // bundles
+                    products.value.push({
+                        'sales_order_item_id': salesOrderItem.id,
+                        'product': salesOrderItem.product,
+                        'quantity': salesOrderItem.quantity,
+                        'subTotal': salesOrderItem.quantity * salesOrderItem.product.cost_price,
+                    });
+                } else {
+                    // product variants & single products
+                    products.value.push({
+                        'sales_order_item_id': salesOrderItem.id,
+                        'product': salesOrderItem.product_variant,
+                        'quantity': salesOrderItem.quantity,
+                        'subTotal': salesOrderItem.quantity * salesOrderItem.product_variant.selling_price,
+                    });
+                }
+            });
+        }
+    }
+})
 
 </script>

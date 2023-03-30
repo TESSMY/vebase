@@ -19,8 +19,11 @@
             <form action="{{ route('admin.quotation-requests.update', [$quotationRequest->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                 @method('PUT')
                 @csrf
-                <quotation-request-form :taxRate="7" :quotationRequest="{{ $quotationRequest }}"></quotation-request-form>
+                <quotation-request-form :taxRate="7" :quotation-request="{{ $quotationRequest }}"></quotation-request-form>
             </form>
+        </div>
+        <div class="col-md-12 text-end">
+            <a href="{{ route('admin.quotation-requests.generatePo', [$quotationRequest->getRouteKey()]) }}"><button type="button" class="col-12 col-md-2 btn btn-success m-2">Generate P.O.</button></a>
         </div>
     </div>
 @endsection

@@ -21,6 +21,16 @@ use Vecapital\Vebase\Http\Controllers\VeController;
 
 class QuotationRequestController extends VeController
 {
+    public function edit(Request $request, $id)
+    {
+        $quotationRequest = $this->findModel($id);
+        $this->authorize('update', $quotationRequest);
+
+        $quotationRequest = $quotationRequest->load('quotationRequestItems.product', 'quotationRequestItems.productVariant', 'supplier');
+
+        return view('admin.quotation-requests.edit', compact('quotationRequest'));
+    }
+
     public function store(Request $request)
     {
         $this->authorize('create', QuotationRequest::class);
@@ -292,5 +302,21 @@ class QuotationRequestController extends VeController
             flash()->error('There was an issue sending the sending the pdf. Quotation Request ID: ' . $quotationRequest->id . ' . Error: ' . $exception->getMessage());
             return redirect()->route('admin.quotation-requests.index');
         }
+    }
+
+    public function generatePo(Request $request, QuotationRequest $quotationRequest)
+    {
+        $this->authorize('generatePo', $quotationRequest);
+
+        if (empty($quotationRequest->quotationRequestItems)) {
+            flash()->error('There are no products in this quotation request. Please add some products before generating the purchase order.');
+            return redirect()->route('admin.quotation-requests.edit', $quotationRequest->getRouteKey());
+        }
+
+        $quotationRequest->createPurchaseOrder($quotationRequest->quotationRequestItems);
+        $quotationRequest->status = QuotationRequest::STATUS_ORDER_CONFIRMED;
+        $quotationRequest->save();
+        flash()->success('Successfully created the purchase order.');
+        return redirect()->route('admin.purchase-orders.index');
     }
 }

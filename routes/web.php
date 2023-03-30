@@ -12,6 +12,9 @@ Route::group([
 ], function () {
     Route::get('/sales-reports/export/', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.export');
     Route::get('/sales-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.index');
+
+    Route::post('/clients/export', RouteServiceProvider::ADMIN_NAMESPACE . 'ClientController@export')->name('clients.export');
+    Route::post('/clients/import', RouteServiceProvider::ADMIN_NAMESPACE . 'ClientController@import')->name('clients.import');
 });
 
 $classes = ClassFinder::getClassesInNamespace('App\Models');

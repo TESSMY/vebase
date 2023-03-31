@@ -90,7 +90,7 @@ class InventoryAdjustmentController extends VeController
 
             DB::commit();
             flash()->success('Successfully created inventory adjustment');
-            return redirect()->route('admin.inventory-adjusment.index');
+            return redirect()->route('admin.inventory-adjustments.index');
         } catch (Exception $exception) {
             Log::error($exception);
             DB::rollBack();
@@ -110,7 +110,14 @@ class InventoryAdjustmentController extends VeController
         $this->authorize('create', $this->model);
         $inventoryAdjustment = $this->findModel($inventoryAdjustment);
         $inventoryAdjustment->load(['createdBy', 'adjustmentItems.product', 'adjustmentItems.productVariant']);
+
+        $compact = [
+            'inventoryAdjustment' => $inventoryAdjustment,
+            'modelName' => $this->modelName,
+            'routeName' => $this->routeName,
+            'routePrefix' => $this->folder,
+        ];
         
-        return view('admin.inventory-adjustments.show', $inventoryAdjustment);
+        return view('admin.inventory-adjustments.show', $compact);
     }
 }

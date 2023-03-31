@@ -54,10 +54,10 @@
                         </multi-select>
                     </td>
                     <td>
-                        <input class="form-control" type="number" v-model="item.product.quantity" disabled>
+                        <input class="form-control" type="number" v-model="item.product.total_stock" disabled>
                     </td>
                     <td>
-                        <input class="form-control" type="number" min="0" :name="'products[' + index + '][new_value]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                        <input class="form-control" type="number" min="0" :name="'products[' + index + '][new_value]'" v-model="item.quantity" required>
                     </td>
                     <td>
                         <span class="btn" @click="removeProduct(index)">

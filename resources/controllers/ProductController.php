@@ -178,7 +178,7 @@ class ProductController extends VeController
     public function update(Request $request, $id)
     {
         $product = $this->findModel($id);
-//        $this->authorize('edit', $product);
+        $this->authorize('update', $product);
         $input = $request->all();
         if (!empty($input['options'])) {
             foreach ($input['options'] as $index => $option) {
@@ -267,7 +267,7 @@ class ProductController extends VeController
             if (!empty($product->bundles)) {
                 $product->bundles()->delete();
             }
-            $product->variants()->delete();
+            $product->productVariants()->delete();
             $product->delete();
 
             flash()->success($product->name . ' deleted successfully!');

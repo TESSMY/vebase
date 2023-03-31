@@ -299,7 +299,7 @@ import Swal from "sweetalert2";
 
 export default {
   name: "ProductForm",
-  props: ['products', 'edit_product', 'variants', 'product_bundles'],
+  props: ['products', 'edit_product', 'variants', 'product_bundles', 'productBrand', 'productSupplier'],
   data() {
     return {
       isEdit: false,
@@ -350,10 +350,11 @@ export default {
       this.product = this.edit_product;
       this.product.variants = this.variants;
       this.type = this.product.type;
-      this.selectedBrand = this.edit_product.brand_id;
-      this.selectedSupplier = this.edit_product.supplier_id;
+      this.selectedBrand = this.productBrand;
+      this.selectedSupplier = this.productSupplier;
       this.bundles = JSON.parse(JSON.stringify(this.product_bundles))
       this.getOptions();
+      this.recalculateTotal();
     }
   },
 

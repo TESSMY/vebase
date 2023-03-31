@@ -153,14 +153,14 @@ class SalesOrderController extends VeController
                     $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
                     $salesOrderItem->update($selectedProduct + [
                             'product_variant_id' => !empty($productVariantModel) ? $productVariantModel->id : null,
-                            'name' => $productModel->name,
-                            'sku' => $productModel->sku,
+                            'name' => !empty($productVariantModel) ? $productVariantModel->name : $productModel->name,
+                            'sku' => !empty($productVariantModel) ? $productVariantModel->sku : $productModel->sku,
                             'description' => $productModel->description,
                             'quantity' => $selectedProduct['quantity'],
-                            'unit_price' => $productModel->selling_price,
-                            'unit_cost' => $productModel->cost_price,
-                            'total_amount' => $selectedProduct['quantity'] * $productModel->selling_price,
-                            'total_cost' => $selectedProduct['quantity'] * $productModel->cost_price,
+                            'unit_price' => !empty($productVariantModel) ? $productVariantModel->selling_price : $productModel->selling_price,
+                            'unit_cost' => !empty($productVariantModel) ? $productVariantModel->cost_price : $productModel->cost_price,
+                            'total_amount' => $selectedProduct['quantity'] * (!empty($productVariantModel) ? $productVariantModel->selling_price : $productModel->selling_price),
+                            'total_cost' => $selectedProduct['quantity'] * (!empty($productVariantModel) ? $productVariantModel->cost_price : $productModel->cost_price),
                     ]);
                     $salesOrderItemIds[] = $salesOrderItem->id;
                     $subTotal += $selectedProduct['quantity'] * (!empty($productVariantModel) ? $productVariantModel->selling_price : $productModel->selling_price);
@@ -184,7 +184,7 @@ class SalesOrderController extends VeController
                             'sales_order_id' => $salesOrder->id,
                             'product_id' => $product->id,
                             'product_variant_id' => $productVariant->id,
-                            'name' => $product->name,
+                            'name' => $productVariant->name,
                             'sku' => $productVariant->sku,
                             'description' => $product->description,
                             'quantity' => $selectedProduct['quantity'],

@@ -59,10 +59,10 @@
                         @forelse ($salesOrders as $salesOrder)
                             <tr>
                                 <td>{{ $salesOrder->id }}</td>
-                                <td>{{ $salesOrder->createdBy->name }}</td>
+                                <td>{{ $salesOrder->client_name }}</td>
                                 <td>{{ $salesOrder->date }}</td>
-                                <td>{{ $salesOrder->status }}</td>
-                                <td>{{ $salesOrder->amount }}({{ $salesOrder->currency }})</td>
+                                <td><span class="{{ $salesOrder->getStatusBtnAttribute() }}">{{ $salesOrder->getStatusTextAttribute() }}</span></td>
+                                <td>{{ $salesOrder->currency }}{{ $salesOrder->grand_total }}</td>
                                 <td>-</td>
                                 <td>
                                     <a href="{{ route('admin.sales-orders.edit', [$salesOrder->getRouteKey()]) }}"><button type="button" class="btn btn-primary">View</button></a>

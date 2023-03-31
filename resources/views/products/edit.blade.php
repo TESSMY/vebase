@@ -24,7 +24,7 @@
         <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data">
             @method('PUT')
             @csrf
-            <product-form :edit_product="{{ $product ?? 'undefined' }}" :variants="{{ $variants }}" :product_bundles="{{ $bundles ?? 'undefined' }}" :product-brand="{{ $product->brand }}" :product-supplier="{{ $product->supplier }}"></product-form>
+            <product-form :edit_product="{{ $product ?? 'undefined' }}" :variants="{{ $product->productVariants }}"></product-form>
             <div class="mt-3">
                 <button class="btn btn-primary me-2" type="submit">{{ __('Update') }}</button>
                 <button class="btn btn-secondary">{{ __('Close') }}</button>

@@ -162,10 +162,10 @@ class ProductController extends VeController
     {
         $product = $this->findModel($id);
         $this->authorize('view', $product);
-        $bundles = $product->bundles()->with('productVariant')->get();
-        $variants = $product->productVariants;
 
-        return view('admin.products.edit', compact('product',  'variants', 'bundles'));
+        $product->load(['productVariants', 'bundles.productVariant', 'brand', 'supplier']);
+
+        return view('admin.products.edit', compact('product'));
     }
 
     /**

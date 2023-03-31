@@ -55,7 +55,11 @@
                                         @if (empty($$routeModel[$indexField['columnName']]))
                                             <td>-</td>
                                         @else
-                                            <td>{{ $$routeModel[$indexField['columnName']] }}</td>
+                                            @if (!empty($indexField['relation']))
+                                                <td>{{ $$routeModel[$indexField['relation']]->name }}</td>
+                                            @else
+                                                <td>{{ $$routeModel[$indexField['columnName']] }}</td>
+                                            @endif
                                         @endif
                                     @endif
                                 @endforeach

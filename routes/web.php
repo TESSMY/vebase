@@ -27,3 +27,6 @@ foreach ($classes as $class) {
         }
     }
 }
+
+Route::resource('quotations', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController');
+Route::post('quotations/{quotation}/send', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController@send')->name('quotations.send');

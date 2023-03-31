@@ -24,5 +24,12 @@
                 <sales-order-form :tax_rate="7" :sales-order="{{ $salesOrder }}"></sales-order-form>
             </form>
         </div>
+        <div class="col-md-12 text-end">
+            <form action="{{ route('admin.sales-orders.destroy', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                @method('DELETE')
+                @csrf
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
     </div>
 @endsection

@@ -59,14 +59,13 @@
                         @forelse ($salesOrders as $salesOrder)
                             <tr>
                                 <td>{{ $salesOrder->id }}</td>
-                                <td>{{ $salesOrder->user?->name }}</td>
+                                <td>{{ $salesOrder->createdBy->name }}</td>
                                 <td>{{ $salesOrder->date }}</td>
                                 <td>{{ $salesOrder->status }}</td>
                                 <td>{{ $salesOrder->amount }}({{ $salesOrder->currency }})</td>
                                 <td>-</td>
                                 <td>
                                     <a href="{{ route('admin.sales-orders.edit', [$salesOrder->getRouteKey()]) }}"><button type="button" class="btn btn-primary">View</button></a>
-                                    <a href="{{ route('admin.sales-orders.destroy', [$salesOrder->getRouteKey()]) }}"><button type="button" class="btn btn-danger">Delete</button></a>
                                 </td>
                             </tr>
                         @empty

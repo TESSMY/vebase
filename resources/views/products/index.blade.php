@@ -62,8 +62,8 @@
                             <td>{{ $product->name }}</td>
                             <td>{{ $product->sku }}</td>
                             <td>{{ $product->type }}</td>
-                            <td>{{ $product->supplier->name }}</td>
-                            <td>{{ $product->brand->name }}</td>
+                            <td>{{ $product->supplier ? $product->supplier->name : '-' }}</td>
+                            <td>{{ $product->brand ? $product->brand->name : '-' }}</td>
                             <td>{{ $product->total_stock }}</td>
                             <td>{{ $product->available_stock }}</td>
                             <td>

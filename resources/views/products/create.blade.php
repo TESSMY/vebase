@@ -21,6 +21,7 @@
 
         {{-- form --}}
             <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
                 <product-form></product-form>
                 <div class="mt-3">
                     <button class="btn btn-primary me-2" type="submit">{{  __('Create') }}</button>

@@ -71,10 +71,10 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-8">
+                                <div class="col-md-9">
                                     <h5 class="card-title align-content-center">COURIER INFORMATION</h5>
                                 </div>
-                                <div class="col-md-4 align-middle text-end">
+                                <div class="col-md-3 align-middle text-end">
                                     <a href="{{ route('admin.couriers.edit', $courier) }}">
                                         <span class="btn btn-sm-light uil-edit-alt px-1"> Edit </span>
                                     </a>
@@ -131,6 +131,18 @@
                         </div>
                     </div>
                 </div>
+                @can('delete-courier')
+                    <hr>
+                    <form action="{{ route('admin.couriers.destroy', [$courier->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                        @method('DELETE')
+                        @csrf
+                        <div class="text-end">
+                            <button class="btn btn-danger px-2" type="submit">
+                                Delete
+                            </button>
+                        </div>
+                    </form>
+                @endcan
             </div>
         </div>
     </div>

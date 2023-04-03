@@ -154,8 +154,19 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
+                @can('delete-client')
+                    <hr>
+                    <form action="{{ route('admin.clients.destroy', [$client->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                        @method('DELETE')
+                        @csrf
+                        <div class="text-end">
+                            <button class="btn btn-danger px-2" type="submit">
+                                Delete
+                            </button>
+                        </div>
+                    </form>
+                @endcan
             </div>
         </div>
     </div>

@@ -73,6 +73,9 @@ class SalesOrderController extends VeController
         $input = $request->input();
         $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
+        $client = Client::find($input['client_id']);
+        $input['client_name'] = $client->name;
+        $input['client_address'] = $client->address_1;
 
         $validator = Validator::make($input, $this->model->createValidator);
 
@@ -151,8 +154,7 @@ class SalesOrderController extends VeController
                     }
 
                     $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
-                    $salesOrderItem->update($selectedProduct + [
-                            'product_variant_id' => !empty($productVariantModel) ? $productVariantModel->id : null,
+                    $salesOrderItem->update([
                             'name' => !empty($productVariantModel) ? $productVariantModel->name : $productModel->name,
                             'sku' => !empty($productVariantModel) ? $productVariantModel->sku : $productModel->sku,
                             'description' => $productModel->description,
@@ -234,6 +236,7 @@ class SalesOrderController extends VeController
                     }
                 }
             }
+            $salesOrder->salesOrderItems()->whereNotIn('sales_order_items.id', $salesOrderItemIds)->delete();
 
             $salesOrder->item_count = count($selectedProducts);
             $salesOrder->tax_amount = $subTotal * $taxRate / 100;

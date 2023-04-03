@@ -10,33 +10,13 @@
                         <label class="col-md-4 text-right form-label text-sm-start">Client</label>
                         <div class="col-md-12">
                             <input type="hidden" name="client_id" :value="client.id">
-                            <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients"></multi-select>
+                            <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients" :disabled="salesOrder"></multi-select>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Date</label>
                     <input class="form-control" type="date" name="date" v-model="date" required>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Customer PO</label>
-                    <input class="form-control" type="text" name="client_address" placeholder="Enter Customer P.O" v-model="customerPo" required>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Customer Name</label>
-                    <input class="form-control" type="text" name="client_name" placeholder="Enter Customer Name" v-model="customerName" required>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Payment Term</label>
-                    <input class="form-control" type="text" name="payment_terms" placeholder="Payment Term" v-model="paymentTerm" required>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Payment Due</label>
-                    <input class="form-control" type="date" name="payment_due" v-model="paymentDue" required>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Packed By Date</label>
-                    <input class="form-control" type="date" name="packed_by_date" v-model="packedByDate" required>
                 </div>
             </div>
         </div>

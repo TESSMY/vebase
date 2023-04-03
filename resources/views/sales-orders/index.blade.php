@@ -65,7 +65,7 @@
                                 <td>{{ $salesOrder->currency }}{{ $salesOrder->grand_total }}</td>
                                 <td>-</td>
                                 <td>
-                                    <a href="{{ route('admin.sales-orders.edit', [$salesOrder->getRouteKey()]) }}"><button type="button" class="btn btn-primary">View</button></a>
+                                    <a href="{{ route('admin.sales-orders.edit', [$salesOrder->getRouteKey()]) }}"><button type="button" class="btn btn-primary">Edit</button></a>
                                 </td>
                             </tr>
                         @empty

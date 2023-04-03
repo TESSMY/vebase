@@ -25,8 +25,8 @@ class ClientImport implements ToModel
             'state' => $row[7],
             'postcode' => $row[8],
             'country' => $row[9],
-            'image' => $row[10],
-            'status' => $row[11],
+            'image' => null,
+            'status' => Client::STATUS_ACTIVE,
         ]);
     }
 }

@@ -170,7 +170,7 @@ const fetchProducts = (query) => {
                 if (product.type == 3) { // bundle type
                     productArray.options.push(product);
                 } else {
-                    product.variants.forEach(variant => {
+                    product.product_variants.forEach(variant => {
                         productArray.options.push(variant)
                     });
                 }

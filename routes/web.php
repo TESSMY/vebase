@@ -12,6 +12,7 @@ Route::group([
 ], function () {
     Route::get('/sales-reports/export/', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.export');
     Route::get('/sales-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.index');
+    Route::post('quotations/{quotation}/send', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController@send')->name('quotations.send');
 });
 
 $classes = ClassFinder::getClassesInNamespace('App\Models');
@@ -27,6 +28,3 @@ foreach ($classes as $class) {
         }
     }
 }
-
-Route::resource('quotations', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController');
-Route::post('quotations/{quotation}/send', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController@send')->name('quotations.send');

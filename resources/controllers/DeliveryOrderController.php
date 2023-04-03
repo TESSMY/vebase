@@ -50,62 +50,7 @@ class DeliveryOrderController extends VeController
             $deliveryOrder = DeliveryOrder::create($input + ['client_name' => $client->name, 'client_address' => $client->address_1 . ' ' . $client->address_2, 'created_by' => Auth::id()]);
             $subTotal = 0;
 
-            foreach ($input['products'] as $product) {
-
-                if (isset($product['product_variant_id'])) {
-                    // product variant & single product
-                    $productVariant = ProductVariant::find($product['product_variant_id']);
-
-                    if (empty($productVariant)) {
-                        flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
-                        return back();
-                    }
-
-                    if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
-                        flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' is not available')->error();
-                        return back();
-                    }
-                    
-                    DeliveryOrderItem::create([
-                        'delivery_order_id' => $deliveryOrder->id,
-                        'product_id' => $productVariant->product_id, 
-                        'product_variant_id' => $productVariant->id,
-                        'name' => $productVariant->name, 
-                        'sku' => $productVariant->sku, 
-                        'quantity' => $product['quantity'], 
-                        'unit_price' => $productVariant->selling_price, 
-                        'total_price' => $productVariant->selling_price * $product['quantity'], 
-                    ]);
-                } else {
-                    // product bundle
-                    $productModel = Product::find($product['product_id']);
-
-                    if (empty($productModel)) {
-                        flash('Error: Product with ID #' . $product['product_id'] . ' not found')->error();
-                        return back();
-                    }
-                    if ($productModel->type != Product::TYPE_PRODUCT_BUNDLE) {
-                        flash('Error: Product with ID #' . $product['product_id'] . ' is not a product bundle')->error();
-                        return back();
-                    }
-
-                    if ($productModel->status != Product::STATUS_ACTIVE) {
-                        flash('Error: Product with ID #' . $product['product_id'] . ' is not available')->error();
-                        return back();
-                    }
-
-                    InvoiceItem::create([
-                        'invoice_id' => $deliveryOrder->id,
-                        'product_id' => $productModel->id, 
-                        'name' => $productModel->name, 
-                        'sku' => $productModel->sku, 
-                        'quantity' => $product['quantity'], 
-                        'unit_price' => $productModel->cost_price, 
-                        'total_price' => $productModel->cost_price * $product['quantity'], 
-                    ]);
-                }
-                $subTotal += $deliveryOrderItem->total_price; 
-            }
+            $subTotal = $deliveryOrder->createDeliveryOrderItems($input['products']);
 
             $deliveryOrder->item_count = count($input['products']);
             $deliveryOrder->sub_total = $subTotal;
@@ -196,76 +141,7 @@ class DeliveryOrderController extends VeController
             $deliveryOrder->update($input + ['client_name' => $client->name, 'client_address' => $client->address_1 . ' ' . $client->address_2]);
             $subTotal = 0;
 
-            $deliveryOrderItemIds = [];
-            foreach ($input['products'] as $product) {
-                if (!empty($product['invoice_item_id'])) {
-                    // existing invoice item
-                    $productModel = Product::find($product['product_id']);
-                    $deliveryOrderItem = InvoiceItem::find($product['invoice_item_id']);
-                    $deliveryOrderItem->update($product + [
-                        'product_variant_id' => !empty($product['product_variant_id']) ? $product['invoice_item_id'] : null, 
-                        'name' => $productModel->name,
-                    ]);
-                    $deliveryOrderItemIds[] = $deliveryOrderItem->id;
-                } else {
-                    if (isset($product['product_variant_id'])) {
-                        // product variant & single product
-                        $productVariant = ProductVariant::find($product['product_variant_id']);
-
-                        if (empty($productVariant)) {
-                            flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
-                            return back();
-                        }
-
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
-                            flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' is not available')->error();
-                            return back();
-                        }
-    
-                        $deliveryOrderItem = InvoiceItem::create([
-                            'invoice_id' => $deliveryOrder->id,
-                            'product_id' => $productVariant->product_id, 
-                            'product_variant_id' => $productVariant->id,
-                            'name' => $productVariant->name, 
-                            'sku' => $productVariant->sku, 
-                            'quantity' => $product['quantity'], 
-                            'unit_price' => $productVariant->selling_price, 
-                            'total_price' => $productVariant->selling_price * $product['quantity'], 
-                        ]);
-                        $deliveryOrderItemIds[] = $deliveryOrderItem->id;
-                    } else {
-                        // product bundle
-                        $productModel = Product::find($product['product_id']);
-
-                        if (empty($productModel)) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' not found')->error();
-                            return back();
-                        }
-                        if ($productModel->type != Product::TYPE_PRODUCT_BUNDLE) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' is not a product bundle')->error();
-                            return back();
-                        }
-    
-                        if ($productModel->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' is not available')->error();
-                            return back();
-                        }
-    
-                        $deliveryOrderItem = InvoiceItem::create([
-                            'invoice_id' => $deliveryOrder->id,
-                            'product_id' => $productModel->id, 
-                            'name' => $productModel->name,
-                            'sku' => $productModel->sku,
-                            'quantity' => $product['quantity'], 
-                            'unit_price' => $productModel->cost_price, 
-                            'total_price' => $productModel->cost_price * $product['quantity'], 
-                        ]);
-                        $deliveryOrderItemIds[] = $deliveryOrderItem->id;
-                    }
-                }
-                $subTotal += $deliveryOrderItem->total_price;
-            }
-            $deliveryOrder->items()->whereNotIn('invoice_items.id', $deliveryOrderItemIds)->delete();
+            $subTotal = $deliveryOrder->createDeliveryOrderItems($input['products']);
 
             $deliveryOrder->item_count = count($input['products']);
             $deliveryOrder->sub_total = $subTotal;

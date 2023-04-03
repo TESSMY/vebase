@@ -13,8 +13,8 @@ Route::group([
     Route::get('/sales-reports/export/', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.export');
     Route::get('/sales-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.index');
 
-    Route::post('suppliers/import', RouteServiceProvider::ADMIN_NAMESPACE . 'SupplierController@import')->name('suppliers.import');
-    Route::post('suppliers/export', RouteServiceProvider::ADMIN_NAMESPACE . 'SupplierController@export')->name('suppliers.export');
+    Route::post('/suppliers/import', RouteServiceProvider::ADMIN_NAMESPACE . 'SupplierController@import')->name('suppliers.import');
+    Route::post('/suppliers/export', RouteServiceProvider::ADMIN_NAMESPACE . 'SupplierController@export')->name('suppliers.export');
 });
 
 $classes = ClassFinder::getClassesInNamespace('App\Models');

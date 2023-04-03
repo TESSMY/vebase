@@ -27,7 +27,12 @@
                     <input class="form-control" type="text" placeholder="Created By" :value="user.name" disabled>
                 </template>
                 <template v-else>
-                    <input class="form-control" type="text" placeholder="Created By" :value="deliveryOrder.createdBy.name" disabled>
+                    <template v-if="deliveryOrder.created_by">
+                        <input class="form-control" type="text" placeholder="Created By" :value="deliveryOrder.created_by.name" disabled>
+                    </template>
+                    <template v-else>
+                        <input class="form-control" type="text" placeholder="Created By" value="System Generated" disabled>
+                    </template>
                 </template>
             </div>
         </div>
@@ -51,7 +56,7 @@
                 <tbody>
                     <tr v-for="(item, index) in products">
                         <td>
-                            <input type="hidden" :name="'products[' + index + '][invoice_item_id]'" :value="item.invoice_item_id">
+                            <input type="hidden" :name="'products[' + index + '][delivery_order_item_id]'" :value="item.delivery_order_item_id">
                             <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
                                 <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
                             </template>
@@ -190,28 +195,27 @@ const fetchClients = (query) => {
 
 onBeforeMount(() => {
     if (props.deliveryOrder !== undefined) {
-        if (props.deliveryOrder.invoice_items !== undefined) {
+        if (props.deliveryOrder.items !== undefined) {
             client.value = props.deliveryOrder.client
             date.value = props.deliveryOrder.date
-            paymentTerm.value = props.deliveryOrder.payment_term
             notes.value = props.deliveryOrder.notes
             products.value = [];
-            props.deliveryOrder.invoice_items.forEach(invoiceItem => {
-                if (invoiceItem.product_variant == null) {
+            props.deliveryOrder.items.forEach(deliveryItem => {
+                if (deliveryItem.product_variant == null) {
                     // bundles
                     products.value.push({
-                        'invoice_item_id': invoiceItem.id,
-                        'product': invoiceItem.product,
-                        'quantity': invoiceItem.quantity,
-                        'subTotal': invoiceItem.quantity * invoiceItem.product.cost_price,
+                        'delivery_order_item_id': deliveryItem.id,
+                        'product': deliveryItem.product,
+                        'quantity': deliveryItem.quantity,
+                        'subTotal': deliveryItem.quantity * deliveryItem.product.cost_price,
                     });
                 } else {
                     // product variants & single products
                     products.value.push({
-                        'invoice_item_id': invoiceItem.id,
-                        'product': invoiceItem.product_variant,
-                        'quantity': invoiceItem.quantity,
-                        'subTotal': invoiceItem.quantity * invoiceItem.product_variant.selling_price,
+                        'delivery_order_item_id': deliveryItem.id,
+                        'product': deliveryItem.product_variant,
+                        'quantity': deliveryItem.quantity,
+                        'subTotal': deliveryItem.quantity * deliveryItem.product_variant.selling_price,
                     });
                 }
             });

@@ -88,7 +88,7 @@ class DeliveryOrderController extends VeController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Invoice  $deliveryOrder
+     * @param  \App\Models\DeliveryOrder  $deliveryOrder
      * @return \Illuminate\Http\Response
      */
     public function edit(Request $request, $deliveryOrder)
@@ -98,7 +98,7 @@ class DeliveryOrderController extends VeController
         $deliveryOrder->load('client', 'items.product', 'items.productVariant', 'createdBy');
 
         $compact = [
-            'invoice' => $deliveryOrder,
+            'deliveryOrder' => $deliveryOrder,
             'model' => $this->model,
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,

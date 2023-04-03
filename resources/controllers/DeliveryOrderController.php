@@ -50,7 +50,9 @@ class DeliveryOrderController extends VeController
             $deliveryOrder = DeliveryOrder::create($input + ['client_name' => $client->name, 'client_address' => $client->address_1 . ' ' . $client->address_2, 'created_by' => Auth::id()]);
             $subTotal = 0;
 
-            $subTotal = $deliveryOrder->createDeliveryOrderItems($input['products']);
+            $deliveryOrder->createDeliveryOrderItems($input['products']);
+
+            $subTotal = $deliveryOrder->items->sum('total_price');
 
             $deliveryOrder->item_count = count($input['products']);
             $deliveryOrder->sub_total = $subTotal;
@@ -141,7 +143,9 @@ class DeliveryOrderController extends VeController
             $deliveryOrder->update($input + ['client_name' => $client->name, 'client_address' => $client->address_1 . ' ' . $client->address_2]);
             $subTotal = 0;
 
-            $subTotal = $deliveryOrder->createDeliveryOrderItems($input['products']);
+            $deliveryOrder->createDeliveryOrderItems($input['products']);
+
+            $subTotal = $deliveryOrder->items->sum('total_price');
 
             $deliveryOrder->item_count = count($input['products']);
             $deliveryOrder->sub_total = $subTotal;

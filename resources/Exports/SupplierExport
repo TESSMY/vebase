@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Exports;
+
+use App\Models\Supplier;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+
+class SupplierExport implements FromCollection, WithMapping, ShouldAutoSize, WithHeadings
+{
+    /**
+    * @return \Illuminate\Support\Collection
+    */
+    public function collection()
+    {
+        return Supplier::all();
+    }
+
+    public function headings(): array
+    {
+        return [
+            'ID',
+            'Name',
+            'Code',
+            'Email',
+            'Address',
+            'City',
+            'State',
+            'Zip',
+            'Country',
+            'PIC Name',
+            'PIC Email',
+            'PIC Phone',
+            'Phone',
+        ];
+    }
+
+    public function map($salesReport): array
+    {
+        $data = [
+            $salesReport->id,
+            $salesReport->name,
+            $salesReport->code,
+            $salesReport->email,
+            $salesReport->address,
+            $salesReport->city,
+            $salesReport->state,
+            $salesReport->zip,
+            $salesReport->country,
+            $salesReport->pic_name,
+            $salesReport->pic_email,
+            $salesReport->pic_phone,
+            $salesReport->phone,
+        ];
+        return $data;
+    }
+}

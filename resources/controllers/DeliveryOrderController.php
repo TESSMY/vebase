@@ -169,7 +169,7 @@ class DeliveryOrderController extends VeController
 
             DB::commit();
             flash()->success('Successfully updated invoice');
-            return redirect()->route('admin.invoices.index');
+            return redirect()->route('admin.delivery-orders.index');
         } catch (Exception $exception) {
             Log::error($exception);
             DB::rollBack();

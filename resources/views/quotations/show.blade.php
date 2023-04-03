@@ -16,9 +16,9 @@
         </div>
         <div class="row">
             <div class="col-12 col-md-1">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="quotationModal">
+                <span type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#quotationModal">
                     Send Quotation Email
-                </button>
+                </span>
 
                 <!-- Modal -->
                 <div class="modal fade" id="quotationModal" tabindex="-1" aria-labelledby="quotationModalLabel" aria-hidden="true">
@@ -27,7 +27,7 @@
                             @csrf
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h4 class="modal-title" style="float: left;">Send Quotation Request {{ $quotation->id }}
+                                    <h4 class="modal-title" style="float: left;">Send Quotation {{ $quotation->id }}
                                     </h4>
                                 </div>
                                 <div class="modal-body">

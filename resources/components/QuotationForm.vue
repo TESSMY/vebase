@@ -75,6 +75,7 @@
                         </td>
                         <td>{{ item.product.selling_price }}</td>
                         <td>$ {{ item.subTotal }}</td>
+                        <input type="hidden" :name="'products[' + i + '][total_price]'" :value="item.subTotal">
                         <td><i class="uil-trash cursor-pointer mt-2" @click="removeProduct(i)"></i></td>
                     </tr>
                 </tbody>
@@ -194,6 +195,7 @@ export default {
 
             this.products = products;
         }
+        this.updateItemTotalPrice();
         this.updateTotalPrice();
     },
 

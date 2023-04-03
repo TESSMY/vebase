@@ -40,78 +40,8 @@ class QuotationController extends VeController
         DB::beginTransaction();
         try {
             $quotation = Quotation::create($input + ['created_by' => Auth::id()]);
-            $subTotal = 0;
 
-            if (!empty($input['products'])) {
-                foreach ($input['products'] as $product) {
-                    if (isset($product['product_variant_id'])) {
-                        // product variant & single product
-                        $productVariant = ProductVariant::find($product['product_variant_id']);
-                        if (empty($productVariant)) {
-                            flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' not found')->error();
-                            return back();
-                        }
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $productVariant->product->status != ProductVariant::STATUS_ACTIVE) {
-                            flash('Error: Product variant with ID #' . $product['product_variant_id'] . ' is not available')->error();
-                            return back();
-                        }
-
-                        $totalPrice = $productVariant->selling_price * $product['quantity'];
-                        $quotationItem = new QuotationItem([
-                            'quotation_id' => $quotation->id,
-                            'product_id' => $productVariant->product_id,
-                            'product_variant_id' => $productVariant->id,
-                            'name' => $productVariant->name,
-                            'sku' => $productVariant->sku,
-                            'quantity' => $product['quantity'],
-                            'cost_price' => $productVariant->product->cost_price,
-                            'unit_price' => $productVariant->selling_price,
-                            'total_price' => $totalPrice,
-                        ]);
-                        $quotationItem->save();
-                        $subTotal += $totalPrice;
-                    } else {
-                        // product bundle
-                        $productModel = Product::find($product['product_id']);
-                        if (empty($productModel)) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' not found')->error();
-                            return back();
-                        }
-                        if ($productModel->type != Product::TYPE_PRODUCT_BUNDLE) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' is not a product bundle')->error();
-                            return back();
-                        }
-                        if ($productModel->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product with ID #' . $product['product_id'] . ' is not available')->error();
-                            return back();
-                        }
-
-                        $totalPrice = $productModel->selling_price * $product['quantity'];
-                        $quotationItem = new QuotationItem([
-                            'quotation_id' => $quotation->id,
-                            'product_id' => $productModel->id,
-                            'name' => $productModel->name,
-                            'sku' => $productModel->sku,
-                            'quantity' => $product['quantity'],
-                            'cost_price' => $productModel->cost_price,
-                            'unit_price' => $productModel->selling_price,
-                            'total_price' => $totalPrice,
-                        ]);
-                        $quotationItem->save();
-                        $subTotal += $totalPrice;
-                    }
-                }
-            }
-            $quotation->total_items = count($input['products']);
-            $quotation->sub_total = $subTotal;
-            $grandTotal = $quotation->sub_total;
-            if (!empty($input['tax_rate'])) {
-                $tax = $subTotal * ($input['tax_rate'] / 100);
-                $grandTotal += $tax;
-                $quotation->tax_amount = $tax;
-            }
-            $quotation->grand_total = $grandTotal;
-            $quotation->save();
+            $quotation = $this->updateOrCreateItem($quotation, $input);
             $quotation->generatePdf();
 
             if ($input['status'] == Quotation::STATUS_APPROVED) {
@@ -149,22 +79,40 @@ class QuotationController extends VeController
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
-        if ($quotation->salesOrder->status == SalesOrder::STATUS_COMPLETED) {
-            flash('Error: Unable to edit due to sales order being completed.');
-            return back();
+        if (!empty($quotation->salesOrder)) {
+            if ($quotation->salesOrder->status == SalesOrder::STATUS_COMPLETED) {
+                flash('Error: Unable to edit due to sales order being completed.');
+                return back();
+            }
         }
         try {
             DB::beginTransaction();
 
             $client = Client::find($input['client_id']);
             $quotation->update($input + ['client_id' => $client->id]);
+            $quotation = $this->updateOrCreateItem($quotation, $input);
+            $quotation->createOrUpdateSalesOrder($input['products']);
+            DB::commit();
+            flash()->success('Successfully updated quotation');
+            return redirect()->route('admin.quotations.index');
+        } catch (Exception $exception) {
+            Log::error($exception);
+            DB::rollBack();
+            flash()->error('There was an issue updating the quotation');
+            return back()->withInput();
+        }
+    }
+
+    public function updateOrCreateItem(Quotation $quotation, $input)
+    {
+        try {
             $subTotal = 0;
             $quotationItemIds = [];
             foreach ($input['products'] as $product) {
                 if (!empty($product['quotation_item_id'])) {
-                    // existing invoice item
+                    // existing quotation item
                     $productModel = Product::find($product['product_id']);
-                    $quotationItem = $quotation->quotationItem()->find($product['quotation_item_id']);
+                    $quotationItem = $quotation->quotationItems()->find($product['quotation_item_id']);
                     $quotationItem->update($product + [
                             'product_variant_id' => !empty($product['product_variant_id']) ? $product['quotation_item_id'] : null,
                             'name' => $productModel->name,
@@ -190,6 +138,7 @@ class QuotationController extends VeController
                             'name' => $productVariant->name,
                             'sku' => $productVariant->sku,
                             'quantity' => $product['quantity'],
+                            'cost_price' => $productVariant->product->cost_price,
                             'unit_price' => $productVariant->selling_price,
                             'total_price' => $productVariant->selling_price * $product['quantity'],
                         ]);
@@ -217,8 +166,9 @@ class QuotationController extends VeController
                             'name' => $productModel->name,
                             'sku' => $productModel->sku,
                             'quantity' => $product['quantity'],
-                            'unit_price' => $productModel->cost_price,
-                            'total_price' => $productModel->cost_price * $product['quantity'],
+                            'cost_price' => $productModel->cost_price,
+                            'unit_price' => $productModel->selling_price,
+                            'total_price' => $productModel->selling_price * $product['quantity'],
                         ]);
                         $quotationItemIds[] = $quotationItem->id;
                     }
@@ -237,15 +187,11 @@ class QuotationController extends VeController
             $quotation->grand_total = $grandTotal;
             $quotation->save();
             $quotation->generatePDF();
-            $quotation->createOrUpdateSalesOrder($input['products']);
-            DB::commit();
-            flash()->success('Successfully updated quotation');
-            return redirect()->route('admin.quotations.index');
+            return $quotation;
         } catch (Exception $exception) {
             Log::error($exception);
-            DB::rollBack();
-            flash()->error('There was an issue updating the quotation');
-            return back()->withInput();
+            flash('There was an error creating the quotation item. Quotation ID: '  . $quotation->id . '. Error: ' . $exception->getMessage());
+            return back();
         }
     }
 

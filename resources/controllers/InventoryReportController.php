@@ -19,6 +19,8 @@ class InventoryReportController extends VeController
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', InventoryReport::class);
+
         $limit = $request->input('limit') ?? 10;
         $productVariants = ProductVariant::query();
 
@@ -81,6 +83,8 @@ class InventoryReportController extends VeController
 
     public function history(Request $request)
     {
+        $this->authorize('viewAny', InventoryReport::class);
+
         $limit = $request->input('limit') ?? 10;
         $inventoryReport = InventoryReport::query();
 
@@ -100,6 +104,8 @@ class InventoryReportController extends VeController
 
     public function generate(Request $request)
     {
+        $this->authorize('edit', InventoryReport::class);
+
         $path = '/inventory-reports/inventory-report-export' . now()->toDateTimeString() . '.xlsx';
         Excel::store(new InventoryReportExport, $path);
 
@@ -111,10 +117,5 @@ class InventoryReportController extends VeController
 
         flash()->success(__('Successfully created inventory report. You can download it in the history page.'));
         return redirect()->route('admin.inventory-reports.index');
-    }
-
-    public function export(Request $request)
-    {
-        return Excel::download(new InventoryReportExport, 'inventory-report-export' . now()->toDateString() . '.xlsx');
     }
 }

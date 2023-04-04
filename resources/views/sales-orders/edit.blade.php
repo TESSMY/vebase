@@ -21,7 +21,7 @@
             <form action="{{ route('admin.sales-orders.update', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                 @method('PUT')
                 @csrf
-                <sales-order-form :tax_rate="7" :sales-order="{{ $salesOrder }}"></sales-order-form>
+                <sales-order-form :tax_rate="7" :sales-order="{{ $salesOrder->load('salesOrderItems.product', 'salesOrderItems.productVariant', 'client') }}"></sales-order-form>
             </form>
         </div>
         <div class="col-md-12 text-end">

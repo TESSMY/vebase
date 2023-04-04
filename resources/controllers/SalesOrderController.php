@@ -19,53 +19,6 @@ use Vecapital\Vebase\Http\Controllers\VeController;
 
 class SalesOrderController extends VeController
 {
-    public function index(Request $request)
-    {
-        $this->authorize('viewAny', SalesOrder::class);
-
-        $search = $request->input('search');
-        $limit = $request->input('limit') ?? 10;
-        $orderColumn = $request->input('order_column');
-        $orderBy = $request->input('order_by');
-
-        $salesOrders = $this->model::query();
-
-        if (!empty($search)) {
-            if (!empty($this->model->searchable)) {
-                $salesOrders = $salesOrders->where(function($query) use ($search) {
-                    foreach ($this->model->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
-                    }
-                });
-            }
-        }
-
-        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
-            $salesOrders = $salesOrders->orderBy($orderColumn, $orderBy);
-        }
-
-        $sortBy = $request->input('sort_by', 'latest');
-        if ($sortBy === 'oldest'){
-            $salesOrders->oldest();
-        } elseif ($sortBy === 'latest'){
-            $salesOrders->latest();
-        }
-
-        $salesOrders = $salesOrders->paginate($limit)->withQueryString();
-
-        return view('admin.sales-orders.index', compact('salesOrders'));
-    }
-
-    public function edit(Request $request, $id)
-    {
-        $salesOrder = $this->findModel($id);
-        $this->authorize('update', $salesOrder);
-
-        $salesOrder = $salesOrder->load('salesOrderItems.product', 'salesOrderItems.productVariant', 'client');
-
-        return view('admin.sales-orders.edit', compact('salesOrder'));
-    }
-
     public function store(Request $request)
     {
         $this->authorize('create', SalesOrder::class);
@@ -74,6 +27,12 @@ class SalesOrderController extends VeController
         $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
         $client = Client::find($input['client_id']);
+
+        if (empty($client)) {
+            flash()->error('Could not find the client selected. Please select a different client.');
+            return back()->withInput($request->input());
+        }
+
         $input['client_name'] = $client->name;
         $input['client_address'] = $client->address_1;
 
@@ -146,14 +105,15 @@ class SalesOrderController extends VeController
 
             foreach ($selectedProducts as $selectedProduct) {
                 if (!empty($selectedProduct['sales_order_item_id'])) {
+                    $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
                     // existing item
-                    $productModel = Product::find($selectedProduct['product_id']);
+                    $productModel = $salesOrderItem->product;
+                    $productVariantModel = null;
 
                     if (!empty($selectedProduct['product_variant_id'])) {
-                        $productVariantModel = ProductVariant::find($selectedProduct['product_variant_id']);
+                        $productVariantModel = $salesOrderItem->productVariant;
                     }
 
-                    $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
                     $salesOrderItem->update([
                             'name' => !empty($productVariantModel) ? $productVariantModel->name : $productModel->name,
                             'sku' => !empty($productVariantModel) ? $productVariantModel->sku : $productModel->sku,

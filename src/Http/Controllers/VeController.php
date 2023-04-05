@@ -162,7 +162,7 @@ class VeController extends Controller
 
     public function show(Request $request, $id)
     {
-        $routeModel = Str::plural(Str::camel($this->routeName));
+        $routeModel = Str::singular(Str::camel($this->routeName));
         $$routeModel = $this->findModel($id);
         $this->authorize('view', $$routeModel);
 
@@ -189,7 +189,7 @@ class VeController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $routeModel = Str::singular($this->routeName);
+        $routeModel = Str::singular(Str::camel($this->routeName));
         $$routeModel = $this->findModel($id);
         $this->authorize('update', $$routeModel);
 

@@ -20,11 +20,11 @@
                 </div>
                 <div class="col-12 col-md-6 mb-md-0 mb-2">
                     <label class="form-label">Supplier Code</label>
-                    <input class="form-control" type="text" name="supplier_code" v-model="supplierCode" required>
+                    <input class="form-control" type="text" name="supplier_code" placeholder="Supplier Code" v-model="supplierCode" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Term</label>
-                    <input class="form-control" type="text" name="payment_terms" v-model="paymentTerm" required>
+                    <input class="form-control" type="text" name="payment_terms" placeholder="Payment Term" v-model="paymentTerm" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Due</label>
@@ -154,8 +154,8 @@ const subTotal = ref(0);
 const purchaseOrder = ref(props.purchaseOrder);
 const supplier = ref({});
 const date = ref({});
-const supplierCode = ref({});
-const paymentTerm = ref({});
+const supplierCode = ref('');
+const paymentTerm = ref('');
 const paymentDue = ref({});
 const grandTotal = ref(0);
 const tax_rate = ref(props.tax_rate);

@@ -34,7 +34,13 @@ class SalesOrderController extends VeController
         }
 
         $input['client_name'] = $client->name;
-        $input['client_address'] = $client->address_1;
+        $input['client_address'] = $client->address_1 . ", " . $client->address_2 . ", " . $client->city . ", " . $client->state . ", " . $client->postcode . ", " . $client->country;
+        $input['address_1'] = $client->address_1;
+        $input['address_2'] = $client->address_2;
+        $input['city'] = $client->city;
+        $input['state'] = $client->state;
+        $input['postcode'] = $client->postcode;
+        $input['country'] = $client->country;
 
         $validator = Validator::make($input, $this->model->createValidator);
 
@@ -106,28 +112,16 @@ class SalesOrderController extends VeController
             $salesOrderItemIds = [];
             foreach ($selectedProducts as $selectedProduct) {
                 if (!empty($selectedProduct['sales_order_item_id'])) {
-                    $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
                     // existing item
-                    $productModel = $salesOrderItem->product;
-                    $productVariantModel = null;
-
-                    if (!empty($selectedProduct['product_variant_id'])) {
-                        $productVariantModel = $salesOrderItem->productVariant;
-                    }
-
+                    $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
                     $salesOrderItem->update([
-                            'name' => !empty($productVariantModel) ? $productVariantModel->name : $productModel->name,
-                            'sku' => !empty($productVariantModel) ? $productVariantModel->sku : $productModel->sku,
-                            'description' => $productModel->description,
                             'quantity' => $selectedProduct['quantity'],
-                            'unit_price' => !empty($productVariantModel) ? $productVariantModel->selling_price : $productModel->selling_price,
-                            'unit_cost' => !empty($productVariantModel) ? $productVariantModel->cost_price : $productModel->cost_price,
-                            'total_amount' => $selectedProduct['quantity'] * (!empty($productVariantModel) ? $productVariantModel->selling_price : $productModel->selling_price),
-                            'total_cost' => $selectedProduct['quantity'] * (!empty($productVariantModel) ? $productVariantModel->cost_price : $productModel->cost_price),
+                            'total_amount' => $selectedProduct['quantity'] * $salesOrderItem->unit_price,
+                            'total_cost' => $selectedProduct['quantity'] * $salesOrderItem->unit_cost,
                     ]);
                     $salesOrderItemIds[] = $salesOrderItem->id;
-                    $subTotal += $selectedProduct['quantity'] * (!empty($productVariantModel) ? $productVariantModel->selling_price : $productModel->selling_price);
-                    $totalCost += $selectedProduct['quantity'] * (!empty($productVariantModel) ? $productVariantModel->cost_price : $productModel->cost_price);
+                    $subTotal += $selectedProduct['quantity'] * $salesOrderItem->unit_price;
+                    $totalCost += $selectedProduct['quantity'] * $salesOrderItem->unit_cost;
                 } else {
                     if (!empty($selectedProduct['product_variant_id'])) {
                         $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);

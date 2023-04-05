@@ -16,10 +16,15 @@ class SupplierController extends VeController
     public function import(Request $request)
     {
         $this->authorize('create', Supplier::class);
+        $input = $request->all();
 
-        if (empty(request()->file('import_file'))) {
-            flash()->error('Please upload an import file excel spreadsheet in order to import rows.');
-            return back()->withInput();
+        $validator = Validator::make($input, [
+            'import_file' => 'required|file|mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/excel',
+        ]);
+
+        if ($validator->fails()) {
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
         }
 
         try {

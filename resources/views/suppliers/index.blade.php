@@ -27,6 +27,7 @@
 
             <!-- Modal -->
             <form action="{{ route('admin.suppliers.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
                 <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                     <div class="modal-content">

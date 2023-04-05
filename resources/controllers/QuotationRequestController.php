@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\QuotationRequest;
 use App\Models\QuotationRequestItem;
+use App\Models\Supplier;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,21 +21,18 @@ use Vecapital\Vebase\Http\Controllers\VeController;
 
 class QuotationRequestController extends VeController
 {
-    public function edit(Request $request, $id)
-    {
-        $quotationRequest = $this->findModel($id);
-        $this->authorize('update', $quotationRequest);
-
-        $quotationRequest = $quotationRequest->load('quotationRequestItems.product', 'quotationRequestItems.productVariant', 'supplier');
-
-        return view('admin.quotation-requests.edit', compact('quotationRequest'));
-    }
-
     public function store(Request $request)
     {
         $this->authorize('create', QuotationRequest::class);
         $input = $request->input();
         $input['created_by'] = Auth::id();
+
+        $supplier = Supplier::find($input['supplier_id']);
+
+        if (empty($supplier)) {
+            flash()->error('Could not find the supplier selected. Please select a different supplier.');
+            return back()->withInput($request->input());
+        }
 
         if ($input['status'] == QuotationRequest::STATUS_APPROVED) {
             $this->authorize('create', PurchaseOrder::class);
@@ -57,60 +54,7 @@ class QuotationRequestController extends VeController
         try {
             $quotationRequest = QuotationRequest::create($input);
 
-            if (!empty($input['products'])) {
-                foreach ($input['products'] as $quotationProduct) {
-                    if (!empty($quotationProduct['product_variant_id'])) {
-                        $productVariant = ProductVariant::find($quotationProduct['product_variant_id']);
-                        $product = $productVariant->product;
-
-                        if (empty($productVariant)) {
-                            flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' not found')->error();
-                            return back();
-                        }
-
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $product->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' is not available')->error();
-                            return back();
-                        }
-
-                        QuotationRequestItem::create([
-                            'quotation_request_id' => $quotationRequest->id,
-                            'product_id' => $product->id,
-                            'product_variant_id' => $productVariant->id,
-                            'name' => $product->name,
-                            'sku' => $product->sku,
-                            'description' => $product->description,
-                            'quantity' => $quotationProduct['quantity'],
-                        ]);
-                    } else {
-                        $product = Product::find($quotationProduct['product_id']);
-
-                        if (empty($product)) {
-                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' not found')->error();
-                            return back();
-                        }
-
-                        if ($product->type != Product::TYPE_PRODUCT_BUNDLE) {
-                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' is not a product bundle')->error();
-                            return back();
-                        }
-
-                        if ($product->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' is not available')->error();
-                            return back();
-                        }
-
-                        QuotationRequestItem::create([
-                            'quotation_request_id' => $quotationRequest->id,
-                            'product_id' => $product->id,
-                            'name' => $product->name,
-                            'sku' => $product->sku,
-                            'description' => $product->description,
-                            'quantity' => $quotationProduct['quantity'],
-                        ]);
-                    }
-                }
-            }
+            $this->updateOrCreateItem($quotationRequest, $input['products'], $input['tax_rate'] ?? 0);
 
             $quotationRequest->file_url = $quotationRequest->generatePdf();
             $quotationRequest->save();
@@ -168,86 +112,7 @@ class QuotationRequestController extends VeController
         try {
             $quotationRequest->update($input);
 
-            if (!empty($input['products'])) {
-                $quotationRequestItemIds = [];
-                foreach ($input['products'] as $quotationProduct) {
-                    if (!empty($quotationProduct['product_variant_id'])) {
-                        $productVariant = ProductVariant::find($quotationProduct['product_variant_id']);
-                        $product = $productVariant->product;
-
-                        if (empty($productVariant)) {
-                            flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' not found')->error();
-                            return back();
-                        }
-
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $product->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product variant with ID #' . $quotationProduct['product_variant_id'] . ' is not available')->error();
-                            return back();
-                        }
-
-                        $quotationRequestItem = $quotationRequest->quotationRequestItems()->where('quotation_request_items.id', $quotationProduct['product_variant_id'])->first();
-
-                        if (!empty($quotationRequestItem)) {
-                            $quotationRequestItem->update([
-                                'name' => $product->name,
-                                'sku' => $product->sku,
-                                'description' => $product->description,
-                                'quantity' => $quotationProduct['quantity'],
-                            ]);
-                        } else {
-                            $quotationRequestItem = QuotationRequestItem::create([
-                                'quotation_request_id' => $quotationRequest->id,
-                                'product_id' => $product->id,
-                                'product_variant_id' => $productVariant->id,
-                                'name' => $product->name,
-                                'sku' => $product->sku,
-                                'description' => $product->description,
-                                'quantity' => $quotationProduct['quantity'],
-                            ]);
-                        }
-                        $quotationRequestItemIds[] = $quotationRequestItem->id;
-                    } else {
-                        $product = Product::find($quotationProduct['product_id']);
-
-                        if (empty($product)) {
-                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' not found')->error();
-                            return back();
-                        }
-
-                        if ($product->type != Product::TYPE_PRODUCT_BUNDLE) {
-                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' is not a product bundle')->error();
-                            return back();
-                        }
-
-                        if ($product->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product with ID #' . $quotationProduct['product_id'] . ' is not available')->error();
-                            return back();
-                        }
-
-                        $quotationRequestItem = $quotationRequest->quotationRequestItems()->where('quotation_request_items.id', $quotationProduct['product_id'])->first();
-
-                        if (!empty($quotationRequestItem)) {
-                            $quotationRequestItem->update([
-                                'name' => $product->name,
-                                'sku' => $product->sku,
-                                'description' => $product->description,
-                                'quantity' => $quotationProduct['quantity'],
-                            ]);
-                        } else {
-                            $quotationRequestItem = QuotationRequestItem::create([
-                                'quotation_request_id' => $quotationRequest->id,
-                                'product_id' => $product->id,
-                                'name' => $product->name,
-                                'sku' => $product->sku,
-                                'description' => $product->description,
-                                'quantity' => $quotationProduct['quantity'],
-                            ]);
-                        }
-                        $quotationRequestItemIds[] = $quotationRequestItem->id;
-                    }
-                }
-                $quotationRequest->quotationRequestItems()->whereNotIn('quotation_request_items.id', $quotationRequestItemIds)->delete();
-            }
+            $this->updateOrCreateItem($quotationRequest, $input['products'], $input['tax_rate'] ?? 0);
 
             $quotationRequest->file_url = $quotationRequest->generatePdf();
             $quotationRequest->save();
@@ -267,7 +132,7 @@ class QuotationRequestController extends VeController
                 return $this->send($request, $quotationRequest);
             } else {
                 DB::commit();
-                flash()->success('Successfully created the quotation request.');
+                flash()->success('Successfully updated the quotation request.');
                 return redirect()->route('admin.quotation-requests.index');
             }
         } catch (Exception $exception) {
@@ -318,5 +183,89 @@ class QuotationRequestController extends VeController
         $quotationRequest->save();
         flash()->success('Successfully created the purchase order.');
         return redirect()->route('admin.purchase-orders.index');
+    }
+
+    public function updateOrCreateItem(QuotationRequest $quotationRequest, $selectedProducts, $taxRate = 0)
+    {
+        if (empty($selectedProducts)) {
+            flash()->error('Selected products is empty, please add a product in order to create quotation request items. Quotation Request ID: ' . $quotationRequest->id);
+            return back();
+        }
+
+        try {
+            foreach ($selectedProducts as $selectedProduct) {
+                if (!empty($selectedProduct['quotation_request_item_id'])) {
+                    // existing item
+                    $quotationRequestItem = $quotationRequest->quotationRequestItems()->find($selectedProduct['quotation_request_item_id']);
+                    $quotationRequestItem->update([
+                            'quantity' => $selectedProduct['quantity'],
+                    ]);
+                    $quotationRequestItemIds[] = $quotationRequestItem->id;
+                } else {
+                    if (!empty($selectedProduct['product_variant_id'])) {
+                        $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
+                        $product = $productVariant->product;
+
+                        if (empty($productVariant)) {
+                            flash('Error: Product variant with ID #' . $selectedProduct['product_variant_id'] . ' not found')->error();
+                            return back();
+                        }
+
+                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $product->status != Product::STATUS_ACTIVE) {
+                            flash('Error: Product variant with ID #' . $selectedProduct['product_variant_id'] . ' is not available')->error();
+                            return back();
+                        }
+
+                        $quotationRequestItem = QuotationRequestItem::create([
+                            'quotation_request_id' => $quotationRequest->id,
+                            'product_id' => $product->id,
+                            'product_variant_id' => $productVariant->id,
+                            'name' => $product->name,
+                            'sku' => $product->sku,
+                            'description' => $product->description,
+                            'quantity' => $selectedProduct['quantity'],
+                        ]);
+
+                        $quotationRequestItemIds[] = $quotationRequestItem->id;
+                    } else {
+                        $product = Product::find($selectedProduct['product_id']);
+
+                        if (empty($product)) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' not found')->error();
+                            return back();
+                        }
+
+                        if ($product->type != Product::TYPE_PRODUCT_BUNDLE) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' is not a product bundle')->error();
+                            return back();
+                        }
+
+                        if ($product->status != Product::STATUS_ACTIVE) {
+                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' is not available')->error();
+                            return back();
+                        }
+
+                        $quotationRequestItem = QuotationRequestItem::create([
+                            'quotation_request_id' => $quotationRequest->id,
+                            'product_id' => $product->id,
+                            'name' => $product->name,
+                            'sku' => $product->sku,
+                            'description' => $product->description,
+                            'quantity' => $selectedProduct['quantity'],
+                        ]);
+
+                        $quotationRequestItemIds[] = $quotationRequestItem->id;
+                    }
+                }
+            }
+            $quotationRequest->quotationRequestItems()->whereNotIn('quotation_request_items.id', $quotationRequestItemIds)->delete();
+            $quotationRequest->save();
+
+            return $quotationRequest;
+        } catch (Exception $exception) {
+            Log::error($exception);
+            flash('There was an error creating the quotation request item. Quotation Request ID: '  . $quotationRequest->id . '. Error: ' . $exception->getMessage());
+            return back();
+        }
     }
 }

@@ -19,11 +19,18 @@
             <form action="{{ route('admin.quotation-requests.update', [$quotationRequest->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                 @method('PUT')
                 @csrf
-                <quotation-request-form :taxRate="7" :quotation-request="{{ $quotationRequest }}"></quotation-request-form>
+                <quotation-request-form :taxRate="7" :quotation-request="{{ $quotationRequest->load('quotationRequestItems.product', 'quotationRequestItems.productVariant', 'supplier') }}"></quotation-request-form>
             </form>
         </div>
-        <div class="col-md-12 text-end">
-            <a href="{{ route('admin.quotation-requests.generatePo', [$quotationRequest->getRouteKey()]) }}"><button type="button" class="col-12 col-md-2 btn btn-success m-2">Generate P.O.</button></a>
+        <div class="row">
+            <div class="col-md-12 text-end">
+                <a class="ms-1" href="{{ route('admin.quotation-requests.generatePo', [$quotationRequest->getRouteKey()]) }}"><button type="button" class="btn btn-success my-2 ms-0">Generate P.O.</button></a>
+                <form action="{{ route('admin.quotation-requests.destroy', [$quotationRequest->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                    @method('DELETE')
+                    @csrf
+                    <button type="submit" class="btn btn-danger ms-1">Delete</button>
+                </form>
+            </div>
         </div>
     </div>
 @endsection

@@ -10,7 +10,7 @@
                         <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
                         <div class="col-md-12">
                             <input type="hidden" name="supplier_id" :value="supplier.id">
-                            <multi-select placeholder="Search Supplier" v-model="supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers"></multi-select>
+                            <multi-select placeholder="Search Supplier" v-model="supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers" :disabled="quotationRequest"></multi-select>
                         </div>
                     </div>
                 </div>
@@ -56,7 +56,8 @@
                                     v-model="item.product"
                                     label="name"
                                     :options="productArray.options"
-                                    @search-change="fetchProducts">
+                                    @search-change="fetchProducts"
+                                    :disabled="quotationRequest">
                                 </multi-select>
                             </td>
                             <td>

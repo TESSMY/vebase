@@ -193,6 +193,7 @@ class QuotationRequestController extends VeController
         }
 
         try {
+            $quotationRequestItemIds = [];
             foreach ($selectedProducts as $selectedProduct) {
                 if (!empty($selectedProduct['quotation_request_item_id'])) {
                     // existing item

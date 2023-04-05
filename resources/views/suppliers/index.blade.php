@@ -1,10 +1,12 @@
 @extends('layouts/layout')
+
 @section('content')
+
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <div class="page-title-box">
-                    <span class="page-title h4">Supplier List</span>
+                    <span class="page-title h4">{{ $modelName }}</span>
                 </div>
             </div>
         </div>
@@ -12,7 +14,7 @@
         <div class="bg-white card shadow py-3 px-4">
             <div class="row mb-3">
                 <div class="col-md-8">
-                    <a href="{{ route('admin.suppliers.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Add Supplier </a>
+                    <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New {{ $modelName }} </a>
                 </div>
                 <div class="col-md-4 text-end">
                     <button type="button" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-secondary rounded ms-1" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
@@ -44,32 +46,22 @@
                 </div>
             </form>
 
-            <form action="#" method="GET" id="form">
+            <form action="{{ route($routePrefix . '.' . $routeName . '.index') }}" method="GET" id="form">
                 @csrf
                 <div class="row mb-3">
                     <div class="col-12 col-md-2 mb-3 mb-md-0 d-flex">
                         <span class="my-auto">Display:</span>
-                        <select class="form-select mx-1" name="limit">
+                        <select class="form-select mx-2" name="limit">
                             <option selected>10</option>
                             <option value="25">25</option>
                             <option value="50">50</option>
                         </select>
-                        <span class="my-auto">Suppliers</span>
+                        <span class="my-auto">{{ $modelName }}</span>
                     </div>
-                    <div class="col-12 col-md-2 mb-3 mb-md-0 d-flex">
-                        <span class="my-auto">Filter:</span>
-                        <select class="form-select mx-1" name="filter">
-                            <option selected>Choose...</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4"></div>
-                    <div class="col-12 col-md-4 p-0">
-                        <div class="px-2">
-                            <label class="form-label my-auto me-md-2">Search: </label>
-                            <input class="form-control" type="search" placeholder="Search" name="search" value="{{ request()->input('search') }}">
-                        </div>
+                    <div class="col-md-8"></div>
+                    <div class="col-12 col-md-2 p-0 d-md-flex">
+                        <label class="form-label my-auto me-md-2">Search: </label>
+                        <input class="form-control" type="search" placeholder="Search" name="search" value="{{ request()->input('search') }}">
                     </div>
                 </div>
             </form>
@@ -77,27 +69,35 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <td>Name</td>
-                            <td>Phone</td>
-                            <td>Email</td>
-                            <td>Created Date</td>
-                            <td></td>
+                            @foreach ($model->indexFields as $indexField)
+                                <th>{{ $indexField['displayName'] }}</th>
+                            @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($suppliers as $supplier)
+                        @forelse ($models as $$routeModel)
                             <tr>
-                                <td>{{ $supplier->name }}</td>
-                                <td>{{ $supplier->phone }}</td>
-                                <td>{{ $supplier->email }}</td>
-                                <td>{{ $supplier->created_at }}</td>
-                                <td>
-                                    <a href="{{ route('admin.suppliers.edit', [$supplier->getRouteKey()]) }}"><button type="button" class="btn btn-primary">Edit</button></a>
-                                </td>
+                                @foreach ($model->indexFields as $indexField)
+                                    @if (strtolower($indexField['columnName']) == 'show')
+                                        <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
+                                    @elseif (strtolower($indexField['columnName']) == 'edit')
+                                        <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
+                                    @else
+                                        @if (empty($$routeModel[$indexField['columnName']]))
+                                            <td>-</td>
+                                        @else
+                                            @if (!empty($indexField['relation']))
+                                                <td>{{ $$routeModel[$indexField['relation']]->name }}</td>
+                                            @else
+                                                <td>{{ $$routeModel[$indexField['columnName']] }}</td>
+                                            @endif
+                                        @endif
+                                    @endif
+                                @endforeach
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="100%" class="text-center">There are no suppliers found.</td>
+                                <td colspan="100%" class="text-center">There are no {{ $modelName }} found.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="mt-2">
-            {{ $suppliers->links() }}
+            {{ $models->links() }}
         </div>
     </div>
 @endsection

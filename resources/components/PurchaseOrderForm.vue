@@ -10,29 +10,25 @@
                         <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
                         <div class="col-md-12">
                             <input type="hidden" name="supplier_id" :value="supplier.id">
-                            <multi-select placeholder="Search Supplier" v-model="supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers"></multi-select>
+                            <multi-select placeholder="Search Supplier" v-model="supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers" :disabled="purchaseOrder"></multi-select>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Date</label>
-                    <input v-if="purchaseOrder" class="form-control" type="date" name="date" placeholder="date" v-model="purchaseOrder.date" required>
-                    <input v-else class="form-control" type="date" name="date" placeholder="date" required>
+                    <input class="form-control" type="date" name="date" v-model="date" required>
                 </div>
                 <div class="col-12 col-md-6 mb-md-0 mb-2">
                     <label class="form-label">Supplier Code</label>
-                    <input v-if="purchaseOrder" class="form-control" type="text" name="supplier_code" v-model="purchaseOrder.supplier_code" readonly>
-                    <input v-else class="form-control" type="text" name="supplier_code" readonly>
+                    <input class="form-control" type="text" name="supplier_code" v-model="supplierCode" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Term</label>
-                    <input v-if="purchaseOrder" class="form-control" type="text" name="payment_terms" placeholder="Payment Term" v-model="purchaseOrder.payment_terms" required>
-                    <input v-else class="form-control" type="text" name="payment_terms" placeholder="Payment Term" required>
+                    <input class="form-control" type="text" name="payment_terms" v-model="paymentTerm" required>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Due</label>
-                    <input v-if="purchaseOrder" class="form-control" type="date" name="payment_due" v-model="purchaseOrder.payment_due" required>
-                    <input v-else class="form-control" type="date" name="payment_due" required>
+                    <input class="form-control" type="date" name="payment_due" v-model="paymentDue" required>
                 </div>
             </div>
         </div>
@@ -56,6 +52,7 @@
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
+                                <input type="hidden" :name="'products[' + index + '][purchase_order_item_id]'" :value="item.purchase_order_item_id">
                                 <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
                                     <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
                                 </template>
@@ -156,12 +153,15 @@ let props = defineProps({
 const subTotal = ref(0);
 const purchaseOrder = ref(props.purchaseOrder);
 const supplier = ref({});
+const date = ref({});
+const supplierCode = ref({});
+const paymentTerm = ref({});
+const paymentDue = ref({});
 const grandTotal = ref(0);
 const tax_rate = ref(props.tax_rate);
 const taxRate1 = ref('');
 const taxRate2 = ref('');
 const status = ref(0);
-
 const products = ref([{
     'product': '',
     'quantity': 0,
@@ -220,4 +220,38 @@ const fetchSuppliers = (query) => {
         });
     }
 };
+
+onBeforeMount(() => {
+    if (props.purchaseOrder !== undefined) {
+        if (props.purchaseOrder.purchase_order_items !== undefined) {
+            supplier.value = props.purchaseOrder.supplier
+            date.value = props.purchaseOrder.date
+            supplierCode.value = props.purchaseOrder.supplier_code
+            paymentTerm.value = props.purchaseOrder.payment_terms
+            paymentDue.value = props.purchaseOrder.payment_due
+            products.value = [];
+
+            props.purchaseOrder.purchase_order_items.forEach(purchaseOrderItem => {
+                if (purchaseOrderItem.product_variant == null) {
+                    // bundles
+                    products.value.push({
+                        'purchase_order_item_id': purchaseOrderItem.id,
+                        'product': purchaseOrderItem.product,
+                        'quantity': purchaseOrderItem.quantity,
+                        'subTotal': purchaseOrderItem.quantity * purchaseOrderItem.product.cost_price,
+                    });
+                } else {
+                    // product variants & single products
+                    products.value.push({
+                        'purchase_order_item_id': purchaseOrderItem.id,
+                        'product': purchaseOrderItem.product_variant,
+                        'quantity': purchaseOrderItem.quantity,
+                        'subTotal': purchaseOrderItem.quantity * purchaseOrderItem.product_variant.selling_price,
+                    });
+                }
+            });
+        }
+    }
+})
+
 </script>

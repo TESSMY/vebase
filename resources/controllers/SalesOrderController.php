@@ -103,6 +103,7 @@ class SalesOrderController extends VeController
             $subTotal = 0;
             $totalCost = 0;
 
+            $salesOrderItemIds = [];
             foreach ($selectedProducts as $selectedProduct) {
                 if (!empty($selectedProduct['sales_order_item_id'])) {
                     $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);

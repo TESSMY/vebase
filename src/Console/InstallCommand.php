@@ -56,6 +56,15 @@ class InstallCommand extends Command
             }
         }
 
+        // api
+        $apis = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'api');
+        foreach ($apis as $api) {
+            // skip '.' and '..' in dir
+            if (strlen($api) > 2) {
+                copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'api' . DIRECTORY_SEPARATOR . $api, app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . $api));
+            }
+        }
+
         // vue components
         $components = scandir(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'components');
         foreach ($components as $component) {

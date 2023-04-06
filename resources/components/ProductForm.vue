@@ -35,7 +35,7 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Brand</label>
             <div class="col-md-12">
-              <input type="hidden" name="brand_id" :value="selectedBrand.id">
+              <input type="hidden" name="brand_id" :value="selectedBrand.id" v-if="selectedBrand">
               <multi-select placeholder="Search Brand" v-model="selectedBrand" label="name" :options="brandArray" @search-change="fetchBrands"></multi-select>
             </div>
           </div>
@@ -46,7 +46,7 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
             <div class="col-md-12">
-              <input type="hidden" name="supplier_id" :value="selectedSupplier.id">
+              <input type="hidden" name="supplier_id" :value="selectedSupplier.id" v-if="selectedSupplier">
               <multi-select placeholder="Search Supplier" v-model="selectedSupplier" label="name" :options="supplierArray" @search-change="fetchSuppliers"></multi-select>
             </div>
           </div>
@@ -299,7 +299,7 @@ import Swal from "sweetalert2";
 
 export default {
   name: "ProductForm",
-  props: ['products', 'edit_product', 'variants', 'product_bundles'],
+  props: ['products', 'edit_product', 'variants', 'product_bundles', 'productBrand', 'productSupplier'],
   data() {
     return {
       isEdit: false,
@@ -350,10 +350,12 @@ export default {
       this.product = this.edit_product;
       this.product.variants = this.variants;
       this.type = this.product.type;
-      this.selectedBrand = this.edit_product.brand_id;
-      this.selectedSupplier = this.edit_product.supplier_id;
-      this.bundles = JSON.parse(JSON.stringify(this.product_bundles))
+      this.selectedBrand = this.edit_product.brand;
+      this.selectedSupplier = this.edit_product.supplier;
+      this.bundles = this.edit_product.bundles;
+
       this.getOptions();
+      this.recalculateTotal();
     }
   },
 

@@ -13,6 +13,9 @@ Route::group([
     Route::get('/sales-reports/export/', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.export');
     Route::get('/sales-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.index');
     Route::post('quotations/{quotation}/send', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController@send')->name('quotations.send');
+    Route::get('/inventory-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'InventoryReportController@index')->name('inventory-reports.index');
+    Route::get('/inventory-reports/history', RouteServiceProvider::ADMIN_NAMESPACE . 'InventoryReportController@history')->name('inventory-reports.history');
+    Route::post('/inventory-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'InventoryReportController@generate')->name('inventory-reports.generate');
 });
 
 $classes = ClassFinder::getClassesInNamespace('App\Models');

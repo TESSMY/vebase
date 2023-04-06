@@ -47,7 +47,13 @@ class DeliveryOrderController extends VeController
             DB::beginTransaction();
 
             $client = Client::find($input['client_id']);
-            $deliveryOrder = DeliveryOrder::create($input + ['client_name' => $client->name, 'client_address' => $client->address_1 . ' ' . $client->address_2, 'created_by' => Auth::id()]);
+            $deliveryOrder = DeliveryOrder::create($input + [
+                'client_name' => $client->name, 
+                'client_address' => $client->address_1 . ' ' . $client->address_2,
+                'postcode' => $client->postcode,
+                'country' => $client->country,
+                'created_by' => Auth::id()
+            ]);
             $subTotal = 0;
 
             $deliveryOrder->createDeliveryOrderItems($input['products']);
@@ -140,7 +146,12 @@ class DeliveryOrderController extends VeController
             
 
             $client = Client::find($input['client_id']);
-            $deliveryOrder->update($input + ['client_name' => $client->name, 'client_address' => $client->address_1 . ' ' . $client->address_2]);
+            $deliveryOrder->update($input + [
+                'client_name' => $client->name, 
+                'client_address' => $client->address_1 . ' ' . $client->address_2,
+                'postcode' => $client->postcode,
+                'country' => $client->country,
+            ]);
             $subTotal = 0;
 
             $deliveryOrder->createDeliveryOrderItems($input['products']);

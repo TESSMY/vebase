@@ -23,7 +23,7 @@
                 <tbody>
                     @forelse ($inventoryReports as $inventoryReport)
                         <tr>
-                           <td>{{ $inventoryReport->created_by->name }}</td>
+                           <td>{{ $inventoryReport->createdBy?->name }}</td>
                            <td>{{ $inventoryReport->created_at }}</td>
                            <td><a href="{{ $inventoryReport->file_url }}" download class="btn btn-primary">Download</a></td>
                         </tr>

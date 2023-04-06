@@ -111,7 +111,6 @@ class InventoryReportController extends VeController
 
         InventoryReport::create([
             'generated_by' => Auth::id(),
-            'created_by_name' => Auth::getName(),
             'file_url' => Storage::url($path),
         ]);
 

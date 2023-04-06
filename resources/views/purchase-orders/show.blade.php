@@ -1,5 +1,7 @@
 @extends('layouts/layout')
+
 @section('content')
+
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 col-md-6">
@@ -16,7 +18,8 @@
         </div>
         <div class="row">
             <div class="col-12 col-md-1">
-                <button class="btn btn-success" data-toggle="modal" data-target="#purchase-order-modal">Send P.O</button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#purchase-order-modal">Send P.O</button>
+
                 <div class="modal fade" id="purchase-order-modal" role="dialog">
                     <div class="modal-dialog">
                         <form action="{{ route('admin.purchase-orders.send', [$purchaseOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
@@ -45,7 +48,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                                    <button type="button" class="btn btn-default" data-bs-dismiss="modal">
                                         Close
                                     </button>
                                     <button type="submit" class="btn btn-primary ml-auto">

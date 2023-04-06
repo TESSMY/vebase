@@ -18,7 +18,7 @@
         <div class="bg-white card shadow py-3 px-4">
             <form action="{{ route('admin.purchase-orders.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <purchase-order-form :taxRate="{{ $taxRate }}"></purchase-order-form>
+                <purchase-order-form :tax_rate="7"></purchase-order-form>
             </form>
         </div>
     </div>

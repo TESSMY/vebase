@@ -22,22 +22,26 @@
                     @csrf
                     <quotation-form :quotation="{{ $quotation }}" :quotation-items="{{ $quotation->quotationItems }}" :quotation-client="{{ $quotation->client }}"></quotation-form>
                     <div class="mt-3">
-                        <button class="btn btn-primary me-2" type="submit">{{  __('Update') }}</button>
-                        <button class="btn btn-secondary">{{ __('Close') }}</button>
+                        @if($quotation->status == \App\Models\Quotation::STATUS_PENDING)
+                            <button class="btn btn-primary me-2" type="submit">{{  __('Update') }}</button>
+                            <button class="btn btn-secondary">{{ __('Close') }}</button>
+                        @endif
                     </div>
                 </form>
             @endcan
             <hr>
             @can('delete-quotation')
-                <form action="{{ route('admin.quotations.destroy', $quotation) }}" method="POST" enctype="multipart/form-data">
-                    @method('DELETE')
-                    @csrf
-                    <div class="text-end">
-                        <button class="btn btn-danger px-2" type="submit">
-                            Delete
-                        </button>
-                    </div>
-                </form>
+                @if($quotation->status == \App\Models\Quotation::STATUS_PENDING || $quotation->status == \App\Models\Quotation::STATUS_APPROVED)
+                    <form action="{{ route('admin.quotations.destroy', $quotation) }}" method="POST" enctype="multipart/form-data">
+                        @method('DELETE')
+                        @csrf
+                        <div class="text-end">
+                            <button class="btn btn-danger px-2" type="submit">
+                                Delete
+                            </button>
+                        </div>
+                    </form>
+                @endif
             @endcan
         </div>
     </div>

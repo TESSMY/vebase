@@ -7,31 +7,31 @@
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Client</label>
                 <input type="hidden" name="client_id" :value="selectedClient.id" class="form-control"/>
-                <multi-select placeholder="Search Client" v-model="selectedClient" label="name" :options="clientArray" @input="fetchClients"></multi-select>
+                <multi-select placeholder="Search Client" v-model="selectedClient" label="name" :options="clientArray" @input="fetchClients" :disabled="disabled"></multi-select>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Delivery Date</label>
-                <input type="date" name="delivery_date" class="form-control" v-model="deliveryDate" />
+                <input type="date" name="delivery_date" class="form-control" v-model="deliveryDate" :disabled="disabled"/>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Quotation Name</label>
-                <input type="text" name="name" class="form-control" v-model="name" />
+                <input type="text" name="name" class="form-control" v-model="name" :disabled="disabled"/>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Payment Term</label>
-                <input type="text" name="payment_term" class="form-control" v-model="paymentTerm" />
+                <input type="text" name="payment_term" class="form-control" v-model="paymentTerm" :disabled="disabled"/>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Billing Address</label>
-                <input type="text" name="billing_address" class="form-control" v-model="billingAddress" />
+                <input type="text" name="billing_address" class="form-control" v-model="billingAddress" :disabled="disabled"/>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Delivery Address</label>
-                <input type="text" name="delivery_address" class="form-control" v-model="deliveryAddress" />
+                <input type="text" name="delivery_address" class="form-control" v-model="deliveryAddress" :disabled="disabled"/>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Expiration Date</label>
-                <input type="date" name="expiration_date" class="form-control" v-model="expirationDate" />
+                <input type="date" name="expiration_date" class="form-control" v-model="expirationDate" :disabled="disabled"/>
             </div>
         </div>
     </div>
@@ -61,33 +61,34 @@
                             </template>
                             <template v-else>
                                 <input type="hidden" :name="'products[' + i + '][product_id]'" :value="item.product.product_id">
-                                <input type="hidden" :name="'products[' + i + '][product_variant_id]'" :value="item.product.id">
+                                <input type="hidden" :name="'products[' + i + '][product_variant_id]'" :value="item.product.product_variant_id">
                             </template>
                             <multi-select placeholder="Search Products"
                                           v-model="item.product"
                                           label="name"
                                           :options="productArray"
+                                          :disabled="disabled"
                                           @search-change="fetchProducts">
                             </multi-select>
                         </td>
                         <td>
-                            <input class="form-control" type="number" min="0" :name="'products[' + i + '][quantity]'" v-model="item.quantity" @input="updateItemTotalPrice(item)" required>
+                            <input class="form-control" type="number" min="0" :name="'products[' + i + '][quantity]'" v-model="item.quantity" @input="updateItemTotalPrice(item)" :disabled="disabled" required>
                         </td>
                         <td>{{ item.product.selling_price }}</td>
                         <td>$ {{ item.subTotal }}</td>
                         <input type="hidden" :name="'products[' + i + '][total_price]'" :value="item.subTotal">
-                        <td><i class="uil-trash cursor-pointer mt-2" @click="removeProduct(i)"></i></td>
+                        <td><i class="uil-trash cursor-pointer mt-2" @click="removeProduct(i)" :disabled="disabled"></i></td>
                     </tr>
                 </tbody>
             </table>
-            <span class="btn text-primary text-decoration-underline pb-3" @click="addProduct()">Add another item</span>
+            <span class="btn text-primary text-decoration-underline pb-3" @click="addProduct()" :disabled="disabled">Add another item</span>
         </div>
         <div class="row container-fluid">
             <div class="col-12 col-md-4 mb-md-0 mb-3">
                 <div class="row px-0">
                     <div class="px-0">
                         <label class="form-label px-0">Notes</label>
-                        <textarea class="form-control" placeholder="Notes that will be displayed on sales order." rows="5" style="resize: none" name="notes" v-model="notes"></textarea>
+                        <textarea class="form-control" placeholder="Notes that will be displayed on sales order." rows="5" style="resize: none" name="notes" v-model="notes" :disabled="disabled"></textarea>
                     </div>
                 </div>
             </div>
@@ -98,7 +99,7 @@
                     <span class="col-5">$ {{ subTotal }}</span>
                     <div class="border my-2"></div>
                     <span class="col-7 fw-bold my-auto">Tax %: </span>
-                    <span class="col-5"><input class="form-control" v-model="taxRate" type="number" name="tax_rate" min="0" max="100" step="1"></span>
+                    <span class="col-5"><input class="form-control" v-model="taxRate" type="number" name="tax_rate" min="0" max="100" step="1" :disabled="disabled"></span>
                     <div class="border my-2"></div>
                     <span class="col-7 fw-bold my-auto">Total (SGD): </span>
                     <span class="col-5">$ {{ grandTotal }}</span>
@@ -109,7 +110,7 @@
         <input type="hidden" name="status" v-model="status">
         <div class="row col-md-12 text-end">
             <div class="col-md-12 text-end">
-                <button type="submit" @click="status = 20" class="btn btn-success m-4">Generate S.O.</button>
+                <button type="submit" @click="status = 20" class="btn btn-success m-4" :disabled="disabled">Generate S.O.</button>
             </div>
         </div>
     </div>
@@ -129,6 +130,7 @@ export default {
     data() {
         return {
             isEdit: false,
+            disabled: false,
             expirationDate: '',
             deliveryDate: '',
             name: '',
@@ -138,7 +140,6 @@ export default {
             clientArray: [],
             selectedClient: {},
             productArray: [],
-            selectedProduct: '',
             itemTotal: '',
             subTotal: '',
             grandTotal: '',
@@ -160,6 +161,9 @@ export default {
 
     mounted() {
         if (this.quotation !== undefined) {
+            if (this.quotation.status != 10) {
+                this.disabled = true;
+            }
             this.selectedClient = this.quotationClient;
             this.deliveryDate = this.quotation.delivery_date;
             let delivery_date = new Date(this.quotation.delivery_date);
@@ -183,6 +187,7 @@ export default {
                     quotation_item_id: item.id,
                     product: {
                         id: item.product_id,
+                        product_variant_id: item.product_variant_id,
                         product_id: item.product_id,
                         name: item.name,
                         selling_price: item.unit_price,

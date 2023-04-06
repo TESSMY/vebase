@@ -33,8 +33,8 @@ class QuotationController extends VeController
 
         $validator = Validator::make($input, $this->model->createValidator);
         if ($validator->fails()) {
-         flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-         return back()->withInput($request->input())->withErrors($validator);
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
         }
 
         DB::beginTransaction();
@@ -42,13 +42,12 @@ class QuotationController extends VeController
             $quotation = Quotation::create($input + ['created_by' => Auth::id()]);
 
             $quotation = $this->updateOrCreateItem($quotation, $input);
-            $quotation->generatePdf();
 
             if ($input['status'] == Quotation::STATUS_APPROVED) {
-                $quotation->createOrUpdateSalesOrder($input['products']);
+                $quotation->createOrUpdateSalesOrder($quotation->quotationItems);
                 DB::commit();
                 flash()->success('Successfully created the sales order.');
-                return redirect()->route('admin.sales-orders.index');
+                return redirect()->route('admin.quotations.index');
             }
 
             DB::commit();
@@ -80,8 +79,8 @@ class QuotationController extends VeController
             return back()->withInput($request->input())->withErrors($validator);
         }
         if (!empty($quotation->salesOrder)) {
-            if ($quotation->salesOrder->status == SalesOrder::STATUS_COMPLETED) {
-                flash('Error: Unable to edit due to sales order being completed.');
+            if ($quotation->salesOrder->status != SalesOrder::STATUS_DRAFT) {
+                flash('Error: Unable to edit due to sales order not being in draft. Please recreate a new quotation.');
                 return back();
             }
         }
@@ -90,8 +89,8 @@ class QuotationController extends VeController
 
             $client = Client::find($input['client_id']);
             $quotation->update($input + ['client_id' => $client->id]);
-            $quotation = $this->updateOrCreateItem($quotation, $input);
-            $quotation->createOrUpdateSalesOrder($input['products']);
+            $this->updateOrCreateItem($quotation, $input);
+
             DB::commit();
             flash()->success('Successfully updated quotation');
             return redirect()->route('admin.quotations.index');
@@ -191,6 +190,35 @@ class QuotationController extends VeController
         } catch (Exception $exception) {
             Log::error($exception);
             flash('There was an error creating the quotation item. Quotation ID: '  . $quotation->id . '. Error: ' . $exception->getMessage());
+            return back();
+        }
+    }
+
+    public function destroy($id)
+    {
+        $quotation = $this->findModel($id);
+        $this->authorize('delete', $quotation);
+
+        try {
+            $quotation->quotationItems()->delete();
+            $quotation->status = Quotation::STATUS_VOID;
+            $quotation->save();
+
+            $salesOrder = $quotation->salesOrder;
+            if (!empty($salesOrder)) {
+                foreach ($salesOrder->salesOrderItems as $item) {
+                    $item->status = SalesOrderItem::STATUS_CANCELLED;
+                    $item->save();
+                }
+                $salesOrder->status = SalesOrder::STATUS_CANCELLED;
+                $salesOrder->save();
+            }
+            flash()->success($quotation->name . ' deleted successfully!');
+            return redirect()->route('admin.quotations.index');
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            flash('Error:' . $exception->getMessage());
             return back();
         }
     }

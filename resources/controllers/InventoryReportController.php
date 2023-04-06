@@ -104,7 +104,7 @@ class InventoryReportController extends VeController
 
     public function generate(Request $request)
     {
-        $this->authorize('edit', InventoryReport::class);
+        $this->authorize('create', InventoryReport::class);
 
         $path = '/inventory-reports/inventory-report-export' . now()->toDateTimeString() . '.xlsx';
         Excel::store(new InventoryReportExport, $path);

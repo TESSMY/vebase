@@ -21,8 +21,8 @@ class ClientImport implements ToModel, WithHeadingRow, WithValidation
             'email' => $row['email'],
             'company_name' => $row['company_name'],
             'phone' => $row['phone'],
-            'address_1' => $row['address1'],
-            'address_2' => $row['address2'],
+            'address_1' => $row['address_1'],
+            'address_2' => $row['address_2'],
             'city' => $row['city'],
             'state' => $row['state'],
             'postcode' => $row['postcode'],
@@ -34,17 +34,7 @@ class ClientImport implements ToModel, WithHeadingRow, WithValidation
 
     public function rules(): array
     {
-        return [
-            '*.name' => 'required|string',
-            '*.email' => 'required|string',
-            '*.company_name' => 'nullable|string',
-            '*.phone' => 'nullable|numeric',
-            '*.address_1' => 'nullable|string',
-            '*.address_2' => 'nullable|string',
-            '*.city' => 'nullable|string',
-            '*.state' => 'nullable|string',
-            '*.postcode' => 'nullable|numeric',
-            '*.country' => 'required|string',
-        ];
+        $client = new Client();
+        return $client->createValidator;
     }
 }

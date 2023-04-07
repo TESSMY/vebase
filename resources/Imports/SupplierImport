@@ -3,9 +3,13 @@
 namespace App\Imports;
 
 use App\Models\Supplier;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class SupplierImport implements ToModel
+class SupplierImport implements ToModel, WithHeadingRow, WithValidation
 {
     /**
     * @param array $row
@@ -15,18 +19,36 @@ class SupplierImport implements ToModel
     public function model(array $row)
     {
         return new Supplier([
-            'name' => $row[0],
-            'code' => $row[1],
-            'email' => $row[2],
-            'address' => $row[3],
-            'city' => $row[4],
-            'state' => $row[5],
-            'zip' => $row[6],
-            'country' => $row[7],
-            'pic_name' => $row[8],
-            'pic_email' => $row[9],
-            'pic_phone' => $row[10],
-            'phone' => $row[11],
+            'name' => $row['name'],
+            'code' => $row['code'],
+            'email' => $row['email'],
+            'address' => $row['address'],
+            'city' => $row['city'],
+            'state' => $row['state'],
+            'zip' => $row['zip'],
+            'country' => $row['country'],
+            'pic_name' => $row['pic_name'],
+            'pic_email' => $row['pic_email'],
+            'pic_phone' => $row['pic_phone'],
+            'phone' => $row['phone'],
         ]);
+    }
+
+    public function rules(): array
+    {
+        return [
+            '*.name' => 'required|string',
+            '*.code' => 'nullable|numeric',
+            '*.email' => 'nullable|string',
+            '*.address' => 'nullable|string',
+            '*.city' => 'nullable|string',
+            '*.state' => 'nullable|string',
+            '*.zip' => 'nullable|numeric',
+            '*.country' => 'required|string',
+            '*.pic_name' => 'nullable|string',
+            '*.pic_email' => 'nullable|string',
+            '*.pic_phone' => 'nullable|string',
+            '*.phone' => 'nullable|string',
+        ];
     }
 }

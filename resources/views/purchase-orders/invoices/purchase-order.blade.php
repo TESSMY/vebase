@@ -310,7 +310,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($invoice->getCustomData()[0]->purchaseItems as $item)
+            @foreach ($invoice->getCustomData()[0]->purchaseOrderItems as $item)
                 <tr>
                     <td>SKU #{{ $item->sku }}</td>
                     <td>{{ !empty($item->product) ? $item->product->name : '-' }}</td>

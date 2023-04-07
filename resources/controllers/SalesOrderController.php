@@ -6,32 +6,41 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
-use App\Models\Supplier;
+use App\Models\Client;
+use App\Models\SalesOrder;
+use App\Models\SalesOrderItem;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Vecapital\Vebase\Http\Controllers\VeController;
 
-class PurchaseOrderController extends VeController
+class SalesOrderController extends VeController
 {
     public function store(Request $request)
     {
-        $this->authorize('create', PurchaseOrder::class);
+        $this->authorize('create', SalesOrder::class);
+
         $input = $request->input();
         $input['created_by'] = Auth::id();
+        $input['currency'] = 'SGD';
+        $client = Client::find($input['client_id']);
 
-        $supplier = Supplier::find($input['supplier_id']);
-
-        if (empty($supplier)) {
-            flash()->error('Could not find the supplier selected. Please select a different supplier.');
+        if (empty($client)) {
+            flash()->error('Could not find the client selected. Please select a different client.');
             return back()->withInput($request->input());
         }
+
+        $input['client_name'] = $client->name;
+        $input['client_address'] = $client->address_1 . ", " . $client->address_2 . ", " . $client->city . ", " . $client->state . ", " . $client->postcode . ", " . $client->country;
+        $input['address_1'] = $client->address_1;
+        $input['address_2'] = $client->address_2;
+        $input['city'] = $client->city;
+        $input['state'] = $client->state;
+        $input['postcode'] = $client->postcode;
+        $input['country'] = $client->country;
 
         $validator = Validator::make($input, $this->model->createValidator);
 
@@ -42,28 +51,29 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            $purchaseOrder = PurchaseOrder::create($input);
+            $salesOrder = SalesOrder::create($input);
 
-            $this->updateOrCreateItem($purchaseOrder, $input['products'], $input['tax_rate'] ?? 0);
+            $this->updateOrCreateItem($salesOrder, $input['products'], $input['tax_rate'] ?? 0);
 
             DB::commit();
-            flash()->success('Successfully created the purchase order.');
-            return redirect()->route('admin.purchase-orders.index');
+            flash()->success('Successfully created the sales order.');
+
+            return redirect()->route('admin.sales-orders.index');
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
             flash('Error: ' . $exception->getMessage());
-            return redirect()->route('admin.purchase-orders.create')->withInput($request->input());
+            return redirect()->route('admin.sales-orders.create')->withInput($request->input());
         }
     }
 
     public function update(Request $request, $id)
     {
-        $purchaseOrder = $this->findModel($id);
-        $this->authorize('update', $purchaseOrder);
+        $salesOrder = $this->findModel($id);
+        $this->authorize('update', $salesOrder);
         $input = $request->input();
 
-        $validator = Validator::make($input, $this->model->updateValidator);
+        $validator = Validator::make($input, $salesOrder->updateValidator);
 
         if ($validator->fails()) {
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
@@ -72,52 +82,26 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            $purchaseOrder->update($input);
+            $salesOrder->update($input);
 
-            $this->updateOrCreateItem($purchaseOrder, $input['products'], $input['tax_rate'] ?? 0);
+            $this->updateOrCreateItem($salesOrder, $input['products'], $input['tax_rate'] ?? 0);
 
             DB::commit();
-            flash()->success('Successfully updated the purchase order.');
-            return redirect()->route('admin.purchase-orders.index');
+            flash()->success('Successfully updated the sales order.');
+
+            return redirect()->route('admin.sales-orders.edit', [$salesOrder->getRouteKey()]);
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash('Error: ' . $exception->getMessage());
-            return redirect()->route('admin.purchase-orders.edit', $purchaseOrder->getRouteKey())->withInput($request->input());
+            flash('Error: ' . $exception);
+            return redirect()->route('admin.sales-orders.edit', $salesOrder->getRouteKey())->withInput($request->input());
         }
     }
 
-    public function send(Request $request, PurchaseOrder $purchaseOrder)
-    {
-        $this->authorize('sendEmail', $purchaseOrder);
-
-        try {
-            $data["email"] = $request->input('to_email');
-            $data["title"] = 'Purchase Order' . ' ' . $purchaseOrder->id;
-            $data["purchaseOrder"] = $purchaseOrder;
-            Mail::send('admin.purchase-orders.message', $data, function ($message) use ($data, $purchaseOrder) {
-                $message->to($data["email"], $data["email"])
-                        ->subject($data["title"])
-                        ->attach(Storage::url($purchaseOrder->file_url));
-            });
-
-            $purchaseOrder->status = PurchaseOrder::STATUS_SENT;
-            $purchaseOrder->save();
-
-            flash()->success('Mail sent successfully!');
-            return redirect()->route('admin.purchase-orders.index');
-        } catch(Exception $exception) {
-            Log::error('There was an issue sending the sending the pdf. Purchase Order ID: ' . $purchaseOrder->id . ' . Error: ' . $exception->getMessage());
-            flash()->error('There was an issue sending the sending the pdf. Purchase Order ID: ' . $purchaseOrder->id . ' . Error: ' . $exception->getMessage());
-            return redirect()->route('admin.purchase-orders.index');
-        }
-
-    }
-
-    public function updateOrCreateItem(PurchaseOrder $purchaseOrder, $selectedProducts, $taxRate = 0)
+    public function updateOrCreateItem(SalesOrder $salesOrder, $selectedProducts, $taxRate = 0)
     {
         if (empty($selectedProducts)) {
-            flash()->error('Selected products is empty, please add a product in order to create purchase order items. Purchase Order ID: ' . $purchaseOrder->id);
+            flash()->error('Selected products is empty, please add a product in order to create sales order items. Sales Order ID: ' . $salesOrder->id);
             return back();
         }
 
@@ -125,19 +109,19 @@ class PurchaseOrderController extends VeController
             $subTotal = 0;
             $totalCost = 0;
 
-            $purchaseOrderItemIds = [];
+            $salesOrderItemIds = [];
             foreach ($selectedProducts as $selectedProduct) {
-                if (!empty($selectedProduct['purchase_order_item_id'])) {
+                if (!empty($selectedProduct['sales_order_item_id'])) {
                     // existing item
-                    $purchaseOrderItem = $purchaseOrder->purchaseOrderItems()->find($selectedProduct['purchase_order_item_id']);
-                    $purchaseOrderItem->update([
+                    $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
+                    $salesOrderItem->update([
                             'quantity' => $selectedProduct['quantity'],
-                            'total_amount' => $selectedProduct['quantity'] * $purchaseOrderItem->unit_price,
-                            'total_cost' => $selectedProduct['quantity'] * $purchaseOrderItem->unit_cost,
+                            'total_amount' => $selectedProduct['quantity'] * $salesOrderItem->unit_price,
+                            'total_cost' => $selectedProduct['quantity'] * $salesOrderItem->unit_cost,
                     ]);
-                    $purchaseOrderItemIds[] = $purchaseOrderItem->id;
-                    $subTotal += $selectedProduct['quantity'] * $purchaseOrderItem->unit_price;
-                    $totalCost += $selectedProduct['quantity'] * $purchaseOrderItem->unit_cost;
+                    $salesOrderItemIds[] = $salesOrderItem->id;
+                    $subTotal += $selectedProduct['quantity'] * $salesOrderItem->unit_price;
+                    $totalCost += $selectedProduct['quantity'] * $salesOrderItem->unit_cost;
                 } else {
                     if (!empty($selectedProduct['product_variant_id'])) {
                         $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
@@ -153,12 +137,12 @@ class PurchaseOrderController extends VeController
                             return back();
                         }
 
-                        $purchaseOrderItem = PurchaseOrderItem::create([
-                            'purchase_order_id' => $purchaseOrder->id,
+                        $salesOrderItem = SalesOrderItem::create([
+                            'sales_order_id' => $salesOrder->id,
                             'product_id' => $product->id,
                             'product_variant_id' => $productVariant->id,
-                            'name' => $product->name,
-                            'sku' => $product->sku,
+                            'name' => $productVariant->name,
+                            'sku' => $productVariant->sku,
                             'description' => $product->description,
                             'quantity' => $selectedProduct['quantity'],
                             'unit_price' => $productVariant->selling_price,
@@ -167,7 +151,7 @@ class PurchaseOrderController extends VeController
                             'total_cost' => $selectedProduct['quantity'] * $productVariant->cost_price,
                         ]);
 
-                        $purchaseOrderItemIds[] = $purchaseOrderItem->id;
+                        $salesOrderItemIds[] = $salesOrderItem->id;
                         $subTotal += $selectedProduct['quantity'] * $productVariant->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
                     } else {
@@ -188,8 +172,8 @@ class PurchaseOrderController extends VeController
                             return back();
                         }
 
-                        $purchaseOrderItem = PurchaseOrderItem::create([
-                            'purchase_order_id' => $purchaseOrder->id,
+                        $salesOrderItem = SalesOrderItem::create([
+                            'sales_order_id' => $salesOrder->id,
                             'product_id' => $product->id,
                             'name' => $product->name,
                             'sku' => $product->sku,
@@ -201,27 +185,26 @@ class PurchaseOrderController extends VeController
                             'total_cost' => $selectedProduct['quantity'] * $product->cost_price,
                         ]);
 
-                        $purchaseOrderItemIds[] = $purchaseOrderItem->id;
+                        $salesOrderItemIds[] = $salesOrderItem->id;
                         $subTotal += $selectedProduct['quantity'] * $product->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $product->cost_price;
                     }
                 }
             }
-            $purchaseOrder->purchaseOrderItems()->whereNotIn('purchase_order_items.id', $purchaseOrderItemIds)->delete();
+            $salesOrder->salesOrderItems()->whereNotIn('sales_order_items.id', $salesOrderItemIds)->delete();
 
-            $purchaseOrder->item_count = count($selectedProducts);
-            $purchaseOrder->tax_amount = $subTotal * ($input['tax_rate'] ?? 0) / 100;
-            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
-            $purchaseOrder->sub_total = $subTotal;
-            $purchaseOrder->grand_total = $subTotal - $purchaseOrder->discount_amount + $purchaseOrder->tax_amount;
-            $purchaseOrder->total_cost = $totalCost;
-            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
-            $purchaseOrder->save();
+            $salesOrder->item_count = count($selectedProducts);
+            $salesOrder->tax_amount = $subTotal * $taxRate / 100;
+            $salesOrder->tax_rate = $taxRate;
+            $salesOrder->sub_total = $subTotal;
+            $salesOrder->grand_total = $subTotal - $salesOrder->discount_amount + $salesOrder->tax_amount;
+            $salesOrder->total_cost = $totalCost;
+            $salesOrder->save();
 
-            return $purchaseOrder;
+            return $salesOrder;
         } catch (Exception $exception) {
             Log::error($exception);
-            flash('There was an error creating the purchase order item. Purchase Order ID: '  . $purchaseOrder->id . '. Error: ' . $exception->getMessage());
+            flash('There was an error creating the sales order item. Sales Order ID: '  . $salesOrder->id . '. Error: ' . $exception->getMessage());
             return back();
         }
     }

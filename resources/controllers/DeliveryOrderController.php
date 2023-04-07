@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Client;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Models\DeliveryOrder;
-use App\Models\SalesOrder;
+use App\Models\DeliveryOrderItem;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Tax;
-use Exception;
 use Illuminate\Http\Request;
+use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -19,183 +19,173 @@ use Vecapital\Vebase\Http\Controllers\VeController;
 
 class DeliveryOrderController extends VeController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-
-    public function index(Request $request)
-    {
-        $this->authorize('view', DeliveryOrder::class);
-        $deliveryOrders = DeliveryOrder::with(['salesOrder', 'items.productVariant.product'])->paginate();
-        return view('admin.delivery-orders.index', compact('deliveryOrders'));
-    }
-
-    public function create()
-    {
-        $this->authorize('create', DeliveryOrder::class);
-        $taxes = Tax::orderBy('created_at', 'desc')->get();
-        $taxRate = $taxes->firstWhere('is_default', true);
-        if (empty($taxRate)) {
-            $taxRate = $taxes[0];
-        }
-        return view('admin.delivery-orders.create', compact('taxRate', 'taxes'));
-    }
-
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
-        $this->authorize('create', DeliveryOrder::class);
+        $this->authorize('create', $this->model);
+        
         $input = $request->input();
-        $input['created_by'] = auth()->id();
+
+        if (empty($this->model->createValidator)) {
+            flash('Error: createValidator is empty')->error();
+            return back()->withInput($request->input()); 
+        }
+
         $validator = Validator::make($input, $this->model->createValidator);
 
         if ($validator->fails()) {
-            // for multiselect in the component
-            if (!empty($input['sales_order_id'])) {
-                $input['sales_order'] = SalesOrder::find($input['sales_order_id']);
-            }
-            // for multiselect in the component
-            if (!empty($input['client_id'])) {
-                $input['client'] = Client::find($input['client_id']);
-            }
-            // for item list that selected previously
-            if (!empty($input['items'])) {
-                $items = [];
-                $productVariants = ProductVariant::with('product')->whereIn('id', array_column($input['items'], 'id'))->get()->keyBy('id');
-                foreach ($input['items'] as $inputItem) {
-                    $items[] = [
-                        'quantity' => $inputItem['quantity'],
-                        'product_variant' => $productVariants[$inputItem['id']] ?? null
-                    ];
-                }
-                $input['items'] = $items;
-            }
-            flash()->error($validator->errors());
-            return back()->withInput($input)->withErrors($validator);
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
         }
-
-        DB::beginTransaction();
+        
         try {
-            $deliveryOrder = DeliveryOrder::create($input);
+            DB::beginTransaction();
+
+            $client = Client::find($input['client_id']);
+            $deliveryOrder = DeliveryOrder::create($input + [
+                'client_name' => $client->name, 
+                'client_address' => $client->address_1 . ' ' . $client->address_2,
+                'postcode' => $client->postcode,
+                'country' => $client->country,
+                'created_by' => Auth::id()
+            ]);
             $subTotal = 0;
-            $productVariant = ProductVariant::select(['id', 'selling_price'])
-                ->whereIn('id', array_column(request('items'), 'id'))
-                ->get()
-                ->pluck('selling_price', 'id');
-            foreach (request('items') as $itemRequest) {
-                $subTotalItem = $itemRequest['quantity'] * $productVariant[$itemRequest['id']];
-                $deliveryOrder->items()->updateOrCreate(
-                    ['product_variant_id' => $itemRequest['id']],
-                    [
-                        'quantity' => $itemRequest['quantity'],
-                        'sub_total' => $subTotalItem,
-                        'unit_price' => $productVariant[$itemRequest['id']]
-                    ]
-                );
-                $subTotal += $subTotalItem;
-            }
 
-            $taxAmount = $subTotal * $input['tax_rate'] / 100;
+            $deliveryOrder->createDeliveryOrderItems($input['products']);
+
+            $subTotal = $deliveryOrder->items->sum('total_price');
+
+            $deliveryOrder->item_count = count($input['products']);
             $deliveryOrder->sub_total = $subTotal;
-            $deliveryOrder->tax_rate = $input['tax_rate'];
-            $deliveryOrder->tax_amount = $taxAmount;
-            $deliveryOrder->grand_total = $subTotal + $taxAmount;
+            $grandTotal = $deliveryOrder->sub_total;
+            if (!empty($input['discount_amount'])) {
+                $subTotal -= $input['discount_amount'];
+            }
+            if (!empty($input['tax_rate_1'])) {
+                $tax1 = $subTotal * ($input['tax_rate_1'] / 100);
+                $grandTotal += $tax1;
+                $deliveryOrder->tax_amount_1 = $tax1;
+            }
+            if (!empty($input['tax_rate_2'])) {
+                $tax2 = $subTotal * ($input['tax_rate_2'] / 100);
+                $grandTotal += $tax2;
+                $deliveryOrder->tax_amount_2 = $tax2;
+            }
+            $deliveryOrder->grand_total = $grandTotal;
             $deliveryOrder->save();
-            DB::commit();
+            $deliveryOrder->generatePDF();
 
-            flash()->success(__('Successfully created the delivery order.'));
+            DB::commit();
+            flash()->success('Successfully created delivery order');
             return redirect()->route('admin.delivery-orders.index');
         } catch (Exception $exception) {
-            DB::rollBack();
             Log::error($exception);
-            flash()->error($exception->getMessage());
-            return redirect()->route('admin.delivery-orders.create')->withInput($request->input());
+            DB::rollBack();
+            flash()->error('There was an issue creating delivery order');
+            return back()->withInput();
         }
     }
 
-    public function edit(Request $request, $id)
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\DeliveryOrder  $deliveryOrder
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Request $request, $deliveryOrder)
     {
-        $deliveryOrder = $this->findModel($id);
+        $deliveryOrder = $this->findModel($deliveryOrder);
         $this->authorize('update', $deliveryOrder);
-        $taxes = Tax::orderBy('created_at', 'desc')->get();
-        $taxRate = $taxes->firstWhere('tax_rate', $deliveryOrder->tax_rate);
-        if (empty($taxRate)) {
-            $taxRate = $taxes[0];
-        }
-        $deliveryOrder->load(['salesOrder', 'items.productVariant.product', 'client']);
-        return view('admin.delivery-orders.edit', compact('deliveryOrder', 'taxRate', 'taxes'));
+        $deliveryOrder->load('client', 'items.product', 'items.productVariant', 'createdBy');
+
+        $compact = [
+            'deliveryOrder' => $deliveryOrder,
+            'model' => $this->model,
+            'modelName' => $this->modelName,
+            'routeName' => $this->routeName,
+            'routePrefix' => $this->folder,
+        ];
+
+        return view('admin.delivery-orders.edit', $compact);
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Invoice  $deliveryOrder
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $deliveryOrder)
     {
-        $deliveryOrder = $this->findModel($id);
+        $deliveryOrder = $this->findModel($deliveryOrder);
+
         $this->authorize('update', $deliveryOrder);
 
         $input = $request->input();
-        $validator = Validator::make($input, $this->model->updateValidator);
 
-        if ($validator->fails()) {
-            // for multiselect in the component
-            if (!empty($input['sales_order_id'])) {
-                $input['sales_order'] = SalesOrder::find($input['sales_order_id']);
-            }
-            // for multiselect in the component
-            if (!empty($input['client_id'])) {
-                $input['client'] = Client::find($input['client_id']);
-            }
-            // for item list that selected previously
-            if (!empty($input['items'])) {
-                $items = [];
-                $productVariants = ProductVariant::with('product')->whereIn('id', array_column($input['items'], 'id'))->get()->keyBy('id');
-                foreach ($input['items'] as $inputItem) {
-                    $items[] = [
-                        'quantity' => $inputItem['quantity'],
-                        'product_variant' => $productVariants[$inputItem['id']] ?? null
-                    ];
-                }
-                $input['items'] = $items;
-            }
-            flash()->error($validator->errors());
-            return back()->withInput($input)->withErrors($validator);
+        if (empty($deliveryOrder->updateValidator())) {
+            flash('Error: updateValidator is empty')->error();
+            return back(); 
         }
 
-        DB::beginTransaction();
+        $validator = Validator::make($input, $deliveryOrder->updateValidator());
+
+        if ($validator->fails()) {
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
+        }
+
         try {
-            $deliveryOrder->update($input);
-            $remainItems = array_column(request('items'), 'id');
+            DB::beginTransaction();
+            
 
-            // DELETE IF NOT EXISTS IN REQUEST
-            $deliveryOrder->items()->whereNotIn('product_variant_id', $remainItems)->delete();
+            $client = Client::find($input['client_id']);
+            $deliveryOrder->update($input + [
+                'client_name' => $client->name, 
+                'client_address' => $client->address_1 . ' ' . $client->address_2,
+                'postcode' => $client->postcode,
+                'country' => $client->country,
+            ]);
             $subTotal = 0;
-            $productVariant = ProductVariant::select(['id', 'selling_price'])
-                ->whereIn('id', $remainItems)
-                ->get()
-                ->pluck('selling_price', 'id');
-            foreach (request('items') as $itemRequest) {
-                $subTotalItem = $itemRequest['quantity'] * $productVariant[$itemRequest['id']];
-                $deliveryOrder->items()->updateOrCreate(
-                    ['product_variant_id' => $itemRequest['id']],
-                    [
-                        'quantity' => $itemRequest['quantity'],
-                        'sub_total' => $subTotalItem,
-                        'unit_price' => $productVariant[$itemRequest['id']]
-                    ]
-                );
-                $subTotal += $subTotalItem;
-            }
 
-            $taxAmount = $subTotal * $input['tax_rate'] / 100;
+            $deliveryOrder->createDeliveryOrderItems($input['products']);
+
+            $subTotal = $deliveryOrder->items->sum('total_price');
+
+            $deliveryOrder->item_count = count($input['products']);
             $deliveryOrder->sub_total = $subTotal;
-            $deliveryOrder->tax_rate = $input['tax_rate'];
-            $deliveryOrder->tax_amount = $taxAmount;
-            $deliveryOrder->grand_total = $subTotal + $taxAmount;
+            $grandTotal = $deliveryOrder->sub_total;
+            if (!empty($input['discount_amount'])) {
+                $subTotal -= $input['discount_amount'];
+            }
+            if (!empty($input['tax_rate_1'])) {
+                $tax1 = $subTotal * ($input['tax_rate_1'] / 100);
+                $grandTotal += $tax1;
+                $deliveryOrder->tax_amount_1 = $tax1;
+            }
+            if (!empty($input['tax_rate_2'])) {
+                $tax2 = $subTotal * ($input['tax_rate_2'] / 100);
+                $grandTotal += $tax2;
+                $deliveryOrder->tax_amount_2 = $tax2;
+            }
+            $deliveryOrder->grand_total = $grandTotal;
             $deliveryOrder->save();
-            DB::commit();
+            $deliveryOrder->generatePDF();
 
-            flash()->success(__('Successfully updated the delivery order.'));
+            DB::commit();
+            flash()->success('Successfully updated invoice');
             return redirect()->route('admin.delivery-orders.index');
         } catch (Exception $exception) {
-            DB::rollBack();
             Log::error($exception);
-            flash()->error($exception->getMessage());
-            return redirect()->route('admin.delivery-orders.edit', $deliveryOrder->getRouteKey())->withInput($request->input());
+            DB::rollBack();
+            flash()->error('There was an issue updating invoice');
+            return back()->withInput();
         }
     }
 }

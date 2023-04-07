@@ -57,11 +57,11 @@
                         <td>
                             <input type="hidden" :name="'products[' + i + '][quotation_item_id]'" :value="item.quotation_item_id">
                             <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
-                                <input type="hidden" :name="'products[' + i + '][product_id]'" :value="item.product.id">
+                              <input type="hidden" :name="'products[' + i + '][product_id]'" :value="item.product.id">
                             </template>
                             <template v-else>
-                                <input type="hidden" :name="'products[' + i + '][product_id]'" :value="item.product.product_id">
-                                <input type="hidden" :name="'products[' + i + '][product_variant_id]'" :value="item.product.product_variant_id">
+                              <input type="hidden" :name="'products[' + i + '][product_id]'" :value="item.product.product_id">
+                              <input type="hidden" :name="'products[' + i + '][product_variant_id]'" :value="item.product.id">
                             </template>
                             <multi-select placeholder="Search Products"
                                           v-model="item.product"

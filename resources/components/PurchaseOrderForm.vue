@@ -14,6 +14,15 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6" v-if="shipmentType == 1">
+                    <div class="form-group row mb-3">
+                        <label class="col-md-4 text-right form-label text-sm-start">Client</label>
+                        <div class="col-md-12">
+                            <input type="hidden" name="client_id" :value="client.id">
+                            <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients" :disabled="purchaseOrder"></multi-select>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Date</label>
                     <input class="form-control" type="date" name="date" v-model="date" required>
@@ -29,6 +38,13 @@
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Payment Due</label>
                     <input class="form-control" type="date" name="payment_due" v-model="paymentDue" required>
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Shipment Type</label>
+                    <select class="form-select" name="shipment_type" required @change="selectShipmentType" v-model="shipmentType">
+                        <option selected value="0">Direct</option>
+                        <option value="1">Non Direct</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -153,6 +169,7 @@ let props = defineProps({
 const subTotal = ref(0);
 const purchaseOrder = ref(props.purchaseOrder);
 const supplier = ref({});
+const client = ref({});
 const date = ref({});
 const supplierCode = ref('');
 const paymentTerm = ref('');
@@ -167,6 +184,7 @@ const products = ref([{
     'quantity': 0,
     'subTotal': 0,
 }]);
+const shipmentType = ref(0);
 
 function addProduct() {
     products.value.push({
@@ -221,10 +239,20 @@ const fetchSuppliers = (query) => {
     }
 };
 
+const clientArray = reactive({ options: [] });
+const fetchClients = (query) => {
+    if (query) {
+        axios.get(`/web/clients?search=${query}`).then((response) => {
+            clientArray.options = response.data.response.items;
+        });
+    }
+};
+
 onBeforeMount(() => {
     if (props.purchaseOrder !== undefined) {
         if (props.purchaseOrder.purchase_order_items !== undefined) {
             supplier.value = props.purchaseOrder.supplier
+            client.value = props.purchaseOrder.client
             date.value = props.purchaseOrder.date
             supplierCode.value = props.purchaseOrder.supplier_code
             paymentTerm.value = props.purchaseOrder.payment_terms

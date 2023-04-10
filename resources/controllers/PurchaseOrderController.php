@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
@@ -27,9 +28,15 @@ class PurchaseOrderController extends VeController
         $input['created_by'] = Auth::id();
 
         $supplier = Supplier::find($input['supplier_id']);
+        $client = Client::find($input['client_id']);
 
         if (empty($supplier)) {
             flash()->error('Could not find the supplier selected. Please select a different supplier.');
+            return back()->withInput($request->input());
+        }
+
+        if (!empty($input['shipment_type']) && empty($client)) {
+            flash()->error('Could not find the client selected. Please select a different client.');
             return back()->withInput($request->input());
         }
 
@@ -42,6 +49,23 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
+            $input['supplier_name'] = $supplier->name;
+            $input['ship_from_address'] = $supplier->address;
+            $input['ship_from_city'] = $supplier->city;
+            $input['ship_from_state'] = $supplier->state;
+            $input['ship_from_postcode'] = $supplier->postcode;
+            $input['ship_from_postcode'] = $supplier->zip;
+            $input['ship_from_country'] = $supplier->country;
+
+            if (!empty($client) && $input['shipment_type'] == PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT) {
+                $input['client_name'] = $client->name;
+                $input['ship_to_address'] = $client->address_1;
+                $input['ship_to_city'] = $client->city;
+                $input['ship_to_state'] = $client->state;
+                $input['ship_to_postcode'] = $client->postcode;
+                $input['ship_to_country'] = $client->country;
+            }
+
             $purchaseOrder = PurchaseOrder::create($input);
 
             $this->updateOrCreateItem($purchaseOrder, $input['products'], $input['tax_rate'] ?? 0);

@@ -2,210 +2,284 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Brand;
+use App\Models\ProductBundle;
 use App\Models\ProductVariant;
-use App\Models\PurchaseOrder;
-use App\Models\Client;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderItem;
+use App\Models\Product;
+use App\Models\QuotationItem;
+use App\Models\Supplier;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Vecapital\Vebase\Http\Controllers\VeController;
 
-class SalesOrderController extends VeController
+
+class ProductController extends VeController
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        $this->authorize('view', Product::class);
+        $products = Product::orderBy('created_at', 'desc');
+        $search = $request->input('search');
+        if (!empty($search)) {
+            $products = $products->where(function($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('sku', 'LIKE', '%' . $search . '%');
+            });
+        }
+
+        $products = $products->paginate(10);
+
+        return view('admin.products.index', compact('search', 'products'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
-        $this->authorize('create', SalesOrder::class);
-
-        $input = $request->input();
-        $input['created_by'] = Auth::id();
-        $input['currency'] = 'SGD';
-        $client = Client::find($input['client_id']);
-
-        if (empty($client)) {
-            flash()->error('Could not find the client selected. Please select a different client.');
-            return back()->withInput($request->input());
-        }
-
-        $input['client_name'] = $client->name;
-        $input['client_address'] = $client->address_1 . ", " . $client->address_2 . ", " . $client->city . ", " . $client->state . ", " . $client->postcode . ", " . $client->country;
-        $input['address_1'] = $client->address_1;
-        $input['address_2'] = $client->address_2;
-        $input['city'] = $client->city;
-        $input['state'] = $client->state;
-        $input['postcode'] = $client->postcode;
-        $input['country'] = $client->country;
-
-        $validator = Validator::make($input, $this->model->createValidator);
-
-        if ($validator->fails()) {
-            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            return back()->withInput($request->input())->withErrors($validator);
-        }
-
-        DB::beginTransaction();
-        try {
-            $salesOrder = SalesOrder::create($input);
-
-            $this->updateOrCreateItem($salesOrder, $input['products'], $input['tax_rate'] ?? 0);
-
-            DB::commit();
-            flash()->success('Successfully created the sales order.');
-
-            return redirect()->route('admin.sales-orders.index');
-        } catch (Exception $exception) {
-            DB::rollBack();
-            Log::error($exception);
-            flash('Error: ' . $exception->getMessage());
-            return redirect()->route('admin.sales-orders.create')->withInput($request->input());
-        }
-    }
-
-    public function update(Request $request, $id)
-    {
-        $salesOrder = $this->findModel($id);
-        $this->authorize('update', $salesOrder);
-        $input = $request->input();
-
-        $validator = Validator::make($input, $salesOrder->updateValidator);
-
-        if ($validator->fails()) {
-            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            return back()->withInput($request->input())->withErrors($validator);
-        }
-
-        DB::beginTransaction();
-        try {
-            $salesOrder->update($input);
-
-            $this->updateOrCreateItem($salesOrder, $input['products'], $input['tax_rate'] ?? 0);
-
-            DB::commit();
-            flash()->success('Successfully updated the sales order.');
-
-            return redirect()->route('admin.sales-orders.edit', [$salesOrder->getRouteKey()]);
-        } catch (Exception $exception) {
-            DB::rollBack();
-            Log::error($exception);
-            flash('Error: ' . $exception);
-            return redirect()->route('admin.sales-orders.edit', $salesOrder->getRouteKey())->withInput($request->input());
-        }
-    }
-
-    public function updateOrCreateItem(SalesOrder $salesOrder, $selectedProducts, $taxRate = 0)
-    {
-        if (empty($selectedProducts)) {
-            flash()->error('Selected products is empty, please add a product in order to create sales order items. Sales Order ID: ' . $salesOrder->id);
-            return back();
-        }
-
-        try {
-            $subTotal = 0;
-            $totalCost = 0;
-
-            $salesOrderItemIds = [];
-            foreach ($selectedProducts as $selectedProduct) {
-                if (!empty($selectedProduct['sales_order_item_id'])) {
-                    // existing item
-                    $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
-                    $salesOrderItem->update([
-                            'quantity' => $selectedProduct['quantity'],
-                            'total_amount' => $selectedProduct['quantity'] * $salesOrderItem->unit_price,
-                            'total_cost' => $selectedProduct['quantity'] * $salesOrderItem->unit_cost,
-                    ]);
-                    $salesOrderItemIds[] = $salesOrderItem->id;
-                    $subTotal += $selectedProduct['quantity'] * $salesOrderItem->unit_price;
-                    $totalCost += $selectedProduct['quantity'] * $salesOrderItem->unit_cost;
-                } else {
-                    if (!empty($selectedProduct['product_variant_id'])) {
-                        $productVariant = ProductVariant::find($selectedProduct['product_variant_id']);
-                        $product = $productVariant->product;
-
-                        if (empty($productVariant)) {
-                            flash('Error: Product variant with ID #' . $selectedProduct['product_variant_id'] . ' not found')->error();
-                            return back();
-                        }
-
-                        if ($productVariant->status != ProductVariant::STATUS_ACTIVE || $product->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product variant with ID #' . $selectedProduct['product_variant_id'] . ' is not available')->error();
-                            return back();
-                        }
-
-                        $salesOrderItem = SalesOrderItem::create([
-                            'sales_order_id' => $salesOrder->id,
-                            'product_id' => $product->id,
-                            'product_variant_id' => $productVariant->id,
-                            'name' => $productVariant->name,
-                            'sku' => $productVariant->sku,
-                            'description' => $product->description,
-                            'quantity' => $selectedProduct['quantity'],
-                            'unit_price' => $productVariant->selling_price,
-                            'unit_cost' => $productVariant->cost_price,
-                            'total_amount' => $selectedProduct['quantity'] * $productVariant->selling_price,
-                            'total_cost' => $selectedProduct['quantity'] * $productVariant->cost_price,
-                        ]);
-
-                        $salesOrderItemIds[] = $salesOrderItem->id;
-                        $subTotal += $selectedProduct['quantity'] * $productVariant->selling_price;
-                        $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
-                    } else {
-                        $product = Product::find($selectedProduct['product_id']);
-
-                        if (empty($product)) {
-                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' not found')->error();
-                            return back();
-                        }
-
-                        if ($product->type != Product::TYPE_PRODUCT_BUNDLE) {
-                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' is not a product bundle')->error();
-                            return back();
-                        }
-
-                        if ($product->status != Product::STATUS_ACTIVE) {
-                            flash('Error: Product with ID #' . $selectedProduct['product_id'] . ' is not available')->error();
-                            return back();
-                        }
-
-                        $salesOrderItem = SalesOrderItem::create([
-                            'sales_order_id' => $salesOrder->id,
-                            'product_id' => $product->id,
-                            'name' => $product->name,
-                            'sku' => $product->sku,
-                            'description' => $product->description,
-                            'quantity' => $selectedProduct['quantity'],
-                            'unit_price' => $product->selling_price,
-                            'unit_cost' => $product->cost_price,
-                            'total_amount' => $selectedProduct['quantity'] * $product->selling_price,
-                            'total_cost' => $selectedProduct['quantity'] * $product->cost_price,
-                        ]);
-
-                        $salesOrderItemIds[] = $salesOrderItem->id;
-                        $subTotal += $selectedProduct['quantity'] * $product->selling_price;
-                        $totalCost += $selectedProduct['quantity'] * $product->cost_price;
-                    }
+        $this->authorize('create', Product::class);
+        $input = $request->all();
+        if (!empty($input['options'])) {
+            if (count($input['options']) > 3) {
+                flash()->error('Too many options provided for a product variant.');
+            } elseif (count($input['options']) <= 3) {
+                foreach ($input['options'] as $index => $option) {
+                    $input['option_' . ($index + 1)] = $option;
                 }
             }
-            $salesOrder->salesOrderItems()->whereNotIn('sales_order_items.id', $salesOrderItemIds)->delete();
+        }
+        $validator = Validator::make($input, $this->model->createValidator);
+        if ($validator->fails()) {
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
+        }
 
-            $salesOrder->item_count = count($selectedProducts);
-            $salesOrder->tax_amount = $subTotal * $taxRate / 100;
-            $salesOrder->tax_rate = $taxRate;
-            $salesOrder->sub_total = $subTotal;
-            $salesOrder->grand_total = $subTotal - $salesOrder->discount_amount + $salesOrder->tax_amount;
-            $salesOrder->total_cost = $totalCost;
-            $salesOrder->save();
+        try {
+            DB::beginTransaction();
 
-            return $salesOrder;
-        } catch (Exception $exception) {
+            $product = Product::create($input);
+            if ($request->hasFile('image')) {
+                $url = Storage::url($request->file('image')->store('products/' . $product->id));
+                $product->image = $url;
+                $product->save();
+            }
+            if ($product->type == Product::TYPE_SINGLE_PRODUCT) {
+                ProductVariant::create([
+                    'product_id' => $product->id,
+                    'image' => $product->image,
+                    'name' => $input['name'],
+                    'barcode' => $input['barcode'],
+                    'cost_price' => $input['cost_price'],
+                    'selling_price' => $input['selling_price'],
+                    'measurement_unit' => $input['measurement_unit'],
+                    'length' => $input['length'],
+                    'width' => $input['width'],
+                    'height' => $input['height'],
+                    'sku' => $input['sku'],
+                    'total_stock' => $input['total_stock'],
+                    'available_stock' => $input['total_stock'],
+                    'status' => $input['status']
+                ]);
+            } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
+                foreach($input['variants'] as $variantData) {
+                    $option1 = '';
+                    $option2 = '';
+                    $option3 = '';
+                    $explodedValue = explode('-', $variantData['sku']);
+                    if (count($explodedValue) > 0) {
+                        $option1 = $explodedValue[1] ?? null;
+                        $option2 = $explodedValue[2] ?? null;
+                        $option3 = $explodedValue[3] ?? null;
+                    }
+                    ProductVariant::create([
+                        'product_id' => $product->id,
+                        'image' => $variantData['image'] ?? null,
+                        'option_1' => $option1,
+                        'option_2' => $option2,
+                        'option_3' => $option3,
+                        'name' => $variantData['name'],
+                        'barcode' => $product->barcode,
+                        'cost_price' => $variantData['unit_cost'],
+                        'selling_price' => $variantData['selling_price'],
+                        'measurement_unit' => $product->measurement_unit,
+                        'length' => $variantData['length'],
+                        'width' => $variantData['width'],
+                        'height' => $variantData['height'],
+                        'sku' => $variantData['sku'],
+                        'total_stock' => $input['total_stock'],
+                        'available_stock' => $input['total_stock'],
+                        'status' => $input['status']
+                    ]);
+                }
+            } elseif ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
+                $productCost = 0;
+                foreach($input['bundles'] as $bundle) {
+                    $productVariant = ProductVariant::find($bundle['product_variant_id']);
+                    ProductBundle::create([
+                        'product_id' => $product->id,
+                        'product_variant_id' => $bundle['product_variant_id'],
+                        'quantity' => $bundle['quantity'],
+                        'selling_price' => $productVariant->selling_price,
+                        'grand_total' => $bundle['quantity'] * $productVariant->selling_price,
+                        'image' => $bundle['image'] ?? null,
+                    ]);
+                    $productCost += $productVariant->cost_price;
+                }
+                $product->cost_price = $productCost;
+                $product->bundle_value = $product->bundles->sum('grand_total');
+                $product->save();
+            } else {
+                throw new Exception('Unhandled product type.');
+            }
+
+            DB::commit();
+            flash()->success($product->name . ' created successfully!');
+            return redirect()->route('admin.products.index');
+        }  catch (Exception $exception) {
+            DB::rollBack();
             Log::error($exception);
-            flash('There was an error creating the sales order item. Sales Order ID: '  . $salesOrder->id . '. Error: ' . $exception->getMessage());
+            flash('Error:' . $exception->getMessage());
             return back();
         }
     }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Request $request, $id)
+    {
+        $product = $this->findModel($id);
+        $this->authorize('view', $product);
+
+        $product->load(['productVariants', 'bundles.productVariant', 'brand', 'supplier']);
+
+        return view('admin.products.edit', compact('product'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $product = $this->findModel($id);
+        $this->authorize('update', $product);
+        $input = $request->all();
+        if (!empty($input['options'])) {
+            foreach ($input['options'] as $index => $option) {
+                $input['option_' . ($index + 1)] = $option;
+            }
+        }
+
+        $validator = Validator::make($input, $this->model->updateValidator);
+        if ($validator->fails()) {
+            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+            return back()->withInput($request->input())->withErrors($validator);
+        }
+
+        try {
+            DB::beginTransaction();
+            if ($request->hasFile('image')) {
+                $url = Storage::url($request->file('image')->store('products/' . $product->id));
+                $product->image = $url;
+                $product->save();
+            }
+            $product->update($input);
+            if (!empty($input['variants']) && Product::TYPE_VARIANT_PRODUCT) {
+                $variantId = [];
+                foreach ($input['variants'] as $variant) {
+                    $currentVariant = $product->productVariants->where('id', $variant['product_variant_id'])->first();
+                    if ($currentVariant) {
+                        $currentVariant->update($variant);
+                    } else {
+                        ProductVariant::create($variant + ['product_id' => $product->id]);
+                    }
+                    $variantId[] = $currentVariant->id;
+                }
+
+                $productBundleVariants = ProductBundle::whereIn('product_variant_id', $variantId)->get();
+                if ($productBundleVariants->isNotEmpty()) {
+                    throw new Exception('Product Variants associated with a Product Bundle cannot be deleted.');
+                }
+
+                $quotationItemVariants = QuotationItem::whereIn('product_variant_id', $variantId)->get();
+                if ($quotationItemVariants->isNotEmpty()) {
+                    throw new Exception('Product Variants associated with a Quotation cannot be deleted.');
+                }
+
+                $product->productVariants()->whereNotIn('id', $variantId)->delete();
+            }
+            if (!empty($input['bundles']) && Product::TYPE_PRODUCT_BUNDLE) {
+                $bundleId = [];
+                foreach ($input['bundles'] as $bundle) {
+                    $currentBundle = $product->bundles()->where('id', $bundle['product_bundle_id'])->first();
+                    if ($currentBundle) {
+                        $currentBundle->update($bundle);
+                    } else {
+                        $currentBundle = ProductBundle::create($bundle + ['product_id' => $product->id]);
+                    }
+                    $bundleId[] = $currentBundle->id;
+                }
+
+                $quotationItems = QuotationItem::whereHas('product', function ($query) use ($bundleId) {
+                    $query->whereIn('id', $bundleId);
+                })->get();
+
+                if ($quotationItems->isNotEmpty()) {
+                    throw new Exception('Product Bundles or their Items associated with a Quotation Item cannot be deleted.');
+                }
+
+                $product->bundles()->whereNotIn('id', $bundleId)->delete();
+            }
+
+            DB::commit();
+            flash()->success($product->name . ' updated successfully!');
+            return redirect()->route('admin.products.index');
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            flash('Error:' . $exception->getMessage());
+            return back();
+        }
+    }
+
+    public function destroy($id)
+    {
+        $product = $this->findModel($id);
+        $this->authorize('delete', $product);
+
+        try {
+            if (!empty($product->bundles)) {
+                $product->bundles()->delete();
+            }
+            $product->productVariants()->delete();
+            $product->delete();
+
+            flash()->success($product->name . ' deleted successfully!');
+            return redirect()->route('admin.products.index');
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            flash('Error:' . $exception->getMessage());
+            return back();
+        }
+    }
+
 }

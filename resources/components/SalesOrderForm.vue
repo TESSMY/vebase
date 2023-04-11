@@ -118,7 +118,7 @@
                 </div>
             </div>
 
-            <input type="hidden" name="isDraft" v-model="isDraft">
+            <input type="hidden" name="is_draft" v-model="isDraft">
 
             <div class="row col-12">
                 <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Next</button>

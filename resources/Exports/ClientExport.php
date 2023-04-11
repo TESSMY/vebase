@@ -21,7 +21,6 @@ class ClientExport implements FromCollection, WithMapping, ShouldAutoSize, WithH
     public function headings(): array
     {
         return [
-            'ID',
             'Name',
             'Email',
             'Company Name',
@@ -39,7 +38,6 @@ class ClientExport implements FromCollection, WithMapping, ShouldAutoSize, WithH
     public function map($client): array
     {
         $data = [
-            $client->id,
             $client->name,
             $client->email,
             $client->company_name,

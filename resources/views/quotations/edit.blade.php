@@ -31,13 +31,26 @@
             @endcan
             <hr>
             @can('delete-quotation')
-                @if($quotation->status == \App\Models\Quotation::STATUS_PENDING || $quotation->status == \App\Models\Quotation::STATUS_APPROVED)
+                @if($quotation->status == \App\Models\Quotation::STATUS_PENDING)
                     <form action="{{ route('admin.quotations.destroy', $quotation) }}" method="POST" enctype="multipart/form-data">
                         @method('DELETE')
                         @csrf
                         <div class="text-end">
                             <button class="btn btn-danger px-2" type="submit">
                                 Delete
+                            </button>
+                        </div>
+                    </form>
+                @endif
+            @endcan
+            @can('edit-quotation')
+                @if ($quotation->status == \App\Models\Quotation::STATUS_APPROVED)
+                    <form action="{{ route('admin.quotations.update.status', $quotation) }}" method="POST" enctype="multipart/form-data">
+                        @method('PUT')
+                        @csrf
+                        <div class="text-end">
+                            <button class="btn btn-danger px-2" type="submit">
+                                Void
                             </button>
                         </div>
                     </form>

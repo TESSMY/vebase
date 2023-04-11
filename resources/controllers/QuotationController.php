@@ -10,6 +10,7 @@ use App\Models\QuotationItem;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use Illuminate\Http\Request;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -39,15 +40,13 @@ class QuotationController extends VeController
 
         DB::beginTransaction();
         try {
-            $quotation = Quotation::create($input + ['created_by' => Auth::id()]);
+            $input['created_by'] = Auth::id();
+            $quotation = Quotation::create($input);
 
             $quotation = $this->updateOrCreateItem($quotation, $input);
 
             if ($input['status'] == Quotation::STATUS_APPROVED) {
-                $quotation->createOrUpdateSalesOrder($quotation->quotationItems);
-                DB::commit();
-                flash()->success('Successfully created the sales order.');
-                return redirect()->route('admin.quotations.index');
+                $quotation->createSalesOrder();
             }
 
             DB::commit();
@@ -88,7 +87,8 @@ class QuotationController extends VeController
             DB::beginTransaction();
 
             $client = Client::find($input['client_id']);
-            $quotation->update($input + ['client_id' => $client->id]);
+            $input['client_id'] = $client->id;
+            $quotation->update($input);
             $this->updateOrCreateItem($quotation, $input);
 
             DB::commit();
@@ -113,7 +113,7 @@ class QuotationController extends VeController
                     $productModel = Product::find($product['product_id']);
                     $quotationItem = $quotation->quotationItems()->find($product['quotation_item_id']);
                     $quotationItem->update($product + [
-                            'product_variant_id' => !empty($product['product_variant_id']) ? $product['quotation_item_id'] : null,
+                            'product_variant_id' => !empty($product['product_variant_id']) ? $product['product_variant_id'] : null,
                             'name' => $productModel->name,
                         ]);
                     $quotationItemIds[] = $quotationItem->id;
@@ -200,12 +200,42 @@ class QuotationController extends VeController
         $this->authorize('delete', $quotation);
 
         try {
-            $quotation->quotationItems()->delete();
+            if ($quotation->status == Quotation::STATUS_PENDING) {
+                $quotation->quotationItems()->delete();
+                $quotation->delete();
+            } else {
+                throw new Exception('Quotations that are not in a pending status cannot be deleted');
+            }
+
+            flash()->success($quotation->name . 'deleted successfully!');
+            return redirect()->route('admin.quotations.index');
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            flash('Error:' . $exception->getMessage());
+            return back();
+        }
+    }
+
+    public function updateStatus($id)
+    {
+        $quotation = $this->findModel($id);
+        $this->authorize('update', $quotation);
+
+        try {
             $quotation->status = Quotation::STATUS_VOID;
             $quotation->save();
 
+            $items = $quotation->quotationItems;
+            if (!empty($items)) {
+                foreach ($items as $item) {
+                    $item->status = QuotationItem::STATUS_VOID;
+                    $item->save();
+                }
+            }
+
             $salesOrder = $quotation->salesOrder;
-            if (!empty($salesOrder)) {
+            if (!empty($salesOrder) && in_array($salesOrder->status, [SalesOrder::STATUS_OUTSTANDING, SalesOrder::STATUS_DRAFT])) {
                 foreach ($salesOrder->salesOrderItems as $item) {
                     $item->status = SalesOrderItem::STATUS_CANCELLED;
                     $item->save();
@@ -213,7 +243,7 @@ class QuotationController extends VeController
                 $salesOrder->status = SalesOrder::STATUS_CANCELLED;
                 $salesOrder->save();
             }
-            flash()->success($quotation->name . ' deleted successfully!');
+            flash()->success($quotation->name . ' voided successfully!');
             return redirect()->route('admin.quotations.index');
         } catch (Exception $exception) {
             DB::rollBack();
@@ -225,7 +255,7 @@ class QuotationController extends VeController
 
     public function send(Request $request, Quotation $quotation)
     {
-        $this->authorize('create', $quotation);
+        $this->authorize('edit', $quotation);
         try {
             $data["email"] = $request->input('to_email');
             $data["title"] = 'Quotation' . ' ' . $quotation->id;

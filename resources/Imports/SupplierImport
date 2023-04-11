@@ -16,19 +16,29 @@ class SupplierImport implements ToModel, WithHeadingRow, WithValidation
     */
     public function model(array $row)
     {
-        return new Supplier([
-            'name' => $row['name'],
-            'email' => $row['email'],
-            'code' => $row['code'],
-            'contact_name' => $row['contact_name'],
-            'contact_number' => $row['contact_number'],
-            'address_1' => $row['address_1'],
-            'address_2' => $row['address_2'],
-            'city' => $row['city'],
-            'state' => $row['state'],
-            'postcode' => $row['postcode'],
-            'country' => $row['country'],
-        ]);
+        $supplier = Supplier::where([['name', $row['name']], ['email', $row['email']], ['code', $row['code']], ['contact_name', $row['contact_name']], ['contact_number', $row['contact_number']]])->first();
+        if (empty($supplier)) {
+            if ($row['status'] == Supplier::STATUS_ACTIVE || $row['status'] == 'Active') {
+                $status = Supplier::STATUS_ACTIVE;
+            } else {
+                $status = Supplier::STATUS_DISABLED;
+            }
+
+            return new Supplier([
+                'name' => $row['name'],
+                'email' => $row['email'],
+                'code' => $row['code'],
+                'contact_name' => $row['contact_name'],
+                'contact_number' => $row['contact_number'],
+                'address_1' => $row['address_1'],
+                'address_2' => $row['address_2'],
+                'city' => $row['city'],
+                'state' => $row['state'],
+                'postcode' => $row['postcode'],
+                'country' => $row['country'],
+                'status' => $status,
+            ]);
+        }
     }
 
     public function rules(): array

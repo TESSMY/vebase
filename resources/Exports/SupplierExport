@@ -21,38 +21,36 @@ class SupplierExport implements FromCollection, WithMapping, ShouldAutoSize, Wit
     public function headings(): array
     {
         return [
-            'ID',
             'Name',
-            'Code',
             'Email',
-            'Address',
+            'Code',
+            'Contact Name',
+            'Contact Number',
+            'Address 1',
+            'Address 2',
             'City',
             'State',
-            'Zip',
+            'Postcode',
             'Country',
-            'PIC Name',
-            'PIC Email',
-            'PIC Phone',
-            'Phone',
+            'Status',
         ];
     }
 
-    public function map($salesReport): array
+    public function map($supplier): array
     {
         $data = [
-            $salesReport->id,
-            $salesReport->name,
-            $salesReport->code,
-            $salesReport->email,
-            $salesReport->address,
-            $salesReport->city,
-            $salesReport->state,
-            $salesReport->zip,
-            $salesReport->country,
-            $salesReport->pic_name,
-            $salesReport->pic_email,
-            $salesReport->pic_phone,
-            $salesReport->phone,
+            $supplier->name,
+            $supplier->email,
+            $supplier->code,
+            $supplier->contact_name,
+            $supplier->contact_number,
+            $supplier->address_1,
+            $supplier->address_2,
+            $supplier->city,
+            $supplier->state,
+            $supplier->postcode,
+            $supplier->country,
+            $supplier->status == Supplier::STATUS_ACTIVE ? 'Active' : 'Disabled',
         ];
         return $data;
     }

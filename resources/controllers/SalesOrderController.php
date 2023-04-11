@@ -31,6 +31,15 @@ class SalesOrderController extends VeController
         $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
 
+        $input['client_id'] = 1;
+        $input['products'] = [
+            [
+                'product_id' => 1,
+                'product_variant_id' => 1,
+                'quantity' => 1,
+            ]
+        ];
+
         $client = Client::find($input['client_id']);
 
         if (empty($client)) {
@@ -58,7 +67,15 @@ class SalesOrderController extends VeController
         try {
             $salesOrder = SalesOrder::create($input);
 
-            $this->updateOrCreateItem($salesOrder, $input['products'], $input['tax_rate'] ?? 0, $input['isDraft']);
+            $this->updateOrCreateItem($salesOrder, $input['products']);
+
+            if ($input['is_draft'] == 1) {
+                $salesOrder->status = SalesOrder::STATUS_DRAFT;
+            }
+
+            $salesOrder->tax_amount = $salesOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
+            $salesOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $salesOrder->save();
 
             DB::commit();
             flash()->success('Successfully created the sales order.');
@@ -89,7 +106,15 @@ class SalesOrderController extends VeController
         try {
             $salesOrder->update($input);
 
-            $this->updateOrCreateItem($salesOrder, $input['products'], $input['tax_rate'] ?? 0, $input['isDraft']);
+            $this->updateOrCreateItem($salesOrder, $input['products']);
+
+            if ($input['is_draft'] == 1) {
+                $salesOrder->status = SalesOrder::STATUS_DRAFT;
+            }
+
+            $salesOrder->tax_amount = $salesOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
+            $salesOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $salesOrder->save();
 
             DB::commit();
             flash()->success('Successfully updated the sales order.');
@@ -103,7 +128,7 @@ class SalesOrderController extends VeController
         }
     }
 
-    public function updateOrCreateItem(SalesOrder $salesOrder, $selectedProducts, $taxRate = 0, $isDraft = false)
+    public function updateOrCreateItem(SalesOrder $salesOrder, $selectedProducts)
     {
         if (empty($selectedProducts)) {
             flash()->error('Selected products is empty, please add a product in order to create sales order items. Sales Order ID: ' . $salesOrder->id);
@@ -216,18 +241,10 @@ class SalesOrderController extends VeController
                 }
             }
             $salesOrder->salesOrderItems()->whereNotIn('sales_order_items.id', $salesOrderItemIds)->delete();
-
             $salesOrder->item_count = count($selectedProducts);
-            $salesOrder->tax_amount = $subTotal * $taxRate / 100;
-            $salesOrder->tax_rate = $taxRate;
             $salesOrder->sub_total = $subTotal;
             $salesOrder->grand_total = $subTotal - $salesOrder->discount_amount + $salesOrder->tax_amount;
             $salesOrder->total_cost = $totalCost;
-
-            if ($isDraft == 1) {
-                $status = SalesOrder::STATUS_DRAFT;
-            }
-
             $salesOrder->status = $status;
             $salesOrder->save();
 
@@ -241,7 +258,7 @@ class SalesOrderController extends VeController
 
     public function generateOrder(Request $request, SalesOrder $salesOrder)
     {
-        $this->authorize('create', $salesOrder);
+        $this->authorize('create', SalesOrder::class);
         $input = $request->input();
 
         if (empty($salesOrder->salesOrderItems)) {

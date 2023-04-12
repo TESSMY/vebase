@@ -2,33 +2,21 @@
     <div class="row">
         <div class="bg-white card shadow py-3 px-4">
             <div class="row border-bottom mb-2">
-                <span class="h5">PURCHASE ORDER DETAILS</span>
+                <span class="h5">SALES ORDER DETAILS</span>
             </div>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group row mb-3">
-                        <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
+                        <label class="col-md-4 text-right form-label text-sm-start">Client</label>
                         <div class="col-md-12">
-                            <input type="hidden" name="supplier_id" :value="supplier.id">
-                            <multi-select placeholder="Search Supplier" v-model="supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers" :disabled="purchaseOrder"></multi-select>
+                            <input type="hidden" name="client_id" :value="client.id">
+                            <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients" :disabled="salesOrder"></multi-select>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Date</label>
                     <input class="form-control" type="date" name="date" v-model="date" required>
-                </div>
-                <div class="col-12 col-md-6 mb-md-0 mb-2">
-                    <label class="form-label">Supplier Code</label>
-                    <input class="form-control" type="text" name="supplier_code" placeholder="Supplier Code" v-model="supplierCode" required>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Payment Term</label>
-                    <input class="form-control" type="text" name="payment_terms" placeholder="Payment Term" v-model="paymentTerm" required>
-                </div>
-                <div class="col-12 col-md-6 mb-2">
-                    <label class="form-label">Payment Due</label>
-                    <input class="form-control" type="date" name="payment_due" v-model="paymentDue" required>
                 </div>
             </div>
         </div>
@@ -52,7 +40,7 @@
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
-                                <input type="hidden" :name="'products[' + index + '][purchase_order_item_id]'" :value="item.purchase_order_item_id">
+                                <input type="hidden" :name="'products[' + index + '][sales_order_item_id]'" :value="item.sales_order_item_id">
                                 <template v-if="item.product.product_id === undefined"> <!-- bundle type  -->
                                     <input type="hidden" :name="'products[' + index + '][product_id]'" :value="item.product.id">
                                 </template>
@@ -88,7 +76,7 @@
                         <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                         <div class="px-0">
                             <label class="form-label px-0">Notes and instructions</label>
-                            <textarea class="form-control" placeholder="Will be displayed on Purchase Order" rows="5" style="resize: none" name="notes_and_instructions"></textarea>
+                            <textarea class="form-control" placeholder="Will be displayed on Sales Order" rows="5" style="resize: none" name="notes_and_instructions">{{ notes }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -129,39 +117,36 @@
                     </div>
                 </div>
             </div>
-
-            <input type="hidden" name="status" v-model="status">
-            <input type="hidden" name="tax_rate" v-model="tax_rate">
-
             <div class="row col-12">
-                <button type="submit" @click="status = 10" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
-                <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
-                <a href="/admin/purchase-orders" class="col-12 col-md-1 btn btn-dark m-2">Close</a>
+                <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Next</button>
+                <a href="/admin/sales-orders" class="col-12 col-md-1 btn btn-dark m-2">Close</a>
             </div>
         </div>
     </div>
+    <input type="hidden" name="tax_rate" v-model="tax_rate">
 </template>
-
 <script setup>
 import { defineComponent, reactive, ref, onBeforeMount, computed } from 'vue';
 
 let props = defineProps({
-    purchaseOrder: Object,
+    salesOrder: Object,
     tax_rate: Number,
 });
 
 const subTotal = ref(0);
-const purchaseOrder = ref(props.purchaseOrder);
-const supplier = ref({});
-const date = ref({});
-const supplierCode = ref('');
+const salesOrder = ref(props.salesOrder);
+const client = ref({});
+const date = ref('');
+const customerPo = ref('');
+const customerName = ref('');
 const paymentTerm = ref('');
-const paymentDue = ref({});
+const paymentDue = ref('');
+const packedByDate = ref('');
+const notes = ref('');
 const grandTotal = ref(0);
 const tax_rate = ref(props.tax_rate);
 const taxRate1 = ref('');
 const taxRate2 = ref('');
-const status = ref(0);
 const products = ref([{
     'product': '',
     'quantity': 0,
@@ -194,6 +179,7 @@ function updateTotalPrice() {
         grandTotal.value += item.subTotal;
     });
 }
+
 const productArray = reactive({ options: [] });
 const fetchProducts = (query) => {
     if (query) {
@@ -212,41 +198,44 @@ const fetchProducts = (query) => {
     }
 };
 
-const supplierArray = reactive({ options: [] });
-const fetchSuppliers = (query) => {
+const clientArray = reactive({ options: [] });
+const fetchClients = (query) => {
     if (query) {
-        axios.get(`/web/suppliers?search=${query}`).then((response) => {
-            supplierArray.options = response.data.response.items;
+        axios.get(`/web/clients?search=${query}`).then((response) => {
+            clientArray.options = response.data.response.items;
         });
     }
 };
 
 onBeforeMount(() => {
-    if (props.purchaseOrder !== undefined) {
-        if (props.purchaseOrder.purchase_order_items !== undefined) {
-            supplier.value = props.purchaseOrder.supplier
-            date.value = props.purchaseOrder.date
-            supplierCode.value = props.purchaseOrder.supplier_code
-            paymentTerm.value = props.purchaseOrder.payment_terms
-            paymentDue.value = props.purchaseOrder.payment_due
+    if (props.salesOrder !== undefined) {
+        if (props.salesOrder.sales_order_items !== undefined) {
+            client.value = props.salesOrder.client
+            date.value = props.salesOrder.date
+            customerPo.value = props.salesOrder.client_address
+            customerName.value = props.salesOrder.client_name
+            paymentTerm.value = props.salesOrder.payment_terms
+            paymentDue.value = props.salesOrder.payment_due
+            packedByDate.value = props.salesOrder.packed_by_date
+            notes.value = props.salesOrder.notes_and_instructions
             products.value = [];
 
-            props.purchaseOrder.purchase_order_items.forEach(purchaseOrderItem => {
-                if (purchaseOrderItem.product_variant == null) {
+            props.salesOrder.sales_order_items.forEach(salesOrderItem => {
+                if (salesOrderItem.product_variant == null) {
                     // bundles
                     products.value.push({
-                        'purchase_order_item_id': purchaseOrderItem.id,
-                        'product': purchaseOrderItem.product,
-                        'quantity': purchaseOrderItem.quantity,
-                        'subTotal': purchaseOrderItem.quantity * purchaseOrderItem.product.cost_price,
+                        'sales_order_item_id': salesOrderItem.id,
+                        'product': salesOrderItem.product,
+                        'quantity': salesOrderItem.quantity,
+                        'subTotal': salesOrderItem.quantity * salesOrderItem.product.cost_price,
                     });
                 } else {
                     // product variants & single products
                     products.value.push({
-                        'purchase_order_item_id': purchaseOrderItem.id,
-                        'product': purchaseOrderItem.product_variant,
-                        'quantity': purchaseOrderItem.quantity,
-                        'subTotal': purchaseOrderItem.quantity * purchaseOrderItem.product_variant.selling_price,
+                        'sales_order_item_id': salesOrderItem.id,
+                        'product': salesOrderItem.product_variant,
+                        'quantity': salesOrderItem.quantity,
+                        'subTotal': salesOrderItem.quantity * salesOrderItem.product_variant.selling_price,
                     });
                 }
             });

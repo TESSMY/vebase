@@ -17,7 +17,7 @@ class VeApiController extends ApiController
     protected $model;
     protected $modelName;
     protected $routeName;
-   
+
 
     /**
      * creates the model from the request path
@@ -32,12 +32,12 @@ class VeApiController extends ApiController
         }
     }
 
-    public function findModel($id) 
+    public function findModel($id)
     {
         $routeKey = $this->model->getRouteKey() ?? 'id';
         $model = $this->model::where($routeKey, $id)->first();
         abort_if(empty($model), 404);
-        
+
         return $model;
     }
 
@@ -45,16 +45,13 @@ class VeApiController extends ApiController
     {
         $this->authorize('viewAny', $this->model);
 
-        $search = $request->input('search');
+        $params = $request->all();
+        $search = $params['searchable'];
         $limit = min(intval($request->get('limit', 10)), 1000);
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
 
         $models = $this->model::query();
-
-        if (!empty($this->model->relatable)) {
-            $models->with($this->model->relatable);
-        }
 
         if (!empty($search)) {
             if (!empty($this->model->searchable)) {
@@ -63,6 +60,14 @@ class VeApiController extends ApiController
                         $query->orWhere($value, 'LIKE', '%' . $search . '%');
                     }
                 });
+            }
+        }
+
+        if (!empty($params['relatable'])) {
+            foreach ($params['relatable'] as $relatable) {
+                if (in_array($relatable, $this->model->relatable)) {
+                    $models = $models->with($relatable);
+                }
             }
         }
 
@@ -83,7 +88,7 @@ class VeApiController extends ApiController
     public function store(Request $request)
     {
         $this->authorize('create', $this->model);
-        
+
         $input = $request->all();
 
         if (empty($this->model->createValidator)) {
@@ -118,7 +123,7 @@ class VeApiController extends ApiController
                 }
             }
         }
-        
+
         return $this->respond($model);
     }
 

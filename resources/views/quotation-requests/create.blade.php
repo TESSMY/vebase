@@ -21,5 +21,10 @@
                 <quotation-request-form :taxRate="7"></quotation-request-form>
             </form>
         </div>
+        <div class="row">
+            <div class="col-md-1">
+                <a href="{{ route('admin.quotation-requests.index') }}" class="col-12 col-md-2"><button class="btn btn-danger m-2">Cancel</button></a>
+            </div>
+        </div>
     </div>
 @endsection

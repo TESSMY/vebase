@@ -34,14 +34,6 @@ class QuotationRequestController extends VeController
             return back()->withInput($request->input());
         }
 
-        if ($input['status'] == QuotationRequest::STATUS_APPROVED) {
-            $this->authorize('create', PurchaseOrder::class);
-        }
-
-        if ($input['status'] == QuotationRequest::STATUS_SENT) {
-            $this->authorize('sendEmail', PurchaseOrder::class);
-        }
-
         $validator = Validator::make($input, $this->model->createValidator);
 
         if ($validator->fails()) {
@@ -54,27 +46,13 @@ class QuotationRequestController extends VeController
         try {
             $quotationRequest = QuotationRequest::create($input);
 
-            $this->updateOrCreateItem($quotationRequest, $input['products'], $input['tax_rate'] ?? 0);
+            $this->updateOrCreateItem($quotationRequest, $input['products']);
 
-            $quotationRequest->file_url = $quotationRequest->generatePdf();
-            $quotationRequest->save();
+            DB::commit();
 
-            if ($input['status'] == QuotationRequest::STATUS_APPROVED) {
-                if (empty($input['products'])) {
-                    flash('Please select at least one product.')->error();
-                    return back();
-                }
-
-                $quotationRequest->createPurchaseOrder($input['products']);
-
-                DB::commit();
-                flash()->success('Successfully created the purchase order.');
-                return redirect()->route('admin.purchase-orders.index');
-            } elseif ($input['status'] == QuotationRequest::STATUS_SENT) {
-                DB::commit();
+            if ($input['send_email']) {
                 return $this->send($request, $quotationRequest);
             } else {
-                DB::commit();
                 flash()->success('Successfully created the quotation request.');
                 return redirect()->route('admin.quotation-requests.index');
             }
@@ -92,14 +70,6 @@ class QuotationRequestController extends VeController
         $this->authorize('update', $quotationRequest);
         $input = $request->input();
 
-        if ($input['status'] == QuotationRequest::STATUS_APPROVED) {
-            $this->authorize('create', PurchaseOrder::class);
-        }
-
-        if ($input['status'] == QuotationRequest::STATUS_SENT) {
-            $this->authorize('sendEmail', PurchaseOrder::class);
-        }
-
         $validator = Validator::make($input, $this->model->updateValidator);
 
         if ($validator->fails()) {
@@ -112,26 +82,13 @@ class QuotationRequestController extends VeController
         try {
             $quotationRequest->update($input);
 
-            $this->updateOrCreateItem($quotationRequest, $input['products'], $input['tax_rate'] ?? 0);
+            $this->updateOrCreateItem($quotationRequest, $input['products']);
 
-            $quotationRequest->file_url = $quotationRequest->generatePdf();
-            $quotationRequest->save();
+            DB::commit();
 
-            if ($input['status'] == QuotationRequest::STATUS_APPROVED) {
-                if (empty($input['products'])) {
-                    flash('Please select at least one product.')->error();
-                    return back();
-                }
-
-                $quotationRequest->createPurchaseOrder($input['products']);
-
-                flash()->success('Successfully created the purchase order.');
-                return redirect()->route('admin.purchase-orders.index');
-            } elseif ($input['status'] == QuotationRequest::STATUS_SENT) {
-                DB::commit();
+            if ($input['send_email']) {
                 return $this->send($request, $quotationRequest);
             } else {
-                DB::commit();
                 flash()->success('Successfully updated the quotation request.');
                 return redirect()->route('admin.quotation-requests.index');
             }
@@ -145,7 +102,7 @@ class QuotationRequestController extends VeController
 
     public function send(Request $request, QuotationRequest $quotationRequest)
     {
-        $this->authorize('sendEmail', $quotationRequest);
+        $this->authorize('update', $quotationRequest);
         try {
             $data["email"] = $request->input('to_email');
             $data["title"] = 'Quotation Request' . ' ' . $quotationRequest->id;
@@ -158,7 +115,7 @@ class QuotationRequestController extends VeController
                         ->subject($data["title"])
                         ->attach(Storage::url($quotationRequest->file_url . '.pdf'));
             });
-            $quotationRequest->status = QuotationRequest::STATUS_SENT;
+            $quotationRequest->status = QuotationRequest::STATUS_PENDING;
             $quotationRequest->save();
             flash()->success('Mail sent successfully!');
             return redirect()->route('admin.quotation-requests.index');
@@ -171,7 +128,7 @@ class QuotationRequestController extends VeController
 
     public function generatePo(Request $request, QuotationRequest $quotationRequest)
     {
-        $this->authorize('generatePo', $quotationRequest);
+        $this->authorize('create', PurchaseOrder::class);
 
         if (empty($quotationRequest->quotationRequestItems)) {
             flash()->error('There are no products in this quotation request. Please add some products before generating the purchase order.');
@@ -179,13 +136,13 @@ class QuotationRequestController extends VeController
         }
 
         $quotationRequest->createPurchaseOrder($quotationRequest->quotationRequestItems);
-        $quotationRequest->status = QuotationRequest::STATUS_ORDER_CONFIRMED;
+        $quotationRequest->status = QuotationRequest::STATUS_APPROVED;
         $quotationRequest->save();
         flash()->success('Successfully created the purchase order.');
         return redirect()->route('admin.purchase-orders.index');
     }
 
-    public function updateOrCreateItem(QuotationRequest $quotationRequest, $selectedProducts, $taxRate = 0)
+    public function updateOrCreateItem(QuotationRequest $quotationRequest, $selectedProducts)
     {
         if (empty($selectedProducts)) {
             flash()->error('Selected products is empty, please add a product in order to create quotation request items. Quotation Request ID: ' . $quotationRequest->id);

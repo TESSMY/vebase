@@ -199,27 +199,19 @@ class QuotationController extends VeController
         $quotation = $this->findModel($id);
         $this->authorize('delete', $quotation);
 
-        try {
-            if ($quotation->status == Quotation::STATUS_PENDING) {
-                $quotation->quotationItems()->delete();
-                $quotation->delete();
-            } else {
-                throw new Exception('Quotations that are not in a pending status cannot be deleted');
-            }
-
-            flash()->success($quotation->name . 'deleted successfully!');
-            return redirect()->route('admin.quotations.index');
-        } catch (Exception $exception) {
-            DB::rollBack();
-            Log::error($exception);
-            flash('Error:' . $exception->getMessage());
-            return back();
+        if ($quotation->status == Quotation::STATUS_PENDING) {
+            $quotation->quotationItems()->delete();
+            $quotation->delete();
+        } else {
+            throw new Exception('Quotations that are not in a pending status cannot be deleted');
         }
+
+        flash()->success($quotation->name . 'deleted successfully!');
+        return redirect()->route('admin.quotations.index');
     }
 
-    public function updateStatus($id)
+    public function updateStatus(Quotation $quotation)
     {
-        $quotation = $this->findModel($id);
         $this->authorize('update', $quotation);
 
         try {

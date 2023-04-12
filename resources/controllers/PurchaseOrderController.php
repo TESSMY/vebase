@@ -35,7 +35,7 @@ class PurchaseOrderController extends VeController
             return back()->withInput($request->input());
         }
 
-        if (!empty($input['shipment_type']) && empty($client)) {
+        if ($input['shipment_type'] == PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT && empty($client)) {
             flash()->error('Could not find the client selected. Please select a different client.');
             return back()->withInput($request->input());
         }
@@ -49,26 +49,20 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            $input['supplier_name'] = $supplier->name;
-            $input['ship_from_address'] = $supplier->address;
-            $input['ship_from_city'] = $supplier->city;
-            $input['ship_from_state'] = $supplier->state;
-            $input['ship_from_postcode'] = $supplier->postcode;
-            $input['ship_from_postcode'] = $supplier->zip;
-            $input['ship_from_country'] = $supplier->country;
-
-            if (!empty($client) && $input['shipment_type'] == PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT) {
-                $input['client_name'] = $client->name;
-                $input['ship_to_address'] = $client->address_1;
-                $input['ship_to_city'] = $client->city;
-                $input['ship_to_state'] = $client->state;
-                $input['ship_to_postcode'] = $client->postcode;
-                $input['ship_to_country'] = $client->country;
-            }
-
             $purchaseOrder = PurchaseOrder::create($input);
 
-            $this->updateOrCreateItem($purchaseOrder, $input['products'], $input['tax_rate'] ?? 0);
+            $this->updateOrCreateItem($purchaseOrder, $input['products']);
+
+            if ($input['generate_purchase_order'] == true) {
+                $purchaseOrder->status = PurchaseOrder::STATUS_ORDER_CONFIRMED;
+            } else {
+                flash()->success('Successfully created the quotation request.');
+                return redirect()->route('admin.quotation-requests.index');
+            }
+
+            $purchaseOrder->tax_amount = $purchaseOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
+            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $purchaseOrder->save();
 
             DB::commit();
             flash()->success('Successfully created the purchase order.');
@@ -98,7 +92,18 @@ class PurchaseOrderController extends VeController
         try {
             $purchaseOrder->update($input);
 
-            $this->updateOrCreateItem($purchaseOrder, $input['products'], $input['tax_rate'] ?? 0);
+            $this->updateOrCreateItem($purchaseOrder, $input['products']);
+
+            if ($input['generate_purchase_order'] == true) {
+                $purchaseOrder->status = PurchaseOrder::STATUS_APPROVED;
+            } else {
+                flash()->success('Successfully created the quotation request.');
+                return redirect()->route('admin.quotation-requests.index');
+            }
+
+            $purchaseOrder->tax_amount = $purchaseOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
+            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $purchaseOrder->save();
 
             DB::commit();
             flash()->success('Successfully updated the purchase order.');
@@ -113,7 +118,7 @@ class PurchaseOrderController extends VeController
 
     public function send(Request $request, PurchaseOrder $purchaseOrder)
     {
-        $this->authorize('sendEmail', $purchaseOrder);
+        $this->authorize('update', $purchaseOrder);
 
         try {
             $data["email"] = $request->input('to_email');
@@ -138,7 +143,7 @@ class PurchaseOrderController extends VeController
 
     }
 
-    public function updateOrCreateItem(PurchaseOrder $purchaseOrder, $selectedProducts, $taxRate = 0)
+    public function updateOrCreateItem(PurchaseOrder $purchaseOrder, $selectedProducts)
     {
         if (empty($selectedProducts)) {
             flash()->error('Selected products is empty, please add a product in order to create purchase order items. Purchase Order ID: ' . $purchaseOrder->id);
@@ -234,8 +239,6 @@ class PurchaseOrderController extends VeController
             $purchaseOrder->purchaseOrderItems()->whereNotIn('purchase_order_items.id', $purchaseOrderItemIds)->delete();
 
             $purchaseOrder->item_count = count($selectedProducts);
-            $purchaseOrder->tax_amount = $subTotal * ($input['tax_rate'] ?? 0) / 100;
-            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
             $purchaseOrder->sub_total = $subTotal;
             $purchaseOrder->grand_total = $subTotal - $purchaseOrder->discount_amount + $purchaseOrder->tax_amount;
             $purchaseOrder->total_cost = $totalCost;

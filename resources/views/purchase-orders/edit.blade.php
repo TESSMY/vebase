@@ -21,7 +21,7 @@
             <form action="{{ route('admin.purchase-orders.update', [$purchaseOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                 @method('PUT')
                 @csrf
-                <purchase-order-form :tax_rate="7" :purchase-order="{{ $purchaseOrder->load('purchaseOrderItems.product', 'purchaseOrderItems.productVariant', 'supplier') }}"></purchase-order-form>
+                <purchase-order-form :tax_rate="7" :purchase-order="{{ $purchaseOrder->load('purchaseOrderItems.product', 'purchaseOrderItems.productVariant', 'supplier', 'client') }}"></purchase-order-form>
             </form>
         </div>
     </div>

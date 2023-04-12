@@ -31,30 +31,12 @@ class SalesOrderController extends VeController
         $input['created_by'] = Auth::id();
         $input['currency'] = 'SGD';
 
-        $input['client_id'] = 1;
-        $input['products'] = [
-            [
-                'product_id' => 1,
-                'product_variant_id' => 1,
-                'quantity' => 1,
-            ]
-        ];
-
         $client = Client::find($input['client_id']);
 
         if (empty($client)) {
             flash()->error('Could not find the client selected. Please select a different client.');
             return back()->withInput($request->input());
         }
-
-        $input['client_name'] = $client->name;
-        $input['client_address'] = $client->address_1 . ", " . $client->address_2 . ", " . $client->city . ", " . $client->state . ", " . $client->postcode . ", " . $client->country;
-        $input['address_1'] = $client->address_1;
-        $input['address_2'] = $client->address_2;
-        $input['city'] = $client->city;
-        $input['state'] = $client->state;
-        $input['postcode'] = $client->postcode;
-        $input['country'] = $client->country;
 
         $validator = Validator::make($input, $this->model->createValidator);
 
@@ -272,11 +254,11 @@ class SalesOrderController extends VeController
         }
 
         if (!empty($input['delivery_order_products'])) {
-            $this->generateDo($salesOrder, $input['delivery_order_products'], $input['notes_and_instructions']);
+            $this->generateDo($salesOrder, $input['delivery_order_products'], $input['notes']);
         }
 
         if (!empty($input['purchase_order_products'])) {
-            $this->generatePo($salesOrder, $input['purchase_order_products'], $input['notes_and_instructions']);
+            $this->generatePo($salesOrder, $input['purchase_order_products'], $input['notes']);
         }
 
         return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
@@ -413,7 +395,7 @@ class SalesOrderController extends VeController
                     'grand_total' => 0,
                     'total_cost' => $totalCost,
                     'total_paid' => 0,
-                    'notes_and_instructions' => $notes,
+                    'notes' => $notes,
                     'status' => PurchaseOrder::STATUS_DRAFT,
                 ]);
 

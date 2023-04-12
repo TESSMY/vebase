@@ -18,6 +18,62 @@
                     <label class="form-label">Date</label>
                     <input class="form-control" type="date" name="date" v-model="date" required>
                 </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Billing Name</label>
+                    <input class="form-control" type="text" name="billing_name" v-model="billing_name" required>
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Billing Contact Number</label>
+                    <input class="form-control" type="text" name="billing_contact_number" v-model="billing_contact_number" required>
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Billing Address</label>
+                    <input class="form-control" type="text" name="billing_address_1" v-model="billing_address_1" required>
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Billing City</label>
+                    <input class="form-control" type="text" name="billing_city" v-model="billing_city">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Billing State</label>
+                    <input class="form-control" type="text" name="billing_state" v-model="billing_state">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Billing Postcode</label>
+                    <input class="form-control" type="text" name="billing_postcode" v-model="billing_postcode">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Billing Country</label>
+                    <input class="form-control" type="text" name="billing_country" v-model="billing_country">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Ship To Name</label>
+                    <input class="form-control" type="text" name="ship_to_name" v-model="ship_to_name" required>
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Ship To Contact Number</label>
+                    <input class="form-control" type="text" name="ship_to_contact_number" v-model="ship_to_contact_number" required>
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Ship To Address</label>
+                    <input class="form-control" type="text" name="ship_to_address_1" v-model="ship_to_address_1" required>
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Ship To City</label>
+                    <input class="form-control" type="text" name="ship_to_city" v-model="ship_to_city">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Ship To State</label>
+                    <input class="form-control" type="text" name="ship_to_state" v-model="ship_to_state">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Ship To Postcode</label>
+                    <input class="form-control" type="text" name="ship_to_postcode" v-model="ship_to_postcode">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Ship To Country</label>
+                    <input class="form-control" type="text" name="ship_to_country" v-model="ship_to_country">
+                </div>
             </div>
         </div>
         <div class="border my-2 mb-3"></div>
@@ -76,7 +132,7 @@
                         <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                         <div class="px-0">
                             <label class="form-label px-0">Notes and instructions</label>
-                            <textarea class="form-control" placeholder="Will be displayed on Sales Order" rows="5" style="resize: none" name="notes_and_instructions">{{ notes }}</textarea>
+                            <textarea class="form-control" placeholder="Will be displayed on Sales Order" rows="5" style="resize: none" name="notes">{{ notes }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -141,11 +197,20 @@ const subTotal = ref(0);
 const salesOrder = ref(props.salesOrder);
 const client = ref({});
 const date = ref('');
-const customerPo = ref('');
-const customerName = ref('');
-const paymentTerm = ref('');
-const paymentDue = ref('');
-const packedByDate = ref('');
+const billing_name = ref('');
+const billing_contact_number = ref('');
+const billing_address_1 = ref('');
+const billing_city = ref('');
+const billing_state = ref('');
+const billing_postcode = ref('');
+const billing_country = ref('');
+const ship_to_name = ref('');
+const ship_to_contact_number = ref('');
+const ship_to_address_1 = ref('');
+const ship_to_city = ref('');
+const ship_to_state = ref('');
+const ship_to_postcode = ref('');
+const ship_to_country = ref('');
 const notes = ref('');
 const grandTotal = ref(0);
 const tax_rate = ref(props.tax_rate);
@@ -217,11 +282,20 @@ onBeforeMount(() => {
         if (props.salesOrder.sales_order_items !== undefined) {
             client.value = props.salesOrder.client
             date.value = props.salesOrder.date
-            customerPo.value = props.salesOrder.client_address
-            customerName.value = props.salesOrder.client_name
-            paymentTerm.value = props.salesOrder.payment_terms
-            paymentDue.value = props.salesOrder.payment_due
-            packedByDate.value = props.salesOrder.packed_by_date
+            billing_name.value = props.salesOrder.billing_name;
+            billing_contact_number.value = props.salesOrder.billing_contact_number;
+            billing_address_1.value = props.salesOrder.billing_address_1;
+            billing_city.value = props.salesOrder.billing_city;
+            billing_state.value = props.salesOrder.billing_state;
+            billing_postcode.value = props.salesOrder.billing_postcode;
+            billing_country.value = props.salesOrder.billing_country;
+            ship_to_name.value = props.salesOrder.ship_to_name;
+            ship_to_contact_number.value = props.salesOrder.ship_to_contact_number;
+            ship_to_address_1.value = props.salesOrder.ship_to_address_1;
+            ship_to_city.value = props.salesOrder.ship_to_city;
+            ship_to_state.value = props.salesOrder.ship_to_state;
+            ship_to_postcode.value = props.salesOrder.ship_to_postcode;
+            ship_to_country.value = props.salesOrder.ship_to_country;
             notes.value = props.salesOrder.notes_and_instructions
             products.value = [];
 

@@ -12,9 +12,15 @@
         </div>
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow py-3 px-4">
-            <div class="row mb-3">
-                <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New {{ $modelName }} </a>
-            </div>
+            
+            @if (View::exists($routePrefix . '.' . $routeName . '.button'))
+                @include($routePrefix . '.' . $routeName . '.button')
+            @else
+                <div class="row mb-3">
+                    <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New {{ $modelName }} </a>
+                </div>
+            @endif
+
             <form action="{{ route($routePrefix . '.' . $routeName . '.index') }}" method="GET" id="form">
                 @csrf
                 <div class="row mb-3">
@@ -34,47 +40,13 @@
                     </div>
                 </div>
             </form>
+
             <div class="overflow-auto">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            @foreach ($model->indexFields as $indexField)
-                                <th>{{ $indexField['displayName'] }}</th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($models as $$routeModel)
-                            <tr>
-                                @foreach ($model->indexFields as $indexField)
-                                    @if (strtolower($indexField['columnName']) == 'show') 
-                                        <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
-                                    @elseif (strtolower($indexField['columnName']) == 'edit') 
-                                        <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
-                                    @else
-                                        @if (empty($$routeModel[$indexField['columnName']]))
-                                            <td>-</td>
-                                        @else
-                                            @if (!empty($indexField['relation']))
-                                                <td>{{ $$routeModel[$indexField['relation']]->name }}</td>
-                                            @else
-                                                <td>{{ $$routeModel[$indexField['columnName']] }}</td>
-                                            @endif
-                                        @endif
-                                    @endif
-                                @endforeach
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="100%" class="text-center">There are no {{ $modelName }} found.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                @include('vebase::common.table')
             </div>
         </div>
         <div class="mt-2">
-            {{ $models->links() }}
+            @include('vebase::common.pagination')
         </div>
     </div>
 @endsection

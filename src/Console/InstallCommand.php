@@ -43,6 +43,7 @@ class InstallCommand extends Command
         foreach ($viewDirectories as $viewDirectory) {
             // skip '.' and '..' in dir
             if (strlen($viewDirectory) > 2) {
+                (new Filesystem)->ensureDirectoryExists(resource_path('views/admin' . DIRECTORY_SEPARATOR . $viewDirectory));
                 (new Filesystem)->copyDirectory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . $viewDirectory, resource_path('views/admin' . DIRECTORY_SEPARATOR . $viewDirectory));
             }
         }
@@ -52,6 +53,7 @@ class InstallCommand extends Command
         foreach ($controllers as $controller) {
             // skip '.' and '..' in dir
             if (strlen($controller) > 2) {
+                (new Filesystem)->ensureDirectoryExists(app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Admin' . DIRECTORY_SEPARATOR . $controller));
                 copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . $controller, app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Admin' . DIRECTORY_SEPARATOR . $controller));
             }
         }
@@ -61,6 +63,7 @@ class InstallCommand extends Command
         foreach ($apis as $api) {
             // skip '.' and '..' in dir
             if (strlen($api) > 2) {
+                (new Filesystem)->ensureDirectoryExists(app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . $api));
                 copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'api' . DIRECTORY_SEPARATOR . $api, app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . $api));
             }
         }
@@ -70,6 +73,7 @@ class InstallCommand extends Command
         foreach ($components as $component) {
             // skip '.' and '..' in dir
             if (strlen($component) > 2) {
+                (new Filesystem)->ensureDirectoryExists(resource_path('js' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . $component));
                 copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . $component, resource_path('js' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . $component));
             }
         }

@@ -247,7 +247,7 @@ class QuotationController extends VeController
 
     public function send(Request $request, Quotation $quotation)
     {
-        $this->authorize('edit', $quotation);
+        $this->authorize('update', $quotation);
         try {
             $data["email"] = $request->input('to_email');
             $data["title"] = 'Quotation' . ' ' . $quotation->id;

@@ -21,8 +21,20 @@
             <form action="{{ route('admin.purchase-orders.update', [$purchaseOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                 @method('PUT')
                 @csrf
-                <purchase-order-form :tax_rate="7" :purchase-order="{{ $purchaseOrder->load('purchaseOrderItems.product', 'purchaseOrderItems.productVariant', 'supplier', 'client') }}"></purchase-order-form>
+                <purchase-order-form :purchase-order="{{ $purchaseOrder->load('purchaseOrderItems.product', 'purchaseOrderItems.productVariant', 'supplier', 'client') }}"></purchase-order-form>
             </form>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-1">
+                <a href="{{ route('admin.purchase-orders.index') }}" class="col-12 col-md-2"><button class="btn btn-secondary">Cancel</button></a>
+            </div>
+            <div class="col-md-11 text-end">
+                <form action="{{ route('admin.purchase-orders.destroy', [$purchaseOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                    @method('DELETE')
+                    @csrf
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
         </div>
     </div>
 @endsection

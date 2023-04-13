@@ -26,7 +26,6 @@ class PurchaseOrderController extends VeController
         $this->authorize('create', PurchaseOrder::class);
         $input = $request->input();
         $input['created_by'] = Auth::id();
-
         $supplier = Supplier::find($input['supplier_id']);
         $client = Client::find($input['client_id']);
 
@@ -49,16 +48,15 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
+            if ($input['generate_purchase_order'] == true) {
+                $input['status'] = PurchaseOrder::STATUS_PENDING;
+            } else {
+                $input['status'] = PurchaseOrder::STATUS_DRAFT;
+            }
+
             $purchaseOrder = PurchaseOrder::create($input);
 
             $this->updateOrCreateItem($purchaseOrder, $input['products']);
-
-            if ($input['generate_purchase_order'] == true) {
-                $purchaseOrder->status = PurchaseOrder::STATUS_ORDER_CONFIRMED;
-            } else {
-                flash()->success('Successfully created the quotation request.');
-                return redirect()->route('admin.quotation-requests.index');
-            }
 
             $purchaseOrder->tax_amount = $purchaseOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
             $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
@@ -90,16 +88,15 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
+            if ($input['generate_purchase_order'] == true) {
+                $input['status'] = PurchaseOrder::STATUS_PENDING;
+            } else {
+                $input['status'] = PurchaseOrder::STATUS_DRAFT;
+            }
+
             $purchaseOrder->update($input);
 
             $this->updateOrCreateItem($purchaseOrder, $input['products']);
-
-            if ($input['generate_purchase_order'] == true) {
-                $purchaseOrder->status = PurchaseOrder::STATUS_APPROVED;
-            } else {
-                flash()->success('Successfully created the quotation request.');
-                return redirect()->route('admin.quotation-requests.index');
-            }
 
             $purchaseOrder->tax_amount = $purchaseOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
             $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;

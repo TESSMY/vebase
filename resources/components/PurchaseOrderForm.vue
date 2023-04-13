@@ -226,10 +226,9 @@
             <input type="hidden" name="generate_purchase_order" v-model="generatePurchaseOrder">
             <input type="hidden" name="tax_rate" v-model="purchaseOrder.tax_rate">
 
-            <div class="row col-12">
+            <div class="row col-12" v-if="!isNotEditable">
                 <button type="submit" @click="generatePurchaseOrder = 1" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
                 <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
-                <a href="/admin/purchase-orders" class="col-12 col-md-1 btn btn-dark m-2">Close</a>
             </div>
         </div>
     </div>
@@ -240,10 +239,8 @@ import { defineComponent, reactive, ref, onBeforeMount, computed } from 'vue';
 
 let props = defineProps({
     purchaseOrder: Object,
-    tax_rate: Number,
 });
 
-const subTotal = ref(0);
 const purchaseOrder = ref({
     'supplier': '',
     'client': '',
@@ -271,7 +268,7 @@ const purchaseOrder = ref({
     'discount_amount': '',
     'shipping_handling': '',
     'other_cost': '',
-    'tax_rate': '',
+    'tax_rate': 7,
     'tax_amount': '',
     'sub_total': '',
     'grand_total': '',
@@ -356,13 +353,11 @@ onBeforeMount(() => {
     if (props.purchaseOrder !== undefined) {
         purchaseOrder.value = props.purchaseOrder;
 
-        if (purchaseOrder.value.status == 20) {
+        if (purchaseOrder.value.status == 10) {
             isNotEditable.value = true;
         } else {
             isNotEditable.value = false;
         }
-
-        console.log(isNotEditable.value);
 
         if (props.purchaseOrder.purchase_order_items !== undefined) {
             products.value = [];

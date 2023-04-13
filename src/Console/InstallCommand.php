@@ -53,7 +53,7 @@ class InstallCommand extends Command
         foreach ($controllers as $controller) {
             // skip '.' and '..' in dir
             if (strlen($controller) > 2) {
-                (new Filesystem)->ensureDirectoryExists(app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Admin' . DIRECTORY_SEPARATOR . $controller));
+                (new Filesystem)->ensureDirectoryExists(app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Admin'));
                 copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . $controller, app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Admin' . DIRECTORY_SEPARATOR . $controller));
             }
         }
@@ -63,7 +63,7 @@ class InstallCommand extends Command
         foreach ($apis as $api) {
             // skip '.' and '..' in dir
             if (strlen($api) > 2) {
-                (new Filesystem)->ensureDirectoryExists(app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . $api));
+                (new Filesystem)->ensureDirectoryExists(app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Api'));
                 copy(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'api' . DIRECTORY_SEPARATOR . $api, app_path('Http' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . $api));
             }
         }

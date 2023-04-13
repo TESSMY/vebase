@@ -20,7 +20,7 @@
         <div class="bg-white card shadow py-3 px-4">
             <form action="{{ route('admin.sales-orders.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <sales-order-form :tax_rate="7"></sales-order-form>
+                <sales-order-form></sales-order-form>
             </form>
         </div>
     </div>

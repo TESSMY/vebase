@@ -9,70 +9,78 @@
                     <div class="form-group row mb-3">
                         <label class="col-md-4 text-right form-label text-sm-start">Client</label>
                         <div class="col-md-12">
-                            <input type="hidden" name="client_id" :value="client.id">
-                            <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients" :disabled="salesOrder"></multi-select>
+                            <input type="hidden" name="client_id" :value="salesOrder.client_id">
+                            <multi-select placeholder="Search Client" v-model="salesOrder.client" label="name" :options="clientArray.options" @search-change="fetchClients" :disabled="salesOrder"></multi-select>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Date</label>
-                    <input class="form-control" type="date" name="date" v-model="date" required>
+                    <input class="form-control" type="date" name="date" v-model="salesOrder.date" required :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Billing Name</label>
-                    <input class="form-control" type="text" name="billing_name" v-model="billing_name" required>
+                    <input class="form-control" type="text" name="billing_name" v-model="salesOrder.billing_name" required :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Billing Contact Number</label>
-                    <input class="form-control" type="text" name="billing_contact_number" v-model="billing_contact_number" required>
+                    <input class="form-control" type="text" name="billing_contact_number" v-model="salesOrder.billing_contact_number" required :disabled="isNotEditable">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Billing Contact Email</label>
+                    <input class="form-control" type="email" name="billing_contact_email" v-model="salesOrder.billing_contact_email" required :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Billing Address</label>
-                    <input class="form-control" type="text" name="billing_address_1" v-model="billing_address_1" required>
+                    <input class="form-control" type="text" name="billing_address_1" v-model="salesOrder.billing_address_1" required :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Billing City</label>
-                    <input class="form-control" type="text" name="billing_city" v-model="billing_city">
+                    <input class="form-control" type="text" name="billing_city" v-model="salesOrder.billing_city" :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Billing State</label>
-                    <input class="form-control" type="text" name="billing_state" v-model="billing_state">
+                    <input class="form-control" type="text" name="billing_state" v-model="salesOrder.billing_state" :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Billing Postcode</label>
-                    <input class="form-control" type="text" name="billing_postcode" v-model="billing_postcode">
+                    <input class="form-control" type="text" name="billing_postcode" v-model="salesOrder.billing_postcode" :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Billing Country</label>
-                    <input class="form-control" type="text" name="billing_country" v-model="billing_country">
+                    <input class="form-control" type="text" name="billing_country" v-model="salesOrder.billing_country" :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Ship To Name</label>
-                    <input class="form-control" type="text" name="ship_to_name" v-model="ship_to_name" required>
+                    <input class="form-control" type="text" name="ship_to_name" v-model="salesOrder.ship_to_name" required :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Ship To Contact Number</label>
-                    <input class="form-control" type="text" name="ship_to_contact_number" v-model="ship_to_contact_number" required>
+                    <input class="form-control" type="text" name="ship_to_contact_number" v-model="salesOrder.ship_to_contact_number" required :disabled="isNotEditable">
+                </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Ship To Contact Email</label>
+                    <input class="form-control" type="email" name="ship_to_contact_email" v-model="salesOrder.ship_to_contact_email" required :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Ship To Address</label>
-                    <input class="form-control" type="text" name="ship_to_address_1" v-model="ship_to_address_1" required>
+                    <input class="form-control" type="text" name="ship_to_address_1" v-model="salesOrder.ship_to_address_1" required :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Ship To City</label>
-                    <input class="form-control" type="text" name="ship_to_city" v-model="ship_to_city">
+                    <input class="form-control" type="text" name="ship_to_city" v-model="salesOrder.ship_to_city" :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Ship To State</label>
-                    <input class="form-control" type="text" name="ship_to_state" v-model="ship_to_state">
+                    <input class="form-control" type="text" name="ship_to_state" v-model="salesOrder.ship_to_state" :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Ship To Postcode</label>
-                    <input class="form-control" type="text" name="ship_to_postcode" v-model="ship_to_postcode">
+                    <input class="form-control" type="text" name="ship_to_postcode" v-model="salesOrder.ship_to_postcode" :disabled="isNotEditable">
                 </div>
                 <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Ship To Country</label>
-                    <input class="form-control" type="text" name="ship_to_country" v-model="ship_to_country">
+                    <input class="form-control" type="text" name="ship_to_country" v-model="salesOrder.ship_to_country" :disabled="isNotEditable">
                 </div>
             </div>
         </div>
@@ -108,16 +116,17 @@
                                     v-model="item.product"
                                     label="name"
                                     :options="productArray.options"
-                                    @search-change="fetchProducts">
+                                    @search-change="fetchProducts"
+                                    :disabled="isNotEditable">
                                 </multi-select>
                             </td>
                             <td>{{ item.description }}</td>
                             <td>
-                                <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required>
+                                <input class="form-control" type="number" min="0" :name="'products[' + index + '][quantity]'" v-model="item.quantity" @input="updateProductSubTotal(item)" required :disabled="isNotEditable">
                             </td>
                             <td>{{ item.product.selling_price }}</td>
                             <td>{{ item.subTotal.toFixed(2) }}</td>
-                            <td>
+                            <td v-if="!isNotEditable">
                                 <span class="btn" @click="removeProduct(index)">
                                     <i class="uil-trash" style="color: red"></i>
                                 </span>
@@ -129,10 +138,10 @@
             <div class="row container-fluid">
                 <div class="col-12 col-md-4 mb-md-0 mb-3">
                     <div class="row px-0">
-                        <span class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
+                        <span v-if="!isNotEditable" class="btn px-0 text-start text-primary text-decoration-underline" @click="addProduct()">Add another line</span>
                         <div class="px-0">
                             <label class="form-label px-0">Notes and instructions</label>
-                            <textarea class="form-control" placeholder="Will be displayed on Sales Order" rows="5" style="resize: none" name="notes">{{ notes }}</textarea>
+                            <textarea class="form-control" placeholder="Will be displayed on Sales Order" rows="5" style="resize: none" name="notes" :disabled="isNotEditable">{{ salesOrder.notes }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -140,7 +149,7 @@
                 <div class="col-12 col-md-4">
                     <div class="row text-end">
                         <span class="col-4 fw-bold my-auto">Sub Total: </span>
-                        <span class="col-8">{{ subTotal.toFixed(2) }}</span>
+                        <span class="col-8">{{ Number(salesOrder.sub_total).toFixed(2) }}</span>
                         <!-- <div class="border my-2"></div>
                         <span class="col-4 fw-bold my-auto">Tax %: </span>
                         <span class="col-8">
@@ -169,59 +178,62 @@
                         </span> -->
                         <div class="border my-2"></div>
                         <span class="col-4 fw-bold my-auto">Total (SGD): </span>
-                        <span class="col-8">{{ grandTotal.toFixed(2) }}</span>
+                        <span class="col-8">{{ Number(salesOrder.grand_total).toFixed(2) }}</span>
                     </div>
                 </div>
             </div>
 
             <input type="hidden" name="is_draft" v-model="isDraft">
+            <input type="hidden" name="tax_rate" v-model="salesOrder.tax_rate">
 
             <div class="row col-12">
-                <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Next</button>
-                <button type="submit" @click="isDraft = 1" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
+                <button v-if="!isNotEditable" type="submit" class="col-12 col-md-1 btn btn-success m-2">Next</button>
+                <button v-if="!isNotEditable" type="submit" @click="isDraft = 1" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
                 <a href="/admin/sales-orders" class="col-12 col-md-1 btn btn-dark m-2">Close</a>
             </div>
         </div>
     </div>
-    <input type="hidden" name="tax_rate" v-model="tax_rate">
 </template>
 <script setup>
 import { defineComponent, reactive, ref, onBeforeMount, computed } from 'vue';
 
 let props = defineProps({
     salesOrder: Object,
-    tax_rate: Number,
 });
 
-const subTotal = ref(0);
-const salesOrder = ref(props.salesOrder);
-const client = ref({});
-const date = ref('');
-const billing_name = ref('');
-const billing_contact_number = ref('');
-const billing_address_1 = ref('');
-const billing_city = ref('');
-const billing_state = ref('');
-const billing_postcode = ref('');
-const billing_country = ref('');
-const ship_to_name = ref('');
-const ship_to_contact_number = ref('');
-const ship_to_address_1 = ref('');
-const ship_to_city = ref('');
-const ship_to_state = ref('');
-const ship_to_postcode = ref('');
-const ship_to_country = ref('');
-const notes = ref('');
-const grandTotal = ref(0);
-const tax_rate = ref(props.tax_rate);
-const taxRate1 = ref('');
-const taxRate2 = ref('');
+const salesOrder = ref({
+    'client': '',
+    'billing_name': '',
+    'billing_address_1': '',
+    'billing_contact_number': '',
+    'billing_contact_email': '',
+    'billing_address_1': '',
+    'billing_city': '',
+    'billing_state': '',
+    'billing_postcode': '',
+    'billing_country': '',
+    'ship_to_name': '',
+    'ship_to_contact_number': '',
+    'ship_to_contact_email': '',
+    'ship_to_address_1': '',
+    'ship_to_city': '',
+    'ship_to_state': '',
+    'ship_to_postcode': '',
+    'ship_to_country': '',
+    'currency': '',
+    'tax_rate': 7,
+    'sub_total': '',
+    'grand_total': '',
+    'date': '',
+    'notes': '',
+});
 const products = ref([{
     'product': '',
     'quantity': 0,
     'subTotal': 0,
 }]);
 const isDraft = ref(0);
+const isNotEditable = ref(0);
 
 function addProduct() {
     products.value.push({
@@ -242,11 +254,11 @@ function updateProductSubTotal(item) {
 }
 
 function updateTotalPrice() {
-    subTotal.value = 0;
-    grandTotal.value = 0;
+    salesOrder.value.sub_total = 0;
+    salesOrder.value.grand_total = 0;
     products.value.forEach(item => {
-        subTotal.value += item.subTotal;
-        grandTotal.value += item.subTotal;
+        salesOrder.value.sub_total += item.subTotal;
+        salesOrder.value.grand_total += item.subTotal;
     });
 }
 
@@ -279,26 +291,16 @@ const fetchClients = (query) => {
 
 onBeforeMount(() => {
     if (props.salesOrder !== undefined) {
-        if (props.salesOrder.sales_order_items !== undefined) {
-            client.value = props.salesOrder.client
-            date.value = props.salesOrder.date
-            billing_name.value = props.salesOrder.billing_name;
-            billing_contact_number.value = props.salesOrder.billing_contact_number;
-            billing_address_1.value = props.salesOrder.billing_address_1;
-            billing_city.value = props.salesOrder.billing_city;
-            billing_state.value = props.salesOrder.billing_state;
-            billing_postcode.value = props.salesOrder.billing_postcode;
-            billing_country.value = props.salesOrder.billing_country;
-            ship_to_name.value = props.salesOrder.ship_to_name;
-            ship_to_contact_number.value = props.salesOrder.ship_to_contact_number;
-            ship_to_address_1.value = props.salesOrder.ship_to_address_1;
-            ship_to_city.value = props.salesOrder.ship_to_city;
-            ship_to_state.value = props.salesOrder.ship_to_state;
-            ship_to_postcode.value = props.salesOrder.ship_to_postcode;
-            ship_to_country.value = props.salesOrder.ship_to_country;
-            notes.value = props.salesOrder.notes_and_instructions
-            products.value = [];
+        salesOrder.value = props.salesOrder;
 
+        if (salesOrder.value.status != 0) {
+            isNotEditable.value = true;
+        } else {
+            isNotEditable.value = false;
+        }
+
+        if (props.salesOrder.sales_order_items !== undefined) {
+            products.value = [];
             props.salesOrder.sales_order_items.forEach(salesOrderItem => {
                 if (salesOrderItem.product_variant == null) {
                     // bundles

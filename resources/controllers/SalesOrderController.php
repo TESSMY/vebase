@@ -47,13 +47,13 @@ class SalesOrderController extends VeController
 
         DB::beginTransaction();
         try {
+            if ($input['is_draft'] == 1) {
+                $input['status'] = SalesOrder::STATUS_DRAFT;
+            }
+
             $salesOrder = SalesOrder::create($input);
 
             $this->updateOrCreateItem($salesOrder, $input['products']);
-
-            if ($input['is_draft'] == 1) {
-                $salesOrder->status = SalesOrder::STATUS_DRAFT;
-            }
 
             $salesOrder->tax_amount = $salesOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
             $salesOrder->tax_rate = $input['tax_rate'] ?? 0;
@@ -86,13 +86,13 @@ class SalesOrderController extends VeController
 
         DB::beginTransaction();
         try {
+            if ($input['is_draft'] == 1) {
+                $input['status'] = SalesOrder::STATUS_DRAFT;
+            }
+
             $salesOrder->update($input);
 
             $this->updateOrCreateItem($salesOrder, $input['products']);
-
-            if ($input['is_draft'] == 1) {
-                $salesOrder->status = SalesOrder::STATUS_DRAFT;
-            }
 
             $salesOrder->tax_amount = $salesOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
             $salesOrder->tax_rate = $input['tax_rate'] ?? 0;
@@ -266,6 +266,7 @@ class SalesOrderController extends VeController
 
     public function generateDo(SalesOrder $salesOrder, $products, $notes)
     {
+        $this->authorize('view', $salesOrder);
         $this->authorize('create', DeliveryOrder::class);
 
         try {
@@ -277,8 +278,10 @@ class SalesOrderController extends VeController
                 'created_by' => $salesOrder->createdBy->id,
                 'client_id' => $salesOrder->client->id,
                 'sales_order_id' => $salesOrder->id,
-                'client_name' => $salesOrder->client->name,
-                'client_address' => $salesOrder->client->address_1,
+                'client_name' => $salesOrder->ship_to_name,
+                'client_address' => $salesOrder->ship_to_address_1,
+                'postcode' => $salesOrder->ship_to_postcode,
+                'country' => $salesOrder->ship_to_country,
                 'item_count' => 0,
                 'tax_rate' => $salesOrder->tax_rate,
                 'tax_amount' => 0,
@@ -291,7 +294,6 @@ class SalesOrderController extends VeController
             ]);
 
             foreach ($products as $product) {
-                $itemCount = 0;
                 $salesOrderItem = $salesOrder->salesOrderItems()->find($product['sales_order_item_id']);
 
                 if (empty($salesOrderItem)) {
@@ -317,11 +319,10 @@ class SalesOrderController extends VeController
 
                 $salesOrderItem->status = SalesOrderItem::STATUS_PENDING_SHIPMENT;
                 $salesOrderItem->save();
-                $itemCount++;
                 $subTotal += $salesOrderItem->total_amount;
             }
 
-            $deliveryOrder->item_count = $itemCount;
+            $deliveryOrder->item_count = count($products);
             $deliveryOrder->tax_amount = $subTotal * $salesOrder->tax_rate / 100;
             $deliveryOrder->sub_total = $subTotal;
             $deliveryOrder->grand_total = $subTotal - $salesOrder->discount_amount + $salesOrder->tax_amount;
@@ -340,6 +341,7 @@ class SalesOrderController extends VeController
 
     public function generatePo(SalesOrder $salesOrder, $products, $notes)
     {
+        $this->authorize('view', $salesOrder);
         $this->authorize('create', PurchaseOrder::class);
 
         $client = $salesOrder->client;
@@ -371,31 +373,39 @@ class SalesOrderController extends VeController
                     'client_id' => $salesOrder->client_id,
                     'sales_order_id' => $salesOrder->id,
                     'created_by' => $salesOrder->createdBy->id,
-                    'item_count' => 0,
-                    'supplier_code' => $supplier->code ?? null,
-                    'date' => now(),
-                    'supplier_name' => $supplier->name,
-                    'ship_from_address' => $supplier->address,
-                    'ship_from_city' => $supplier->city,
-                    'ship_from_state' => $supplier->state,
-                    'ship_from_postcode' => $supplier->zip,
-                    'ship_from_country' => $supplier->country,
-                    'client_name' => $salesOrder->client_name,
-                    'ship_to_address' => $salesOrder->address_1,
-                    'ship_to_city' => $salesOrder->city,
-                    'ship_to_state' => $salesOrder->state,
-                    'ship_to_postcode' => $salesOrder->postcode,
-                    'ship_to_country' => $salesOrder->country,
-                    'tax_rate' => $salesOrder->tax_rate,
+                    'billing_name' => $salesOrder->billing_name,
+                    'billing_contact_number' => $salesOrder->billing_contact_number,
+                    'billing_contact_email' => $salesOrder->billing_contact_email,
+                    'billing_address_1' => $salesOrder->billing_address_1,
+                    'billing_address_2' => $salesOrder->billing_address_2,
+                    'billing_city' => $salesOrder->billing_city,
+                    'billing_state' => $salesOrder->billing_state,
+                    'billing_postcode' => $salesOrder->billing_postcode,
+                    'billing_country' => $salesOrder->billing_country,
+                    'ship_to_name' => $salesOrder->ship_to_name,
+                    'ship_to_contact_number' => $salesOrder->ship_to_contact_number,
+                    'ship_to_contact_email' => $salesOrder->ship_to_contact_email,
+                    'ship_to_address_1' => $salesOrder->ship_to_address_1,
+                    'ship_to_address_2' => $salesOrder->ship_to_address_2,
+                    'ship_to_city' => $salesOrder->ship_to_city,
+                    'ship_to_state' => $salesOrder->ship_to_state,
+                    'ship_to_postcode' => $salesOrder->ship_to_postcode,
+                    'ship_to_country' => $salesOrder->ship_to_country,
+                    'currency' => $salesOrder->currency,
                     'discount_amount' => 0,
                     'shipping_handling' => 0,
                     'other_cost' => 0,
+                    'tax_rate' => $salesOrder->tax_rate,
                     'tax_amount' => 0,
                     'sub_total' => $subTotal,
                     'grand_total' => 0,
                     'total_cost' => $totalCost,
                     'total_paid' => 0,
+                    'supplier_code' => $supplier->code ?? null,
+                    'date' => now(),
                     'notes' => $notes,
+                    'item_count' => 0,
+                    'shipment_type' => PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT,
                     'status' => PurchaseOrder::STATUS_DRAFT,
                 ]);
 

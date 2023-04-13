@@ -21,12 +21,15 @@
 
             @if ($salesOrder->status == App\Models\SalesOrder::STATUS_OUTSTANDING)
                 <form action="{{ route('admin.sales-orders.updateItemStatus', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <sales-order-item-form :sales-order="{{ $salesOrder->load('salesOrderItems.product', 'salesOrderItems.productVariant', 'client') }}"></sales-order-item-form>
+                </form>
             @else
                 <form action="{{ route('admin.sales-orders.generateOrder', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <sales-order-show-form :sales-order="{{ $salesOrder->load('salesOrderItems.product', 'salesOrderItems.productVariant', 'client') }}"></sales-order-show-form>
+                </form>
             @endif
-                @csrf
-                <sales-order-show-form :tax_rate="7" :sales-order="{{ $salesOrder->load('salesOrderItems.product', 'salesOrderItems.productVariant', 'client') }}"></sales-order-show-form>
-            </form>
         </div>
     </div>
 @endsection

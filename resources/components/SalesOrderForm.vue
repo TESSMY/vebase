@@ -195,8 +195,8 @@
             <input type="hidden" name="tax_rate" v-model="salesOrder.tax_rate">
 
             <div class="row col-12">
-                <button v-if="!isNotEditable" type="submit" class="col-12 col-md-1 btn btn-success m-2">Next</button>
-                <button v-if="!isNotEditable" type="submit" @click="isDraft = 1" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
+                <button v-if="!isNotEditable" type="submit" class="col-12 col-md-1 btn btn-success m-2">Update</button>
+                <button v-if="!isNotEditable && salesOrder.status != 70" type="submit" @click="isDraft = 1" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
             </div>
         </div>
     </div>
@@ -304,7 +304,7 @@ onBeforeMount(() => {
     if (props.salesOrder !== undefined) {
         salesOrder.value = props.salesOrder;
 
-        if (salesOrder.value.status != 0) {
+        if (salesOrder.value.status != 0 && salesOrder.value.status != 70) {
             isNotEditable.value = true;
         } else {
             isNotEditable.value = false;

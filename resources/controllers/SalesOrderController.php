@@ -55,8 +55,7 @@ class SalesOrderController extends VeController
 
             $this->updateOrCreateItem($salesOrder, $input['products']);
 
-            $salesOrder->tax_amount = $salesOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
-            $salesOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $salesOrder->tax_amount = $salesOrder->sub_total * ($input['tax_rate'] ?? 0) / 100;
             $salesOrder->save();
 
             DB::commit();
@@ -94,8 +93,7 @@ class SalesOrderController extends VeController
 
             $this->updateOrCreateItem($salesOrder, $input['products']);
 
-            $salesOrder->tax_amount = $salesOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
-            $salesOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $salesOrder->tax_amount = $salesOrder->sub_total * ($input['tax_rate'] ?? 0) / 100;
             $salesOrder->save();
 
             DB::commit();

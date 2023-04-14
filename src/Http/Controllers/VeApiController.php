@@ -45,8 +45,8 @@ class VeApiController extends ApiController
     {
         $this->authorize('viewAny', $this->model);
 
-        $params = $request->all();
-        $search = $params['searchable'];
+        $search = $request->input('search');
+        $with = $request->input('with');
         $limit = min(intval($request->get('limit', 10)), 1000);
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
@@ -63,11 +63,15 @@ class VeApiController extends ApiController
             }
         }
 
-        if (!empty($params['relatable'])) {
-            foreach ($params['relatable'] as $relatable) {
-                if (in_array($relatable, $this->model->relatable)) {
-                    $models = $models->with($relatable);
+        if (!empty($with)) {
+            if (is_array($with)) {
+                foreach ($with as $relatable) {
+                    if (in_array($relatable, $this->model->relatable)) {
+                        $models = $models->with($relatable);
+                    }
                 }
+            } else {
+                $models = $models->with($with);
             }
         }
 

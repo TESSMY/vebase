@@ -250,8 +250,12 @@ let props = defineProps({
 });
 
 const purchaseOrder = ref({
-    'supplier': '',
-    'client': '',
+    'supplier': {
+        'id': ''
+    },
+    'client': {
+        'id': ''
+    },
     'billing_name': '',
     'billing_address_1': '',
     'billing_address_2': '',

@@ -135,7 +135,7 @@ class QuotationRequestController extends VeController
             return redirect()->route('admin.quotation-requests.edit', $quotationRequest->getRouteKey());
         }
 
-        $quotationRequest->createPurchaseOrder($quotationRequest->quotationRequestItems);
+        $quotationRequest->createPurchaseOrder();
         $quotationRequest->status = QuotationRequest::STATUS_APPROVED;
         $quotationRequest->save();
         flash()->success('Successfully created the purchase order.');

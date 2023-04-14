@@ -91,7 +91,7 @@
                     <form action="{{ route('admin.quotation-requests.destroy', [$quotationRequest->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                         @method('DELETE')
                         @csrf
-                        <button type="submit" class="btn btn-danger ms-1">Delete</button>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete the quotation request?')">Delete</button>
                     </form>
                 @endif
             </div>

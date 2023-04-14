@@ -10,7 +10,7 @@
                         <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
                         <div class="col-md-12">
                             <input type="hidden" name="supplier_id" :value="quotationRequest.supplier.id">
-                            <multi-select placeholder="Search Supplier" v-model="quotationRequest.supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers" :disabled="quotationRequest"></multi-select>
+                            <multi-select placeholder="Search Supplier" v-model="quotationRequest.supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers" :disabled="quotationRequest.supplier_id"></multi-select>
                         </div>
                     </div>
                 </div>
@@ -33,8 +33,12 @@
                             <input class="form-control" type="email" name="billing_contact_email" v-model="quotationRequest.billing_contact_email" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Address</label>
+                            <label class="form-label">Billing Address 1</label>
                             <input class="form-control" type="text" name="billing_address_1" v-model="quotationRequest.billing_address_1" :disabled="isNotEditable" required>
+                        </div>
+                        <div class="col-12 col-md-6 mb-2">
+                            <label class="form-label">Billing Address 2</label>
+                            <input class="form-control" type="text" name="billing_address_2" v-model="quotationRequest.billing_address_2" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
                             <label class="form-label">Billing City</label>
@@ -69,8 +73,12 @@
                             <input class="form-control" type="email" name="ship_to_contact_email" v-model="quotationRequest.ship_to_contact_email" required :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Ship To Address</label>
+                            <label class="form-label">Ship To Address 1</label>
                             <input class="form-control" type="text" name="ship_to_address_1" v-model="quotationRequest.ship_to_address_1" required :disabled="isNotEditable">
+                        </div>
+                        <div class="col-12 col-md-6 mb-2">
+                            <label class="form-label">Ship To Address 2</label>
+                            <input class="form-control" type="text" name="ship_to_address_2" v-model="quotationRequest.ship_to_address_2" required :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
                             <label class="form-label">Ship To City</label>
@@ -121,7 +129,7 @@
                                     label="name"
                                     :options="productArray.options"
                                     @search-change="fetchProducts"
-                                    :disabled="quotationRequest">
+                                    :disabled="isNotEditable">
                                 </multi-select>
                             </td>
                             <td>
@@ -201,6 +209,7 @@ const quotationRequest = ref({
     'billing_contact_number': '',
     'billing_contact_email': '',
     'billing_address_1': '',
+    'billing_address_2': '',
     'billing_city': '',
     'billing_state': '',
     'billing_postcode': '',
@@ -209,6 +218,7 @@ const quotationRequest = ref({
     'ship_to_contact_number': '',
     'ship_to_contact_email': '',
     'ship_to_address_1': '',
+    'ship_to_address_2': '',
     'ship_to_city': '',
     'ship_to_state': '',
     'ship_to_postcode': '',
@@ -256,7 +266,7 @@ const fetchProducts = (query) => {
 };
 
 const supplierArray = reactive({ options: [] });
-const fetchSupplliers = (query) => {
+const fetchSuppliers = (query) => {
     if (query) {
         axios.get(`/web/suppliers?search=${query}`).then((response) => {
             supplierArray.options = response.data.response.items;

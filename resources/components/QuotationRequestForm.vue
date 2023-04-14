@@ -203,7 +203,9 @@ let props = defineProps({
     taxRate: Number,
 });
 const quotationRequest = ref({
-    'supplier': '',
+    'supplier': {
+        'id': ''
+    },
     'billing_name': '',
     'billing_address_1': '',
     'billing_contact_number': '',

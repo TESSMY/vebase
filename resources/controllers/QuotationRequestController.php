@@ -48,14 +48,13 @@ class QuotationRequestController extends VeController
 
             $this->updateOrCreateItem($quotationRequest, $input['products']);
 
-            DB::commit();
-
             if ($input['send_email']) {
-                return $this->send($request, $quotationRequest);
-            } else {
-                flash()->success('Successfully created the quotation request.');
-                return redirect()->route('admin.quotation-requests.index');
+                $this->send($request, $quotationRequest);
             }
+
+            DB::commit();
+            flash()->success('Successfully created the quotation request.');
+            return redirect()->route('admin.quotation-requests.index');
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
@@ -84,14 +83,13 @@ class QuotationRequestController extends VeController
 
             $this->updateOrCreateItem($quotationRequest, $input['products']);
 
-            DB::commit();
-
             if ($input['send_email']) {
-                return $this->send($request, $quotationRequest);
-            } else {
-                flash()->success('Successfully updated the quotation request.');
-                return redirect()->route('admin.quotation-requests.index');
+                $this->send($request, $quotationRequest);
             }
+
+            DB::commit();
+            flash()->success('Successfully updated the quotation request.');
+            return redirect()->route('admin.quotation-requests.index');
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
@@ -117,8 +115,9 @@ class QuotationRequestController extends VeController
             });
             $quotationRequest->status = QuotationRequest::STATUS_PENDING;
             $quotationRequest->save();
+
             flash()->success('Mail sent successfully!');
-            return redirect()->route('admin.quotation-requests.index');
+            return true;
         } catch(Exception $exception) {
             Log::error('There was an issue sending the pdf. Quotation Request ID: ' . $quotationRequest->id . ' . Error: ' . $exception->getMessage());
             flash()->error('There was an issue sending the sending the pdf. Quotation Request ID: ' . $quotationRequest->id . ' . Error: ' . $exception->getMessage());

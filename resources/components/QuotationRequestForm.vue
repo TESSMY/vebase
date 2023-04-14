@@ -21,40 +21,40 @@
                 <div class="col-md-12">
                     <div class="form-group row mb-3">
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Name</label>
-                            <input class="form-control" type="text" name="billing_name" v-model="quotationRequest.billing_name" :disabled="isNotEditable" required>
+                            <label class="form-label">Supplier Name</label>
+                            <input class="form-control" type="text" name="supplier_name" v-model="quotationRequest.supplier_name" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Contact Number</label>
-                            <input class="form-control" type="text" name="billing_contact_number" v-model="quotationRequest.billing_contact_number" :disabled="isNotEditable" required>
+                            <label class="form-label">Supplier Contact Number</label>
+                            <input class="form-control" type="text" name="supplier_contact_number" v-model="quotationRequest.supplier_contact_number" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Contact Email</label>
-                            <input class="form-control" type="email" name="billing_contact_email" v-model="quotationRequest.billing_contact_email" :disabled="isNotEditable" required>
+                            <label class="form-label">Supplier Contact Email</label>
+                            <input class="form-control" type="email" name="supplier_contact_email" v-model="quotationRequest.supplier_contact_email" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Address 1</label>
-                            <input class="form-control" type="text" name="billing_address_1" v-model="quotationRequest.billing_address_1" :disabled="isNotEditable" required>
+                            <label class="form-label">Supplier Address 1</label>
+                            <input class="form-control" type="text" name="supplier_address_1" v-model="quotationRequest.supplier_address_1" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Address 2</label>
-                            <input class="form-control" type="text" name="billing_address_2" v-model="quotationRequest.billing_address_2" :disabled="isNotEditable" required>
+                            <label class="form-label">Supplier Address 2</label>
+                            <input class="form-control" type="text" name="billing_address_2" v-model="quotationRequest.supplier_address_2" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing City</label>
-                            <input class="form-control" type="text" name="billing_city" v-model="quotationRequest.billing_city" :disabled="isNotEditable">
+                            <label class="form-label">Supplier City</label>
+                            <input class="form-control" type="text" name="supplier_city" v-model="quotationRequest.supplier_city" :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing State</label>
-                            <input class="form-control" type="text" name="billing_state" v-model="quotationRequest.billing_state" :disabled="isNotEditable">
+                            <label class="form-label">Supplier State</label>
+                            <input class="form-control" type="text" name="supplier_state" v-model="quotationRequest.supplier_state" :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Postcode</label>
-                            <input class="form-control" type="text" name="billing_postcode" v-model="quotationRequest.billing_postcode" :disabled="isNotEditable">
+                            <label class="form-label">Supplier Postcode</label>
+                            <input class="form-control" type="text" name="supplier_postcode" v-model="quotationRequest.supplier_postcode" :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Country</label>
-                            <input class="form-control" type="text" name="billing_country" v-model="quotationRequest.billing_country" :disabled="isNotEditable">
+                            <label class="form-label">Supplier Country</label>
+                            <input class="form-control" type="text" name="supplier_country" v-model="quotationRequest.supplier_country" :disabled="isNotEditable">
                         </div>
                     </div>
                 </div>
@@ -206,16 +206,15 @@ const quotationRequest = ref({
     'supplier': {
         'id': ''
     },
-    'billing_name': '',
-    'billing_address_1': '',
-    'billing_contact_number': '',
-    'billing_contact_email': '',
-    'billing_address_1': '',
-    'billing_address_2': '',
-    'billing_city': '',
-    'billing_state': '',
-    'billing_postcode': '',
-    'billing_country': '',
+    'supplier_name': '',
+    'supplier_contact_number': '',
+    'supplier_contact_email': '',
+    'supplier_address_1': '',
+    'supplier_address_2': '',
+    'supplier_city': '',
+    'supplier_state': '',
+    'supplier_postcode': '',
+    'supplier_country': '',
     'ship_to_name': '',
     'ship_to_contact_number': '',
     'ship_to_contact_email': '',

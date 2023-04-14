@@ -18,7 +18,7 @@ class SupplierImport implements ToModel, WithHeadingRow, WithValidation
     {
         $supplier = Supplier::where([['name', $row['name']], ['email', $row['email']], ['code', $row['code']], ['contact_name', $row['contact_name']], ['contact_number', $row['contact_number']]])->first();
         if (empty($supplier)) {
-            if ($row['status'] == Supplier::STATUS_ACTIVE || $row['status'] == 'Active') {
+            if ($row['status'] == Supplier::STATUS_ACTIVE || strtolower($row['status']) == 'active') {
                 $status = Supplier::STATUS_ACTIVE;
             } else {
                 $status = Supplier::STATUS_DISABLED;

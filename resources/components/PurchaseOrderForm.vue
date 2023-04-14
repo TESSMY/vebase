@@ -53,40 +53,40 @@
                 <div class="col-md-12 my-2">
                     <div class="form-group row mb-3">
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Name</label>
-                            <input class="form-control" type="text" name="billing_name" v-model="purchaseOrder.billing_name" required :disabled="isNotEditable">
+                            <label class="form-label">Supplier Name</label>
+                            <input class="form-control" type="text" name="supplier_name" v-model="purchaseOrder.supplier_name" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Contact Number</label>
-                            <input class="form-control" type="text" name="billing_contact_number" v-model="purchaseOrder.billing_contact_number" required :disabled="isNotEditable">
+                            <label class="form-label">Supplier Contact Number</label>
+                            <input class="form-control" type="text" name="supplier_contact_number" v-model="purchaseOrder.supplier_contact_number" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Contact Email</label>
-                            <input class="form-control" type="email" name="billing_contact_email" v-model="purchaseOrder.billing_contact_email" required :disabled="isNotEditable">
+                            <label class="form-label">Supplier Contact Email</label>
+                            <input class="form-control" type="email" name="supplier_contact_email" v-model="purchaseOrder.supplier_contact_email" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Address 1</label>
-                            <input class="form-control" type="text" name="billing_address_1" v-model="purchaseOrder.billing_address_1" required :disabled="isNotEditable">
+                            <label class="form-label">Supplier Address 1</label>
+                            <input class="form-control" type="text" name="supplier_address_1" v-model="purchaseOrder.supplier_address_1" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Address 2</label>
-                            <input class="form-control" type="text" name="billing_address_2" v-model="purchaseOrder.billing_address_2" required :disabled="isNotEditable">
+                            <label class="form-label">Supplier Address 2</label>
+                            <input class="form-control" type="text" name="billing_address_2" v-model="purchaseOrder.supplier_address_2" :disabled="isNotEditable" required>
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing City</label>
-                            <input class="form-control" type="text" name="billing_city" v-model="purchaseOrder.billing_city" :disabled="isNotEditable">
+                            <label class="form-label">Supplier City</label>
+                            <input class="form-control" type="text" name="supplier_city" v-model="purchaseOrder.supplier_city" :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing State</label>
-                            <input class="form-control" type="text" name="billing_state" v-model="purchaseOrder.billing_state" :disabled="isNotEditable">
+                            <label class="form-label">Supplier State</label>
+                            <input class="form-control" type="text" name="supplier_state" v-model="purchaseOrder.supplier_state" :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Postcode</label>
-                            <input class="form-control" type="text" name="billing_postcode" v-model="purchaseOrder.billing_postcode" :disabled="isNotEditable">
+                            <label class="form-label">Supplier Postcode</label>
+                            <input class="form-control" type="text" name="supplier_postcode" v-model="purchaseOrder.supplier_postcode" :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Country</label>
-                            <input class="form-control" type="text" name="billing_country" v-model="purchaseOrder.billing_country" :disabled="isNotEditable">
+                            <label class="form-label">Supplier Country</label>
+                            <input class="form-control" type="text" name="supplier_country" v-model="purchaseOrder.supplier_country" :disabled="isNotEditable">
                         </div>
                     </div>
                 </div>
@@ -256,16 +256,15 @@ const purchaseOrder = ref({
     'client': {
         'id': ''
     },
-    'billing_name': '',
-    'billing_address_1': '',
-    'billing_address_2': '',
-    'billing_contact_number': '',
-    'billing_contact_email': '',
-    'billing_address_1': '',
-    'billing_city': '',
-    'billing_state': '',
-    'billing_postcode': '',
-    'billing_country': '',
+    'supplier_name': '',
+    'supplier_contact_number': '',
+    'supplier_contact_email': '',
+    'supplier_address_1': '',
+    'supplier_address_2': '',
+    'supplier_city': '',
+    'supplier_state': '',
+    'supplier_postcode': '',
+    'supplier_country': '',
     'ship_to_name': '',
     'ship_to_contact_number': '',
     'ship_to_contact_email': '',

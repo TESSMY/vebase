@@ -61,8 +61,7 @@ class PurchaseOrderController extends VeController
 
             $this->updateOrCreateItem($purchaseOrder, $input['products']);
 
-            $purchaseOrder->tax_amount = $purchaseOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
-            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $purchaseOrder->tax_amount = $purchaseOrder->sub_total * ($input['tax_rate'] ?? 0) / 100;
             $purchaseOrder->file_url = $purchaseOrder->generatePdf();
             $purchaseOrder->save();
 
@@ -102,8 +101,7 @@ class PurchaseOrderController extends VeController
 
             $this->updateOrCreateItem($purchaseOrder, $input['products']);
 
-            $purchaseOrder->tax_amount = $purchaseOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
-            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $purchaseOrder->tax_amount = $purchaseOrder->sub_total * ($input['tax_rate'] ?? 0) / 100;
             $purchaseOrder->file_url = $purchaseOrder->generatePdf();
             $purchaseOrder->save();
 

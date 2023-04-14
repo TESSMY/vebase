@@ -32,13 +32,13 @@
         </div>
         <div class="row mb-2">
             <div class="col-md-1">
-                <a href="{{ route('admin.sales-orders.index') }}" class="col-12 col-md-2"><button class="btn btn-secondary">Cancel</button></a>
+                <a href="{{ route('admin.sales-orders.index') }}" class="col-12 col-md-2"><button class="btn btn-secondary">Back</button></a>
             </div>
             <div class="col-md-11 text-end">
                 <form action="{{ route('admin.sales-orders.destroy', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                     @method('DELETE')
                     @csrf
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete the sales order?')">Delete</button>
                 </form>
             </div>
         </div>

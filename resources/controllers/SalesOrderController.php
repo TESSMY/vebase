@@ -489,6 +489,12 @@ class SalesOrderController extends VeController
                 }
 
                 $salesOrderItem = $salesOrder->salesOrderItems()->find($product['sales_order_item_id']);
+
+                if (empty($salesOrderItem)) {
+                    flash()->error("Unable to update sales order item, could not find the item associated in this sales order. Sales Order ID: " . $salesOrder->id . ". Sales Order Item ID: " . $product['sales_order_item_id']);
+                    return back();
+                }
+
                 $salesOrderItem->update([
                     'status' => $product['status'],
                 ]);

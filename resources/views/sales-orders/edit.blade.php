@@ -24,12 +24,17 @@
                 <sales-order-form :tax_rate="7" :sales-order="{{ $salesOrder->load('salesOrderItems.product', 'salesOrderItems.productVariant', 'client') }}"></sales-order-form>
             </form>
         </div>
-        <div class="col-md-12 text-end">
-            <form action="{{ route('admin.sales-orders.destroy', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
-                @method('DELETE')
-                @csrf
-                <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
+        <div class="row mb-2">
+            <div class="col-md-1">
+                <a href="{{ route('admin.sales-orders.index') }}" class="col-12 col-md-2"><button class="btn btn-secondary">Cancel</button></a>
+            </div>
+            <div class="col-md-11 text-end">
+                <form action="{{ route('admin.sales-orders.destroy', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                    @method('DELETE')
+                    @csrf
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
         </div>
     </div>
 @endsection

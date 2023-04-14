@@ -23,5 +23,10 @@
                 <sales-order-form></sales-order-form>
             </form>
         </div>
+        <div class="row mb-2">
+            <div class="col-md-1">
+                <a href="{{ route('admin.sales-orders.index') }}" class="col-12 col-md-2"><button class="btn btn-secondary">Cancel</button></a>
+            </div>
+        </div>
     </div>
 @endsection

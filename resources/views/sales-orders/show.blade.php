@@ -18,7 +18,6 @@
         </div>
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow py-3 px-4">
-
             @if ($salesOrder->status == App\Models\SalesOrder::STATUS_OUTSTANDING)
                 <form action="{{ route('admin.sales-orders.updateItemStatus', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -30,6 +29,18 @@
                     <sales-order-show-form :sales-order="{{ $salesOrder->load('salesOrderItems.product', 'salesOrderItems.productVariant', 'client') }}"></sales-order-show-form>
                 </form>
             @endif
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-1">
+                <a href="{{ route('admin.sales-orders.index') }}" class="col-12 col-md-2"><button class="btn btn-secondary">Cancel</button></a>
+            </div>
+            <div class="col-md-11 text-end">
+                <form action="{{ route('admin.sales-orders.destroy', [$salesOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                    @method('DELETE')
+                    @csrf
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
         </div>
     </div>
 @endsection

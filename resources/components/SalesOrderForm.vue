@@ -189,7 +189,6 @@
             <div class="row col-12">
                 <button v-if="!isNotEditable" type="submit" class="col-12 col-md-1 btn btn-success m-2">Next</button>
                 <button v-if="!isNotEditable" type="submit" @click="isDraft = 1" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
-                <a href="/admin/sales-orders" class="col-12 col-md-1 btn btn-dark m-2">Close</a>
             </div>
         </div>
     </div>

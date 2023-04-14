@@ -85,8 +85,7 @@
                 </div>
             </div>
             <div class="row col-12">
-                <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Next</button>
-                <a href="/admin/sales-orders" class="col-12 col-md-1 btn btn-dark m-2">Close</a>
+                <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Update</button>
             </div>
         </div>
     </div>

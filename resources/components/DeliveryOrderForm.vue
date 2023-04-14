@@ -42,11 +42,11 @@
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Receiver Contact Number</label>
-                <input class="form-control" type="text" placeholder="Receiver Contact Number" name="ship_to_contact_number" v-model="delivery.ship_to_contact_number" required>
+                <input class="form-control" type="text" placeholder="Receiver Contact Number" name="ship_to_contact_number" v-model="delivery.ship_to_contact_number">
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Receiver Email Address</label>
-                <input class="form-control" type="text" placeholder="Receiver Email Address" name="ship_to_email_address" v-model="delivery.ship_to_email_address" required>
+                <input class="form-control" type="text" placeholder="Receiver Email Address" name="ship_to_email_address" v-model="delivery.ship_to_email_address">
             </div>
             <div class="col-12 col-md-6 mb-2"></div>
             <div class="col-12 col-md-6 mb-2">
@@ -67,7 +67,7 @@
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Postcode</label>
-                <input class="form-control" type="text" placeholder="Postcode" name="ship_to_postcode" v-model="delivery.ship_to_postcode">
+                <input class="form-control" type="text" placeholder="Postcode" name="ship_to_postcode" v-model="delivery.ship_to_postcode" required>
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Country</label>

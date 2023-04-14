@@ -9,8 +9,8 @@
                     <div class="form-group row mb-3">
                         <label class="col-md-4 text-right form-label text-sm-start">Supplier</label>
                         <div class="col-md-12">
-                            <input type="hidden" name="supplier_id" :value="purchaseOrder.supplier_id">
-                            <multi-select placeholder="Search Supplier" v-model="purchaseOrder.supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers" :disabled="isNotEditable"></multi-select>
+                            <input type="hidden" name="supplier_id" :value="purchaseOrder.supplier.id">
+                            <multi-select placeholder="Search Supplier" v-model="purchaseOrder.supplier" label="name" :options="supplierArray.options" @search-change="fetchSuppliers" :disabled="purchaseOrder.supplier_id"></multi-select>
                         </div>
                     </div>
                 </div>
@@ -18,8 +18,8 @@
                     <div class="form-group row mb-3">
                         <label class="col-md-4 text-right form-label text-sm-start">Client</label>
                         <div class="col-md-12">
-                            <input type="hidden" name="client_id" :value="purchaseOrder.client_id">
-                            <multi-select placeholder="Search Client" v-model="purchaseOrder.client" label="name" :options="clientArray.options" @search-change="fetchClients" :disabled="isNotEditable"></multi-select>
+                            <input type="hidden" name="client_id" :value="purchaseOrder.client.id">
+                            <multi-select placeholder="Search Client" v-model="purchaseOrder.client" label="name" :options="clientArray.options" @search-change="fetchClients" :disabled="purchaseOrder.client_id"></multi-select>
                         </div>
                     </div>
                 </div>
@@ -65,8 +65,12 @@
                             <input class="form-control" type="email" name="billing_contact_email" v-model="purchaseOrder.billing_contact_email" required :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Billing Address</label>
+                            <label class="form-label">Billing Address 1</label>
                             <input class="form-control" type="text" name="billing_address_1" v-model="purchaseOrder.billing_address_1" required :disabled="isNotEditable">
+                        </div>
+                        <div class="col-12 col-md-6 mb-2">
+                            <label class="form-label">Billing Address 2</label>
+                            <input class="form-control" type="text" name="billing_address_2" v-model="purchaseOrder.billing_address_2" required :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
                             <label class="form-label">Billing City</label>
@@ -101,8 +105,12 @@
                             <input class="form-control" type="email" name="ship_to_contact_email" v-model="purchaseOrder.ship_to_contact_email" required :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
-                            <label class="form-label">Ship To Address</label>
+                            <label class="form-label">Ship To Address 1</label>
                             <input class="form-control" type="text" name="ship_to_address_1" v-model="purchaseOrder.ship_to_address_1" required :disabled="isNotEditable">
+                        </div>
+                        <div class="col-12 col-md-6 mb-2">
+                            <label class="form-label">Ship To Address 2</label>
+                            <input class="form-control" type="text" name="ship_to_address_2" v-model="purchaseOrder.ship_to_address_2" required :disabled="isNotEditable">
                         </div>
                         <div class="col-12 col-md-6 mb-2">
                             <label class="form-label">Ship To City</label>
@@ -227,7 +235,7 @@
             <input type="hidden" name="tax_rate" v-model="purchaseOrder.tax_rate">
 
             <div class="row col-12" v-if="!isNotEditable">
-                <button type="submit" @click="generatePurchaseOrder = 1" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
+                <button type="submit" @click="generatePurchaseOrder = 10" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
                 <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
             </div>
         </div>
@@ -246,6 +254,7 @@ const purchaseOrder = ref({
     'client': '',
     'billing_name': '',
     'billing_address_1': '',
+    'billing_address_2': '',
     'billing_contact_number': '',
     'billing_contact_email': '',
     'billing_address_1': '',
@@ -257,6 +266,7 @@ const purchaseOrder = ref({
     'ship_to_contact_number': '',
     'ship_to_contact_email': '',
     'ship_to_address_1': '',
+    'ship_to_address_2': '',
     'ship_to_city': '',
     'ship_to_state': '',
     'ship_to_postcode': '',

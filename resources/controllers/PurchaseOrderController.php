@@ -27,16 +27,19 @@ class PurchaseOrderController extends VeController
         $input = $request->input();
         $input['created_by'] = Auth::id();
         $supplier = Supplier::find($input['supplier_id']);
-        $client = Client::find($input['client_id']);
 
         if (empty($supplier)) {
             flash()->error('Could not find the supplier selected. Please select a different supplier.');
             return back()->withInput($request->input());
         }
 
-        if ($input['shipment_type'] == PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT && empty($client)) {
-            flash()->error('Could not find the client selected. Please select a different client.');
-            return back()->withInput($request->input());
+        if ($input['shipment_type'] == PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT) {
+            $client = Client::find($input['client_id']);
+
+            if (empty($client)) {
+                flash()->error('Could not find the client selected. Please select a different client.');
+                return back()->withInput($request->input());
+            }
         }
 
         $validator = Validator::make($input, $this->model->createValidator);
@@ -48,7 +51,7 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            if ($input['generate_purchase_order'] == true) {
+            if ($input['generate_purchase_order'] == PurchaseOrder::STATUS_PENDING) {
                 $input['status'] = PurchaseOrder::STATUS_PENDING;
             } else {
                 $input['status'] = PurchaseOrder::STATUS_DRAFT;
@@ -60,6 +63,7 @@ class PurchaseOrderController extends VeController
 
             $purchaseOrder->tax_amount = $purchaseOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
             $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
             $purchaseOrder->save();
 
             DB::commit();
@@ -88,7 +92,7 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            if ($input['generate_purchase_order'] == true) {
+            if ($input['generate_purchase_order'] == PurchaseOrder::STATUS_PENDING) {
                 $input['status'] = PurchaseOrder::STATUS_PENDING;
             } else {
                 $input['status'] = PurchaseOrder::STATUS_DRAFT;
@@ -100,6 +104,7 @@ class PurchaseOrderController extends VeController
 
             $purchaseOrder->tax_amount = $purchaseOrder->sub_total * $input['tax_rate'] ?? 0 / 100;
             $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
+            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
             $purchaseOrder->save();
 
             DB::commit();
@@ -239,8 +244,6 @@ class PurchaseOrderController extends VeController
             $purchaseOrder->sub_total = $subTotal;
             $purchaseOrder->grand_total = $subTotal - $purchaseOrder->discount_amount + $purchaseOrder->tax_amount;
             $purchaseOrder->total_cost = $totalCost;
-            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
-            $purchaseOrder->save();
 
             return $purchaseOrder;
         } catch (Exception $exception) {

@@ -32,7 +32,7 @@
                 <form action="{{ route('admin.purchase-orders.destroy', [$purchaseOrder->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                     @method('DELETE')
                     @csrf
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete the purchase order?')">Delete</button>
                 </form>
             </div>
         </div>

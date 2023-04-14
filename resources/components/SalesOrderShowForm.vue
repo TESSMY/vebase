@@ -17,7 +17,7 @@
                     <div class="form-group row mb-3">
                         <label class="col-md-4 text-right form-label text-sm-start">Client</label>
                         <div class="col-md-12">
-                            <input type="hidden" name="client_id" :value="salesOrder.client_id">
+                            <input type="hidden" name="client_id" :value="salesOrder.client.id">
                             <multi-select placeholder="Search Client" v-model="salesOrder.client" label="name" :options="clientArray.options" @search-change="fetchClients" disabled></multi-select>
                         </div>
                     </div>
@@ -98,7 +98,9 @@ let props = defineProps({
 });
 
 const salesOrder = ref({
-    'client': '',
+    'client': {
+        'id': ''
+    },
     'billing_name': '',
     'billing_address_1': '',
     'billing_contact_number': '',

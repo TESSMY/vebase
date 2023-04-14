@@ -209,7 +209,9 @@ let props = defineProps({
 });
 
 const salesOrder = ref({
-    'client': '',
+    'client': {
+        'id': ''
+    },
     'billing_name': '',
     'billing_address_1': '',
     'billing_address_2': '',

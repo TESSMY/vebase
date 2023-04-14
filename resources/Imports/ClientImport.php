@@ -20,7 +20,7 @@ class ClientImport implements ToModel, WithHeadingRow, WithValidation
     {
         $client = Client::where([['name', $row['name']], ['email', $row['email']], ['company_name', $row['company_name']], ['phone', $row['phone']]])->first();
         if (empty($client)) {
-            if ($row['status'] == Client::STATUS_ACTIVE || $row['status'] == 'Active') {
+            if ($row['status'] == Client::STATUS_ACTIVE || strtolower($row['status']) == 'active') {
                 $status = Client::STATUS_ACTIVE;
             } else {
                 $status = Client::STATUS_DISABLED;

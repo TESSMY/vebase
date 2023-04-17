@@ -98,6 +98,15 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status" v-model="quotationRequest.status" :disabled="isNotEditable">
+                        <option selected value="0">Draft</option>
+                        <option value="10">Pending</option>
+                        <option value="20">Approved</option>
+                        <option value="30">Cancelled</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="border my-2 mb-3"></div>
@@ -159,7 +168,8 @@
             <div class="row">
                 <div class="row col-6">
                     <button type="button" v-if="!isNotEditable" @click="send_email = true" data-bs-toggle="modal" data-bs-target="#sendEmailModal" class="col-12 col-md-2 btn btn-primary m-2">Send Email</button>
-                    <button type="submit" v-if="!isNotEditable && !isNotDraft" class="col-12 col-md-2 btn btn-success m-2">Save as Draft</button>
+                    <button type="submit" v-if="!isNotEditable && !isNotDraft" @click="quotationRequest.status = 0" class="col-12 col-md-2 btn btn-success m-2">Save as Draft</button>
+                    <button type="submit" v-if="!isNotEditable" class="col-12 col-md-2 btn btn-success m-2">Update</button>
                 </div>
             </div>
 

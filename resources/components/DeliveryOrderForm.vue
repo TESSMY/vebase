@@ -7,7 +7,7 @@
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Client</label>
                 <input type="hidden" name="client_id" :value="client.id">
-                <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients" @Select="setDeliveryAddress"></multi-select>
+                <multi-select placeholder="Search Client" v-model="client" label="name" :options="clientArray.options" @search-change="fetchClients" @select="setDeliveryAddress"></multi-select>
             </div>
             <div class="col-12 col-md-6 mb-md-0 mb-2">
                 <label class="form-label">Client P.O (optional)</label>

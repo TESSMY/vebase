@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
@@ -49,6 +48,8 @@ class SalesOrderController extends VeController
         try {
             if ($input['is_draft'] == 1) {
                 $input['status'] = SalesOrder::STATUS_DRAFT;
+            } else {
+                $input['status'] = SalesOrder::STATUS_ONGOING;
             }
 
             $salesOrder = SalesOrder::create($input);
@@ -118,7 +119,7 @@ class SalesOrderController extends VeController
         try {
             $subTotal = 0;
             $totalCost = 0;
-            $status = SalesOrder::STATUS_ONGOING;
+            $status = $salesOrder->status;
 
             $salesOrderItemIds = [];
             foreach ($selectedProducts as $selectedProduct) {
@@ -127,6 +128,8 @@ class SalesOrderController extends VeController
                     $salesOrderItem = $salesOrder->salesOrderItems()->find($selectedProduct['sales_order_item_id']);
                     $product = $salesOrderItem->product;
                     $productVariant = $salesOrderItem->productVariant;
+                    $originalQuantity = $salesOrderItem->quantity;
+                    $onHoldQuantity = $originalQuantity - $selectedProduct['quantity'];
                     $salesOrderItem->update([
                             'quantity' => $selectedProduct['quantity'],
                             'total_amount' => $selectedProduct['quantity'] * $salesOrderItem->unit_price,
@@ -136,12 +139,18 @@ class SalesOrderController extends VeController
                     $subTotal += $selectedProduct['quantity'] * $salesOrderItem->unit_price;
                     $totalCost += $selectedProduct['quantity'] * $salesOrderItem->unit_cost;
 
-                    if (!empty($productVariant)) {
-                        if ($productVariant->available_stock < $selectedProduct['quantity']) {
+                    if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
+                        if (!empty($productVariant)) {
+                            if ($productVariant->available_stock < $selectedProduct['quantity']) {
+                                $status = SalesOrder::STATUS_OUTSTANDING;
+                            }
+                            $productVariant->stock_on_hold -= $onHoldQuantity;
+                            $productVariant->save();
+                        } elseif ($product->available_stock < $selectedProduct['quantity']) {
                             $status = SalesOrder::STATUS_OUTSTANDING;
+                            $productVariant->stock_on_hold -= $onHoldQuantity;
+                            $product->save();
                         }
-                    } elseif ($product->available_stock < $selectedProduct['quantity']) {
-                        $status = SalesOrder::STATUS_OUTSTANDING;
                     }
                 } else {
                     if (!empty($selectedProduct['product_variant_id'])) {
@@ -176,8 +185,12 @@ class SalesOrderController extends VeController
                         $subTotal += $selectedProduct['quantity'] * $productVariant->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
 
-                        if ($productVariant->available_stock < $selectedProduct['quantity']) {
-                            $status = SalesOrder::STATUS_OUTSTANDING;
+                        if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
+                            if ($productVariant->available_stock < $selectedProduct['quantity']) {
+                                $status = SalesOrder::STATUS_OUTSTANDING;
+                            }
+                            $productVariant->stock_on_hold += $selectedProduct['quantity'];
+                            $productVariant->save();
                         }
                     } else {
                         $product = Product::find($selectedProduct['product_id']);
@@ -214,8 +227,12 @@ class SalesOrderController extends VeController
                         $subTotal += $selectedProduct['quantity'] * $product->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $product->cost_price;
 
-                        if ($product->available_stock < $selectedProduct['quantity']) {
-                            $status = SalesOrder::STATUS_OUTSTANDING;
+                        if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
+                            if ($product->available_stock < $selectedProduct['quantity']) {
+                                $status = SalesOrder::STATUS_OUTSTANDING;
+                            }
+                            $product->stock_on_hold += $selectedProduct['quantity'];
+                            $product->save();
                         }
                     }
                 }

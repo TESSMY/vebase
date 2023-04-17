@@ -55,7 +55,7 @@
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Delivery Address 2</label>
-                <input class="form-control" type="text" placeholder="Delivery Address 2" name="ship_to_address_2" v-model="delivery.ship_to_address_2" required>
+                <input class="form-control" type="text" placeholder="Delivery Address 2" name="ship_to_address_2" v-model="delivery.ship_to_address_2">
             </div>
             <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">City</label>

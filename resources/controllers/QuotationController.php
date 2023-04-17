@@ -215,17 +215,6 @@ class QuotationController extends VeController
         $this->authorize('update', $quotation);
 
         try {
-            $quotation->status = Quotation::STATUS_VOID;
-            $quotation->save();
-
-            $items = $quotation->quotationItems;
-            if (!empty($items)) {
-                foreach ($items as $item) {
-                    $item->status = QuotationItem::STATUS_VOID;
-                    $item->save();
-                }
-            }
-
             $salesOrder = $quotation->salesOrder;
             if (!empty($salesOrder) && in_array($salesOrder->status, [SalesOrder::STATUS_OUTSTANDING, SalesOrder::STATUS_DRAFT])) {
                 foreach ($salesOrder->salesOrderItems as $item) {
@@ -234,11 +223,22 @@ class QuotationController extends VeController
                 }
                 $salesOrder->status = SalesOrder::STATUS_CANCELLED;
                 $salesOrder->save();
+
+                $items = $quotation->quotationItems;
+                if (!empty($items)) {
+                    foreach ($items as $item) {
+                        $item->status = QuotationItem::STATUS_VOID;
+                        $item->save();
+                    }
+                }
+
+                $quotation->status = Quotation::STATUS_VOID;
+                $quotation->save();
             }
+
             flash()->success($quotation->name . ' voided successfully!');
             return redirect()->route('admin.quotations.index');
         } catch (Exception $exception) {
-            DB::rollBack();
             Log::error($exception);
             flash('Error:' . $exception->getMessage());
             return back();

@@ -17,7 +17,7 @@ class VeApiController extends ApiController
     protected $model;
     protected $modelName;
     protected $routeName;
-   
+
 
     /**
      * creates the model from the request path
@@ -32,12 +32,12 @@ class VeApiController extends ApiController
         }
     }
 
-    public function findModel($id) 
+    public function findModel($id)
     {
         $routeKey = $this->model->getRouteKey() ?? 'id';
         $model = $this->model::where($routeKey, $id)->first();
         abort_if(empty($model), 404);
-        
+
         return $model;
     }
 
@@ -46,6 +46,7 @@ class VeApiController extends ApiController
         $this->authorize('viewAny', $this->model);
 
         $search = $request->input('search');
+        $with = $request->input('with');
         $limit = min(intval($request->get('limit', 10)), 1000);
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
@@ -62,11 +63,15 @@ class VeApiController extends ApiController
             }
         }
 
-        if (!empty($input['relatable'])) {
-            foreach ($input['relatable'] as $relatable) {
-                if (in_array($relatable, $this->model->relatable)) {
-                    $models->with($relatable);
+        if (!empty($with)) {
+            if (is_array($with)) {
+                foreach ($with as $relatable) {
+                    if (in_array($relatable, $this->model->relatable)) {
+                        $models = $models->with($relatable);
+                    }
                 }
+            } else {
+                $models = $models->with($with);
             }
         }
 
@@ -87,7 +92,7 @@ class VeApiController extends ApiController
     public function store(Request $request)
     {
         $this->authorize('create', $this->model);
-        
+
         $input = $request->all();
 
         if (empty($this->model->createValidator)) {
@@ -122,7 +127,7 @@ class VeApiController extends ApiController
                 }
             }
         }
-        
+
         return $this->respond($model);
     }
 

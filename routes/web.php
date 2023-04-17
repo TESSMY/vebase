@@ -37,3 +37,7 @@ foreach ($classes as $class) {
         }
     }
 }
+
+Route::resource('quotation-requests', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationRequestController');
+Route::post('quotation-requests/{quotationRequest}/send', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationRequestController@send')->name('quotation-requests.send');
+Route::get('quotation-requests/{quotationRequest}/generatePo', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationRequestController@generatePo')->name('quotation-requests.generatePo');

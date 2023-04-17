@@ -51,12 +51,6 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            if ($input['generate_purchase_order'] == PurchaseOrder::STATUS_PENDING) {
-                $input['status'] = PurchaseOrder::STATUS_PENDING;
-            } else {
-                $input['status'] = PurchaseOrder::STATUS_DRAFT;
-            }
-
             $purchaseOrder = PurchaseOrder::create($input);
 
             $this->updateOrCreateItem($purchaseOrder, $input['products']);
@@ -91,12 +85,6 @@ class PurchaseOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            if ($input['generate_purchase_order'] == PurchaseOrder::STATUS_PENDING) {
-                $input['status'] = PurchaseOrder::STATUS_PENDING;
-            } else {
-                $input['status'] = PurchaseOrder::STATUS_DRAFT;
-            }
-
             $purchaseOrder->update($input);
 
             $this->updateOrCreateItem($purchaseOrder, $input['products']);

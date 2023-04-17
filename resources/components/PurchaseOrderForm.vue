@@ -130,6 +130,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-12 col-md-6 mb-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status" v-model="purchaseOrder.status" :disabled="isNotEditable">
+                        <option selected value="0">Draft</option>
+                        <option value="10">Pending</option>
+                        <option value="20">Partially Received</option>
+                        <option value="30">Order Completed</option>
+                        <option value="40">Cancelled</option>
+                        <option value="50">Rejected</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="border my-2 mb-3"></div>
@@ -231,12 +242,11 @@
                 </div>
             </div>
 
-            <input type="hidden" name="generate_purchase_order" v-model="generatePurchaseOrder">
             <input type="hidden" name="tax_rate" v-model="purchaseOrder.tax_rate">
 
             <div class="row col-12" v-if="!isNotEditable">
-                <button type="submit" @click="generatePurchaseOrder = 10" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
-                <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
+                <button type="submit" @click="purchaseOrder.status = 10" class="col-12 col-md-1 btn btn-success m-2">Generate P.O.</button>
+                <button type="submit" @click="purchaseOrder.status = 0" class="col-12 col-md-1 btn btn-success m-2">Submit Draft</button>
             </div>
         </div>
     </div>
@@ -297,7 +307,6 @@ const products = ref([{
     'quantity': 0,
     'subTotal': 0,
 }]);
-const generatePurchaseOrder = ref(0);
 const isNotEditable = ref(0);
 
 function addProduct() {

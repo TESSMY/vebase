@@ -44,16 +44,16 @@
                 @endif
             @endcan
             @can('edit-quotation')
-                @if ($quotation->status == \App\Models\Quotation::STATUS_APPROVED)
-                    <form action="{{ route('admin.quotations.update.status', $quotation) }}" method="POST" enctype="multipart/form-data">
-                        @method('PUT')
-                        @csrf
-                        <div class="text-end">
-                            <button class="btn btn-danger px-2" type="submit">
-                                Void
-                            </button>
-                        </div>
-                    </form>
+                @if ($quotation->status == \App\Models\Quotation::STATUS_APPROVED && in_array($quotation->salesOrder->status, [\App\Models\SalesOrder::STATUS_OUTSTANDING, \App\Models\SalesOrder::STATUS_DRAFT])))
+                <form action="{{ route('admin.quotations.update.status', $quotation) }}" method="POST" enctype="multipart/form-data">
+                    @method('PUT')
+                    @csrf
+                    <div class="text-end">
+                        <button class="btn btn-danger px-2" type="submit">
+                            Void
+                        </button>
+                    </div>
+                </form>
                 @endif
             @endcan
         </div>

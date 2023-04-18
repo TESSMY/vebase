@@ -143,11 +143,15 @@ class SalesOrderController extends VeController
                         if (!empty($productVariant)) {
                             if ($productVariant->available_stock < $selectedProduct['quantity']) {
                                 $status = SalesOrder::STATUS_OUTSTANDING;
+                                $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
+                                $salesOrderItem->save();
                             }
                             $productVariant->stock_on_hold -= $onHoldQuantity;
                             $productVariant->save();
                         } elseif ($product->available_stock < $selectedProduct['quantity']) {
                             $status = SalesOrder::STATUS_OUTSTANDING;
+                            $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
+                            $salesOrderItem->save();
                             $productVariant->stock_on_hold -= $onHoldQuantity;
                             $product->save();
                         }
@@ -188,6 +192,8 @@ class SalesOrderController extends VeController
                         if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
                             if ($productVariant->available_stock < $selectedProduct['quantity']) {
                                 $status = SalesOrder::STATUS_OUTSTANDING;
+                                $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
+                                $salesOrderItem->save();
                             }
                             $productVariant->stock_on_hold += $selectedProduct['quantity'];
                             $productVariant->save();
@@ -230,6 +236,8 @@ class SalesOrderController extends VeController
                         if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
                             if ($product->available_stock < $selectedProduct['quantity']) {
                                 $status = SalesOrder::STATUS_OUTSTANDING;
+                                $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
+                                $salesOrderItem->save();
                             }
                             $product->stock_on_hold += $selectedProduct['quantity'];
                             $product->save();
@@ -319,6 +327,28 @@ class SalesOrderController extends VeController
                 $product = $salesOrderItem->product;
                 $productVariant = $salesOrderItem->productVariant;
 
+                if ($salesOrderItem->status == SalesOrderItem::STATUS_ORDER_CONFIRMED) { // outstanding item manually confirmed by admin
+                    if (!empty($productVariant)) {
+                        if ($productVariant->available_stock < $salesOrderItem->quantity) {
+                            flash()->error("Unable to generate delivery order, there is not enough product variant quantity available. Sales Order Item ID: " . $product['sales_order_item_id'] . ". Product Variant ID: " . $productVariant->id);
+                            return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
+                        } else {
+                            $productVariant->stock_on_hold += $salesOrderItem->quantity;
+                            $productVariant->save();
+                        }
+                    } else {
+                        if ($product->available_stock < $salesOrderItem->quantity) {
+                            flash()->error("Unable to generate delivery order, there is not enough product quantity available. Sales Order Item ID: " . $product['sales_order_item_id'] . ". Product ID: " . $product->id);
+                            return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
+                        } else {
+                            $product->stock_on_hold += $salesOrderItem->quantity;
+                            $product->save();
+                        }
+                    }
+                    $salesOrderItem->shipment_type = SalesOrderItem::SHIPMENT_TYPE_DIRECT_FROM_SELF;
+                    $salesOrderItem->save();
+                }
+
                 DeliveryOrderItem::create([
                     'delivery_order_id' => $deliveryOrder->id,
                     'sales_order_item_id' => $salesOrderItem->id,
@@ -388,15 +418,15 @@ class SalesOrderController extends VeController
                     'client_id' => $salesOrder->client_id,
                     'sales_order_id' => $salesOrder->id,
                     'created_by' => $salesOrder->createdBy->id,
-                    'billing_name' => $salesOrder->billing_name,
-                    'billing_contact_number' => $salesOrder->billing_contact_number,
-                    'billing_contact_email' => $salesOrder->billing_contact_email,
-                    'billing_address_1' => $salesOrder->billing_address_1,
-                    'billing_address_2' => $salesOrder->billing_address_2,
-                    'billing_city' => $salesOrder->billing_city,
-                    'billing_state' => $salesOrder->billing_state,
-                    'billing_postcode' => $salesOrder->billing_postcode,
-                    'billing_country' => $salesOrder->billing_country,
+                    'supplier_name' => $salesOrder->billing_name,
+                    'supplier_contact_number' => $salesOrder->billing_contact_number,
+                    'supplier_contact_email' => $salesOrder->billing_contact_email,
+                    'supplier_address_1' => $salesOrder->billing_address_1,
+                    'supplier_address_2' => $salesOrder->billing_address_2,
+                    'supplier_city' => $salesOrder->billing_city,
+                    'supplier_state' => $salesOrder->billing_state,
+                    'supplier_postcode' => $salesOrder->billing_postcode,
+                    'supplier_country' => $salesOrder->billing_country,
                     'ship_to_name' => $salesOrder->ship_to_name,
                     'ship_to_contact_number' => $salesOrder->ship_to_contact_number,
                     'ship_to_contact_email' => $salesOrder->ship_to_contact_email,
@@ -420,7 +450,7 @@ class SalesOrderController extends VeController
                     'date' => now(),
                     'notes' => $notes,
                     'item_count' => 0,
-                    'shipment_type' => PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT,
+                    'shipment_type' => PurchaseOrder::SHIPMENT_TYPE_DIRECT_TO_CUSTOMER,
                     'status' => PurchaseOrder::STATUS_DRAFT,
                 ]);
 
@@ -512,7 +542,19 @@ class SalesOrderController extends VeController
 
                 $salesOrderItem->update([
                     'status' => $product['status'],
+                    'shipment_type' => SalesOrderItem::SHIPMENT_TYPE_DIRECT_FROM_SUPPLIER
                 ]);
+
+                if ($salesOrderItem->status == SalesOrderItem::STATUS_REJECTED) {
+                    $salesOrderItem->delete();
+                }
+            }
+
+            $approvedItemCount = $salesOrder->salesOrderItems()->where('status', SalesOrderItem::STATUS_ORDER_CONFIRMED)->count();
+
+            if ($approvedItemCount == $salesOrder->salesOrderItems()->count()) { // all items are of approved status
+                $salesOrder->status = SalesOrder::STATUS_ONGOING;
+                $salesOrder->save();
             }
 
             flash()->success('Successfully updated the sales order items.');

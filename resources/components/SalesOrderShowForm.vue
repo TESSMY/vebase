@@ -33,7 +33,7 @@
                 <table class="table table-bordered text-center">
                     <thead>
                         <tr>
-                            <th>Select</th>
+                            <th>D.O</th>
                             <th>Product Name</th>
                             <th>SKU</th>
                             <th>Quantity</th>
@@ -47,8 +47,9 @@
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
+                                <span v-if="item.product.available_stock < item.quantity" class="badge bg-danger">No Stock</span>
                                 <input v-if="item.shipmentType == 0 && item.deliveryOrderChecked" type="hidden" :name="'delivery_order_products[' + index + '][sales_order_item_id]'" :value="item.sales_order_item_id">
-                                <input v-if="item.shipmentType == 0 && item.status == 0" type="checkbox" :name="'delivery_order_products[' + index + '][generate_delivery_order]'" value="1" v-model="item.deliveryOrderChecked">
+                                <input v-if="item.shipmentType == 0 && (item.status == 0 || item.status == 40)" type="checkbox" :name="'delivery_order_products[' + index + '][generate_delivery_order]'" value="1" v-model="item.deliveryOrderChecked">
                             </td>
                             <td>{{ item.product.name }}</td>
                             <td>{{ item.product.sku }}</td>
@@ -59,15 +60,15 @@
                             <td>{{ item.product.selling_price }}</td>
                             <td>
                                 <input v-if="item.shipmentType == 1 && item.purchaseOrderChecked" type="hidden" :name="'purchase_order_products[' + index + '][sales_order_item_id]'" :value="item.sales_order_item_id">
-                                <input v-if="item.shipmentType == 1 && item.status == 0" type="checkbox" :name="'purchase_order_products[' + index + '][generate_purchase_order]'" value="1" v-model="item.purchaseOrderChecked">
+                                <input v-if="item.shipmentType == 1 && (item.status == 0 || item.status == 40)" type="checkbox" :name="'purchase_order_products[' + index + '][generate_purchase_order]'" value="1" v-model="item.purchaseOrderChecked">
                                 <input v-if="item.shipmentType == 1" type="hidden" :name="'purchase_order_products[' + index + '][supplier_id]'" :value="item.supplier_id">
                             </td>
                             <td>
                             </td>
                             <td>
-                                <select class="form-select" name="shipment_type" :disabled="item.status == 80" required v-model="item.shipmentType">
-                                    <option selected value="0">Direct</option>
-                                    <option value="1">Non Direct</option>
+                                <select class="form-select" name="shipment_type" :disabled="item.status == 80 || item.status == 0" required v-model="item.shipmentType">
+                                    <option v-if="item.product.available_stock > item.quantity" :selected="item.product.available_stock > item.quantity" value="0">Direct</option>
+                                    <option :selected="item.product.available_stock < item.quantity" value="1">Non Direct</option>
                                 </select>
                             </td>
                         </tr>
@@ -162,6 +163,14 @@ onBeforeMount(() => {
             products.value = []
             props.salesOrder.sales_order_items.forEach(salesOrderItem => {
                 if (salesOrderItem.product_variant == null) {
+                    if (salesOrderItem.status == 40) { // for outstanding items
+                        if (salesOrderItem.product.available_stock < salesOrderItem.quantity) {
+                            salesOrderItem.shipment_type = 1;
+                        } else {
+                            salesOrderItem.shipment_type = 0;
+                        }
+                    }
+
                     // bundles
                     products.value.push({
                         'sales_order_item_id': salesOrderItem.id,
@@ -175,6 +184,14 @@ onBeforeMount(() => {
                         'purchaseOrderChecked' : false,
                     });
                 } else {
+                    if (salesOrderItem.status == 40) { // for outstanding items
+                        if (salesOrderItem.product.available_stock < salesOrderItem.quantity) {
+                            salesOrderItem.shipment_type = 1;
+                        } else {
+                            salesOrderItem.shipment_type = 0;
+                        }
+                    }
+
                     // product variants & single products
                     products.value.push({
                         'sales_order_item_id': salesOrderItem.id,

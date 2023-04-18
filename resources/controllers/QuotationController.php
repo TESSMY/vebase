@@ -91,6 +91,10 @@ class QuotationController extends VeController
             $quotation->update($input);
             $this->updateOrCreateItem($quotation, $input);
 
+            if ($input['status'] == Quotation::STATUS_APPROVED) {
+                $quotation->createSalesOrder();
+            }
+
             DB::commit();
             flash()->success('Successfully updated quotation');
             return redirect()->route('admin.quotations.index');

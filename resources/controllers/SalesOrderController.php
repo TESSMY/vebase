@@ -191,8 +191,9 @@ class SalesOrderController extends VeController
                         $subTotal += $selectedProduct['quantity'] * $productVariant->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
 
-                        if ($salesOrder->status == SalesOrder::STATUS_OUTSTANDING) {
+                        if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
                             if ($productVariant->available_stock < $selectedProduct['quantity']) {
+                                $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
                             } else {
@@ -235,8 +236,9 @@ class SalesOrderController extends VeController
                         $subTotal += $selectedProduct['quantity'] * $product->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $product->cost_price;
 
-                        if ($salesOrder->status == SalesOrder::STATUS_OUTSTANDING) {
+                        if ($salesOrder->status == SalesOrder::STATUS_DRAFT) {
                             if ($product->available_stock < $selectedProduct['quantity']) {
+                                $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
                             } else {
@@ -523,6 +525,7 @@ class SalesOrderController extends VeController
             return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
         }
 
+        DB::beginTransaction();
         try {
             foreach ($input['products'] as $product) {
                 if (empty($product['sales_order_item_id'])) {
@@ -559,9 +562,11 @@ class SalesOrderController extends VeController
                 $salesOrder->save();
             }
 
+            DB::commit();
             flash()->success('Successfully updated the sales order items.');
             return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
         } catch (Exception $exception) {
+            DB::rollBack();
             Log::error($exception);
             flash('There was an issue updating the sales order items. Sales Order ID: ' . $salesOrder->id . '. Error: ' . $exception->getMessage());
             return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
@@ -25,12 +26,20 @@ class PurchaseOrderController extends VeController
         $this->authorize('create', PurchaseOrder::class);
         $input = $request->input();
         $input['created_by'] = Auth::id();
-
         $supplier = Supplier::find($input['supplier_id']);
 
         if (empty($supplier)) {
             flash()->error('Could not find the supplier selected. Please select a different supplier.');
             return back()->withInput($request->input());
+        }
+
+        if ($input['shipment_type'] == PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT) {
+            $client = Client::find($input['client_id']);
+
+            if (empty($client)) {
+                flash()->error('Could not find the client selected. Please select a different client.');
+                return back()->withInput($request->input());
+            }
         }
 
         $validator = Validator::make($input, $this->model->createValidator);
@@ -44,7 +53,11 @@ class PurchaseOrderController extends VeController
         try {
             $purchaseOrder = PurchaseOrder::create($input);
 
-            $this->updateOrCreateItem($purchaseOrder, $input['products'], $input['tax_rate'] ?? 0);
+            $this->updateOrCreateItem($purchaseOrder, $input['products']);
+
+            $purchaseOrder->tax_amount = $purchaseOrder->sub_total * ($input['tax_rate'] ?? 0) / 100;
+            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
+            $purchaseOrder->save();
 
             DB::commit();
             flash()->success('Successfully created the purchase order.');
@@ -74,7 +87,11 @@ class PurchaseOrderController extends VeController
         try {
             $purchaseOrder->update($input);
 
-            $this->updateOrCreateItem($purchaseOrder, $input['products'], $input['tax_rate'] ?? 0);
+            $this->updateOrCreateItem($purchaseOrder, $input['products']);
+
+            $purchaseOrder->tax_amount = $purchaseOrder->sub_total * ($input['tax_rate'] ?? 0) / 100;
+            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
+            $purchaseOrder->save();
 
             DB::commit();
             flash()->success('Successfully updated the purchase order.');
@@ -89,7 +106,7 @@ class PurchaseOrderController extends VeController
 
     public function send(Request $request, PurchaseOrder $purchaseOrder)
     {
-        $this->authorize('sendEmail', $purchaseOrder);
+        $this->authorize('update', $purchaseOrder);
 
         try {
             $data["email"] = $request->input('to_email');
@@ -114,7 +131,7 @@ class PurchaseOrderController extends VeController
 
     }
 
-    public function updateOrCreateItem(PurchaseOrder $purchaseOrder, $selectedProducts, $taxRate = 0)
+    public function updateOrCreateItem(PurchaseOrder $purchaseOrder, $selectedProducts)
     {
         if (empty($selectedProducts)) {
             flash()->error('Selected products is empty, please add a product in order to create purchase order items. Purchase Order ID: ' . $purchaseOrder->id);
@@ -210,13 +227,9 @@ class PurchaseOrderController extends VeController
             $purchaseOrder->purchaseOrderItems()->whereNotIn('purchase_order_items.id', $purchaseOrderItemIds)->delete();
 
             $purchaseOrder->item_count = count($selectedProducts);
-            $purchaseOrder->tax_amount = $subTotal * ($input['tax_rate'] ?? 0) / 100;
-            $purchaseOrder->tax_rate = $input['tax_rate'] ?? 0;
             $purchaseOrder->sub_total = $subTotal;
             $purchaseOrder->grand_total = $subTotal - $purchaseOrder->discount_amount + $purchaseOrder->tax_amount;
             $purchaseOrder->total_cost = $totalCost;
-            $purchaseOrder->file_url = $purchaseOrder->generatePdf();
-            $purchaseOrder->save();
 
             return $purchaseOrder;
         } catch (Exception $exception) {

@@ -203,8 +203,14 @@ class QuotationController extends VeController
         $quotation = $this->findModel($id);
         $this->authorize('delete', $quotation);
 
+        if (!empty($quotation->salesOrder->first())) {
+            flash('Error: Quotations that have a sales order cannot be deleted')->error();
+            return back();
+        }
+
         if ($quotation->status != Quotation::STATUS_PENDING) {
             flash('Error: Quotations that are not in a pending status cannot be deleted')->error();
+            return back();
         }
 
         $quotation->quotationItems()->delete();
@@ -220,24 +226,25 @@ class QuotationController extends VeController
 
         try {
             $salesOrder = $quotation->salesOrder;
-            if (!empty($salesOrder) && in_array($salesOrder->status, [SalesOrder::STATUS_OUTSTANDING, SalesOrder::STATUS_DRAFT])) {
-                foreach ($salesOrder->salesOrderItems as $item) {
-                    $item->status = SalesOrderItem::STATUS_CANCELLED;
-                    $item->save();
-                }
-                $salesOrder->status = SalesOrder::STATUS_CANCELLED;
-                $salesOrder->save();
-
-                $items = $quotation->quotationItems;
-                if (!empty($items)) {
-                    foreach ($items as $item) {
-                        $item->status = QuotationItem::STATUS_VOID;
+            if ($quotation->status == Quotation::STATUS_APPROVED) {
+                if (!empty($salesOrder) && in_array($salesOrder->status, [SalesOrder::STATUS_OUTSTANDING, SalesOrder::STATUS_DRAFT])) {
+                    foreach ($salesOrder->salesOrderItems as $item) {
+                        $item->status = SalesOrderItem::STATUS_CANCELLED;
                         $item->save();
                     }
-                }
+                    $salesOrder->status = SalesOrder::STATUS_CANCELLED;
+                    $salesOrder->save();
 
-                $quotation->status = Quotation::STATUS_VOID;
-                $quotation->save();
+                    $items = $quotation->quotationItems;
+                    if (!empty($items)) {
+                        foreach ($items as $item) {
+                            $item->status = QuotationItem::STATUS_VOID;
+                            $item->save();
+                        }
+                    }
+                    $quotation->status = Quotation::STATUS_VOID;
+                    $quotation->save();
+                }
             }
 
             flash()->success($quotation->name . ' voided successfully!');

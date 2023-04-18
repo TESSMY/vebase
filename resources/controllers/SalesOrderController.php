@@ -139,21 +139,23 @@ class SalesOrderController extends VeController
                     $subTotal += $selectedProduct['quantity'] * $salesOrderItem->unit_price;
                     $totalCost += $selectedProduct['quantity'] * $salesOrderItem->unit_cost;
 
-                    if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
+                    if ($salesOrder->status == SalesOrder::STATUS_OUTSTANDING) {
                         if (!empty($productVariant)) {
                             if ($productVariant->available_stock < $selectedProduct['quantity']) {
-                                $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
+                            } else {
+                                $productVariant->stock_on_hold -= $onHoldQuantity;
+                                $productVariant->save();
                             }
-                            $productVariant->stock_on_hold -= $onHoldQuantity;
-                            $productVariant->save();
-                        } elseif ($product->available_stock < $selectedProduct['quantity']) {
-                            $status = SalesOrder::STATUS_OUTSTANDING;
-                            $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
-                            $salesOrderItem->save();
-                            $productVariant->stock_on_hold -= $onHoldQuantity;
-                            $product->save();
+                        } else {
+                            if ($product->available_stock < $selectedProduct['quantity']) {
+                                $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
+                                $salesOrderItem->save();
+                            } else {
+                                $product->stock_on_hold -= $onHoldQuantity;
+                                $product->save();
+                            }
                         }
                     }
                 } else {
@@ -189,14 +191,14 @@ class SalesOrderController extends VeController
                         $subTotal += $selectedProduct['quantity'] * $productVariant->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $productVariant->cost_price;
 
-                        if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
+                        if ($salesOrder->status == SalesOrder::STATUS_OUTSTANDING) {
                             if ($productVariant->available_stock < $selectedProduct['quantity']) {
-                                $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
+                            } else {
+                                $productVariant->stock_on_hold += $selectedProduct['quantity'];
+                                $productVariant->save();
                             }
-                            $productVariant->stock_on_hold += $selectedProduct['quantity'];
-                            $productVariant->save();
                         }
                     } else {
                         $product = Product::find($selectedProduct['product_id']);
@@ -233,14 +235,14 @@ class SalesOrderController extends VeController
                         $subTotal += $selectedProduct['quantity'] * $product->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $product->cost_price;
 
-                        if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
+                        if ($salesOrder->status == SalesOrder::STATUS_OUTSTANDING) {
                             if ($product->available_stock < $selectedProduct['quantity']) {
-                                $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
+                            } else {
+                                $product->stock_on_hold += $selectedProduct['quantity'];
+                                $product->save();
                             }
-                            $product->stock_on_hold += $selectedProduct['quantity'];
-                            $product->save();
                         }
                     }
                 }

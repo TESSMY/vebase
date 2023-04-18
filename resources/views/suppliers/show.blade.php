@@ -156,7 +156,7 @@
                 </div>
                 @can('delete-supplier')
                     <hr>
-                    <form action="{{ route('admin.suppliers.destroy', [$supplier>getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.suppliers.destroy', [$supplier->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                         @method('DELETE')
                         @csrf
                         <div class="text-end">

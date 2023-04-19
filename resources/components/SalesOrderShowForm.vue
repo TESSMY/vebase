@@ -47,7 +47,8 @@
                     <tbody>
                         <tr v-for="(item, index) in products">
                             <td>
-                                <span v-if="item.product.available_stock < item.quantity" class="badge bg-danger">No Stock</span>
+                                <span v-if="item.product.available_stock < item.quantity && item.status == 40" class="badge bg-danger">No Stock</span>
+                                <span v-if="item.status == 20" class="badge bg-danger">Rejected</span>
                                 <input v-if="item.shipmentType == 0 && item.deliveryOrderChecked" type="hidden" :name="'delivery_order_products[' + index + '][sales_order_item_id]'" :value="item.sales_order_item_id">
                                 <input v-if="item.shipmentType == 0 && (item.status == 0 || item.status == 40)" type="checkbox" :name="'delivery_order_products[' + index + '][generate_delivery_order]'" value="1" v-model="item.deliveryOrderChecked">
                             </td>
@@ -66,9 +67,9 @@
                             <td>
                             </td>
                             <td>
-                                <select class="form-select" name="shipment_type" :disabled="item.status == 80 || item.status == 0" required v-model="item.shipmentType">
-                                    <option v-if="item.product.available_stock > item.quantity" :selected="item.product.available_stock > item.quantity" value="0">Direct</option>
-                                    <option :selected="item.product.available_stock < item.quantity" value="1">Non Direct</option>
+                                <select v-if="item.status != 20" class="form-select" name="shipment_type" :disabled="item.status == 80 || item.status == 0" required v-model="item.shipmentType">
+                                    <option v-if="item.product.available_stock > item.quantity" :selected="item.product.available_stock > item.quantity && item.status != 20" value="0">Direct</option>
+                                    <option :selected="item.product.available_stock < item.quantity && item.status != 20" value="1">Non Direct</option>
                                 </select>
                             </td>
                         </tr>

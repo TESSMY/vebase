@@ -267,7 +267,7 @@ class SalesOrderController extends VeController
 
     public function generateOrder(Request $request, SalesOrder $salesOrder)
     {
-        $this->authorize('create', SalesOrder::class);
+        $this->authorize('view', $salesOrder);
         $input = $request->input();
 
         if (empty($salesOrder->salesOrderItems)) {
@@ -281,11 +281,19 @@ class SalesOrderController extends VeController
         }
 
         if (!empty($input['delivery_order_products'])) {
-            $this->generateDo($salesOrder, $input['delivery_order_products'], $input['notes']);
+            $deliveryOrder = $this->generateDo($salesOrder, $input['delivery_order_products'], $input['notes']);
         }
 
         if (!empty($input['purchase_order_products'])) {
-            $this->generatePo($salesOrder, $input['purchase_order_products'], $input['notes']);
+            $purchaseOrder = $this->generatePo($salesOrder, $input['purchase_order_products'], $input['notes']);
+        }
+
+        if (!empty($deliveryOrder)) {
+            flash()->success('Successfully generated the delivery order(s).');
+        }
+
+        if (!empty($purchaseOrder)) {
+            flash()->success('Successfully generated the purchase order(s).');
         }
 
         return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
@@ -325,7 +333,7 @@ class SalesOrderController extends VeController
 
                 if (empty($salesOrderItem)) {
                     flash()->error("Unable to generate delivery order, could not find the sales order item. Sales Order Item ID: " . $product['sales_order_item_id']);
-                    return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
+                    return null;
                 }
 
                 $product = $salesOrderItem->product;
@@ -335,7 +343,7 @@ class SalesOrderController extends VeController
                     if (!empty($productVariant)) {
                         if ($productVariant->available_stock < $salesOrderItem->quantity) {
                             flash()->error("Unable to generate delivery order, there is not enough product variant quantity available. Sales Order Item ID: " . $product['sales_order_item_id'] . ". Product Variant ID: " . $productVariant->id);
-                            return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
+                            return null;
                         } else {
                             $productVariant->stock_on_hold += $salesOrderItem->quantity;
                             $productVariant->save();
@@ -343,7 +351,7 @@ class SalesOrderController extends VeController
                     } else {
                         if ($product->available_stock < $salesOrderItem->quantity) {
                             flash()->error("Unable to generate delivery order, there is not enough product quantity available. Sales Order Item ID: " . $product['sales_order_item_id'] . ". Product ID: " . $product->id);
-                            return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
+                            return null;
                         } else {
                             $product->stock_on_hold += $salesOrderItem->quantity;
                             $product->save();
@@ -378,13 +386,12 @@ class SalesOrderController extends VeController
             $deliveryOrder->save();
 
             DB::commit();
-            flash()->success('Successfully generated the delivery order(s).');
             return $deliveryOrder;
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
             flash('There was an issue generating the delivery order. Error: ' . $exception->getMessage());
-            return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
+            return null;
         }
     }
 
@@ -397,7 +404,7 @@ class SalesOrderController extends VeController
 
         if (empty($client)) {
             flash()->error("Unable to generate purchase order for sales orders with no client. Please select a client before generating a purchase order.");
-            return redirect()->route('admin.sales-orders.edit', $salesOrder->getRouteKey());
+            return null;
         }
 
         try {
@@ -414,7 +421,7 @@ class SalesOrderController extends VeController
 
                 if (empty($supplier)) {
                     flash()->error('Could not find the supplier for this sales order item. Sales Order Item ID: ' . $item[$index]['sales_order_item_id']);
-                    return false;
+                    return null;
                 }
 
                 $purchaseOrder = PurchaseOrder::create([
@@ -464,7 +471,7 @@ class SalesOrderController extends VeController
 
                     if (empty($salesOrderItem)) {
                         flash()->error("Unable to generate purchase order, could not find the sales order item. Sales Order Item ID: " . $product['sales_order_item_id']);
-                        return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
+                        return null;
                     }
 
                     PurchaseOrderItem::create([
@@ -500,13 +507,12 @@ class SalesOrderController extends VeController
             }
 
             DB::commit();
-            flash()->success('Successfully generated the purchase order(s).');
             return $purchaseOrder;
         } catch (Exception $exception) {
             DB::rollBack();
             Log::error($exception);
             flash('There was an issue generating the purchase order. Error: ' . $exception->getMessage());
-            return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());
+            return null;
         }
     }
 
@@ -549,15 +555,14 @@ class SalesOrderController extends VeController
                     'status' => $product['status'],
                     'shipment_type' => SalesOrderItem::SHIPMENT_TYPE_DIRECT_FROM_SUPPLIER
                 ]);
-
-                if ($salesOrderItem->status == SalesOrderItem::STATUS_REJECTED) {
-                    $salesOrderItem->delete();
-                }
             }
 
-            $approvedItemCount = $salesOrder->salesOrderItems()->where('status', SalesOrderItem::STATUS_ORDER_CONFIRMED)->count();
+            $approvedItemCount = $salesOrder->salesOrderItems()->where(function ($query) {
+                $query->where('status', SalesOrderItem::STATUS_ORDER_CONFIRMED)
+                    ->orWhere('status', SalesOrderItem::STATUS_REJECTED);
+            })->count();
 
-            if ($approvedItemCount == $salesOrder->salesOrderItems()->count()) { // all items are of approved status
+            if ($approvedItemCount == $salesOrder->salesOrderItems()->count()) { // all items are of approved or rejected status
                 $salesOrder->status = SalesOrder::STATUS_ONGOING;
                 $salesOrder->save();
             }

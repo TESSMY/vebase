@@ -197,9 +197,6 @@ class SalesOrderController extends VeController
                                 $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
-                            } else {
-                                $productVariant->stock_on_hold += $selectedProduct['quantity'];
-                                $productVariant->save();
                             }
                         }
                     } else {
@@ -242,9 +239,6 @@ class SalesOrderController extends VeController
                                 $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
-                            } else {
-                                $product->stock_on_hold += $selectedProduct['quantity'];
-                                $product->save();
                             }
                         }
                     }
@@ -344,17 +338,11 @@ class SalesOrderController extends VeController
                         if ($productVariant->available_stock < $salesOrderItem->quantity) {
                             flash()->error("Unable to generate delivery order, there is not enough product variant quantity available. Sales Order Item ID: " . $product['sales_order_item_id'] . ". Product Variant ID: " . $productVariant->id);
                             return null;
-                        } else {
-                            $productVariant->stock_on_hold += $salesOrderItem->quantity;
-                            $productVariant->save();
                         }
                     } else {
                         if ($product->available_stock < $salesOrderItem->quantity) {
                             flash()->error("Unable to generate delivery order, there is not enough product quantity available. Sales Order Item ID: " . $product['sales_order_item_id'] . ". Product ID: " . $product->id);
                             return null;
-                        } else {
-                            $product->stock_on_hold += $salesOrderItem->quantity;
-                            $product->save();
                         }
                     }
                     $salesOrderItem->shipment_type = SalesOrderItem::SHIPMENT_TYPE_DIRECT_FROM_SELF;
@@ -566,6 +554,8 @@ class SalesOrderController extends VeController
                 $salesOrder->status = SalesOrder::STATUS_ONGOING;
                 $salesOrder->save();
             }
+
+            $salesOrder->holdStock();
 
             DB::commit();
             flash()->success('Successfully updated the sales order items.');

@@ -46,7 +46,7 @@ class SalesOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            if ($input['is_draft'] == 1) {
+            if (!empty($input['is_draft']) && $input['is_draft'] == 1) {
                 $input['status'] = SalesOrder::STATUS_DRAFT;
             } else {
                 $input['status'] = SalesOrder::STATUS_ONGOING;
@@ -86,8 +86,12 @@ class SalesOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            if ($input['is_draft'] == 1) {
-                $input['status'] = SalesOrder::STATUS_DRAFT;
+            if ($salesOrder->status == SalesOrder::STATUS_DRAFT) {
+                if (!empty($input['is_draft']) && $input['is_draft'] == 1) {
+                    $input['status'] = SalesOrder::STATUS_DRAFT;
+                } else {
+                    $input['status'] = SalesOrder::STATUS_ONGOING;
+                }
             }
 
             $salesOrder->update($input);
@@ -139,9 +143,10 @@ class SalesOrderController extends VeController
                     $subTotal += $selectedProduct['quantity'] * $salesOrderItem->unit_price;
                     $totalCost += $selectedProduct['quantity'] * $salesOrderItem->unit_cost;
 
-                    if ($salesOrder->status == SalesOrder::STATUS_OUTSTANDING) {
+                    if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
                         if (!empty($productVariant)) {
                             if ($productVariant->available_stock < $selectedProduct['quantity']) {
+                                $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
                             } else {
@@ -150,6 +155,7 @@ class SalesOrderController extends VeController
                             }
                         } else {
                             if ($product->available_stock < $selectedProduct['quantity']) {
+                                $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
                             } else {
@@ -282,18 +288,16 @@ class SalesOrderController extends VeController
 
         if (!empty($input['delivery_order_products'])) {
             $deliveryOrder = $this->generateDo($salesOrder, $input['delivery_order_products'], $input['notes']);
+            if (!empty($deliveryOrder)) {
+                flash()->success('Successfully generated the delivery order(s).');
+            }
         }
 
         if (!empty($input['purchase_order_products'])) {
             $purchaseOrder = $this->generatePo($salesOrder, $input['purchase_order_products'], $input['notes']);
-        }
-
-        if (!empty($deliveryOrder)) {
-            flash()->success('Successfully generated the delivery order(s).');
-        }
-
-        if (!empty($purchaseOrder)) {
-            flash()->success('Successfully generated the purchase order(s).');
+            if (!empty($purchaseOrder)) {
+                flash()->success('Successfully generated the purchase order(s).');
+            }
         }
 
         return redirect()->route('admin.sales-orders.show', $salesOrder->getRouteKey());

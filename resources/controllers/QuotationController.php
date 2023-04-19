@@ -77,6 +77,10 @@ class QuotationController extends VeController
             flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
             return back()->withInput($request->input())->withErrors($validator);
         }
+        if ($quotation->status == Quotation::STATUS_APPROVED) {
+            flash('Error: Quotations that are approved cannot be updated.')->error();
+            return back();
+        }
         if (!empty($quotation->salesOrder)) {
             if ($quotation->salesOrder->status != SalesOrder::STATUS_DRAFT) {
                 flash('Error: Unable to edit due to sales order not being in draft. Please recreate a new quotation.');
@@ -203,7 +207,7 @@ class QuotationController extends VeController
         $quotation = $this->findModel($id);
         $this->authorize('delete', $quotation);
 
-        if (!empty($quotation->salesOrder->first())) {
+        if (!empty($quotation->salesOrder)) {
             flash('Error: Quotations that have a sales order cannot be deleted')->error();
             return back();
         }
@@ -220,31 +224,45 @@ class QuotationController extends VeController
         return redirect()->route('admin.quotations.index');
     }
 
-    public function updateStatus(Quotation $quotation)
+    public function void(Quotation $quotation)
     {
         $this->authorize('update', $quotation);
 
+        $salesOrder = $quotation->salesOrder;
+
+        if ($quotation->status != Quotation::STATUS_APPROVED) {
+            flash('Error: Approved quotations cannot be voided')->error();
+            return back();
+        }
+
+        if (empty($salesOrder)) {
+            flash('Error: Quotations that does not have an associated sales order cannot be voided')->error();
+            return back();
+        }
+
+        if (!in_array($salesOrder->status, [SalesOrder::STATUS_OUTSTANDING, SalesOrder::STATUS_DRAFT])) {
+            flash('Error: Quotation has a sales order that cannot be voided')->error();
+            return back();
+        }
+
         try {
-            $salesOrder = $quotation->salesOrder;
-            if ($quotation->status == Quotation::STATUS_APPROVED) {
-                if (!empty($salesOrder) && in_array($salesOrder->status, [SalesOrder::STATUS_OUTSTANDING, SalesOrder::STATUS_DRAFT])) {
-                    foreach ($salesOrder->salesOrderItems as $item) {
-                        $item->status = SalesOrderItem::STATUS_CANCELLED;
+            if (in_array($salesOrder->status, [SalesOrder::STATUS_OUTSTANDING, SalesOrder::STATUS_DRAFT])) {
+                foreach ($salesOrder->salesOrderItems as $item) {
+                    $item->status = SalesOrderItem::STATUS_CANCELLED;
+                    $item->save();
+                }
+                $salesOrder->status = SalesOrder::STATUS_CANCELLED;
+                $salesOrder->save();
+
+                $items = $quotation->quotationItems;
+                if (!empty($items)) {
+                    foreach ($items as $item) {
+                        $item->status = QuotationItem::STATUS_VOID;
                         $item->save();
                     }
-                    $salesOrder->status = SalesOrder::STATUS_CANCELLED;
-                    $salesOrder->save();
-
-                    $items = $quotation->quotationItems;
-                    if (!empty($items)) {
-                        foreach ($items as $item) {
-                            $item->status = QuotationItem::STATUS_VOID;
-                            $item->save();
-                        }
-                    }
-                    $quotation->status = Quotation::STATUS_VOID;
-                    $quotation->save();
                 }
+                $quotation->status = Quotation::STATUS_VOID;
+                $quotation->save();
             }
 
             flash()->success($quotation->name . ' voided successfully!');

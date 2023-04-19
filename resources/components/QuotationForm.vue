@@ -6,100 +6,100 @@
     <div class="row">
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Client</label>
-        <input type="hidden" name="client_id" :value="selectedClient.id" class="form-control"/>
+        <input type="hidden" :name="'client_id'" :value="selectedClient.id" class="form-control"/>
         <multi-select placeholder="Search Client" v-model="selectedClient" label="name" :options="clientArray" @input="fetchClients" :disabled="disabled"></multi-select>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Delivery Date</label>
-        <input type="date" name="delivery_date" class="form-control" v-model="currentQuotation.delivery_date" :disabled="disabled"/>
+        <input type="date" :name="'delivery_date'" class="form-control" v-model="currentQuotation.delivery_date" :disabled="disabled"/>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Quotation Name</label>
-        <input type="text" name="name" class="form-control" v-model="currentQuotation.name" :disabled="disabled"/>
+        <input type="text" :name="'name'" class="form-control" v-model="currentQuotation.name" :disabled="disabled"/>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Payment Term</label>
-        <input type="text" name="payment_term" class="form-control" v-model="currentQuotation.payment_term" :disabled="disabled"/>
+        <input type="text" :name="'payment_term'" class="form-control" v-model="currentQuotation.payment_term" :disabled="disabled"/>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Currency</label>
-        <input type="text" name="currency" class="form-control" v-model="currentQuotation.currency" :disabled="disabled"/>
+        <input type="text" :name="'currency'" class="form-control" v-model="currentQuotation.currency" :disabled="disabled"/>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Name</label>
-        <input class="form-control" type="text" name="billing_name" v-model="currentQuotation.billing_name" :disabled="disabled" required >
+        <input class="form-control" type="text" :name="'billing_name'" v-model="currentQuotation.billing_name" :disabled="disabled" required >
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Contact Number</label>
-        <input class="form-control" type="text" name="billing_contact_number" v-model="currentQuotation.billing_contact_number" :disabled="disabled">
+        <input class="form-control" type="text" :name="'billing_contact_number'" v-model="currentQuotation.billing_contact_number" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Contact Email</label>
-        <input class="form-control" type="email" name="billing_contact_email" v-model="currentQuotation.billing_contact_email" :disabled="disabled">
+        <input class="form-control" type="email" :name="'billing_contact_email'" v-model="currentQuotation.billing_contact_email" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Address 1</label>
-        <input class="form-control" type="text" name="billing_address_1" v-model="currentQuotation.billing_address_1" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'billing_address_1'" v-model="currentQuotation.billing_address_1" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Address 2</label>
-        <input class="form-control" type="text" name="billing_address_2" v-model="currentQuotation.billing_address_2" :disabled="disabled">
+        <input class="form-control" type="text" :name="'billing_address_2'" v-model="currentQuotation.billing_address_2" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing City</label>
-        <input class="form-control" type="text" name="billing_city" v-model="currentQuotation.billing_city" :disabled="disabled">
+        <input class="form-control" type="text" :name="'billing_city'" v-model="currentQuotation.billing_city" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing State</label>
-        <input class="form-control" type="text" name="billing_state" v-model="currentQuotation.billing_state" :disabled="disabled">
+        <input class="form-control" type="text" :name="'billing_state'" v-model="currentQuotation.billing_state" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Postcode</label>
-        <input class="form-control" type="text" name="billing_postcode" v-model="currentQuotation.billing_postcode" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'billing_postcode'" v-model="currentQuotation.billing_postcode" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Country</label>
-        <input class="form-control" type="text" name="billing_country" v-model="currentQuotation.billing_country" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'billing_country'" v-model="currentQuotation.billing_country" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Name</label>
-        <input class="form-control" type="text" name="ship_to_name" v-model="currentQuotation.ship_to_name" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'ship_to_name'" v-model="currentQuotation.ship_to_name" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Contact Number</label>
-        <input class="form-control" type="text" name="ship_to_contact_number" v-model="currentQuotation.ship_to_contact_number" :disabled="disabled">
+        <input class="form-control" type="text" :name="'ship_to_contact_number'" v-model="currentQuotation.ship_to_contact_number" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Contact Email</label>
-        <input class="form-control" type="email" name="ship_to_contact_email" v-model="currentQuotation.ship_to_contact_email" :disabled="disabled">
+        <input class="form-control" type="email" :name="'ship_to_contact_email'" v-model="currentQuotation.ship_to_contact_email" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Address 1</label>
-        <input class="form-control" type="text" name="ship_to_address_1" v-model="currentQuotation.ship_to_address_1" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'ship_to_address_1'" v-model="currentQuotation.ship_to_address_1" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Address 2</label>
-        <input class="form-control" type="text" name="ship_to_address_2" v-model="currentQuotation.ship_to_address_2" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'ship_to_address_2'" v-model="currentQuotation.ship_to_address_2" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To City</label>
-        <input class="form-control" type="text" name="ship_to_city" v-model="currentQuotation.ship_to_city" :disabled="disabled">
+        <input class="form-control" type="text" :name="'ship_to_city'" v-model="currentQuotation.ship_to_city" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To State</label>
-        <input class="form-control" type="text" name="ship_to_state" v-model="currentQuotation.ship_to_state" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'ship_to_state'" v-model="currentQuotation.ship_to_state" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Postcode</label>
-        <input class="form-control" type="text" name="ship_to_postcode" v-model="currentQuotation.ship_to_postcode" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'ship_to_postcode'" v-model="currentQuotation.ship_to_postcode" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Country</label>
-        <input class="form-control" type="text" name="ship_to_country" v-model="currentQuotation.ship_to_country" :disabled="disabled">
+        <input class="form-control" type="text" :name="'ship_to_country'" v-model="currentQuotation.ship_to_country" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Expiration Date</label>
-        <input type="date" name="expiration_date" class="form-control" v-model="currentQuotation.expiration_date" :disabled="disabled"/>
+        <input type="date" :name="'expiration_date'" class="form-control" v-model="currentQuotation.expiration_date" :disabled="disabled"/>
       </div>
     </div>
   </div>
@@ -155,7 +155,7 @@
         <div class="row px-0">
           <div class="px-0">
             <label class="form-label px-0">Notes</label>
-            <textarea class="form-control" placeholder="Notes that will be displayed on sales order." rows="5" style="resize: none" name="notes" v-model="currentQuotation.notes" :disabled="disabled"></textarea>
+            <textarea class="form-control" placeholder="Notes that will be displayed on sales order." rows="5" style="resize: none" :name="'notes'" v-model="currentQuotation.notes" :disabled="disabled"></textarea>
           </div>
         </div>
       </div>
@@ -166,7 +166,7 @@
           <span class="col-5">$ {{ currentQuotation.sub_total }}</span>
           <div class="border my-2"></div>
           <span class="col-7 fw-bold my-auto">Tax %: </span>
-          <span class="col-5"><input class="form-control" v-model="currentQuotation.tax_rate" @input="updateTotalPrice" type="number" name="tax_rate" min="0" max="100" step="1" :disabled="disabled"></span>
+          <span class="col-5"><input class="form-control" v-model="currentQuotation.tax_rate" @input="updateTotalPrice" type="number" :name="'tax_rate'" min="0" max="100" step="1" :disabled="disabled"></span>
           <div class="border my-2"></div>
           <span class="col-7 fw-bold my-auto">Total (SGD): </span>
           <span class="col-5">$ {{ currentQuotation.grand_total }}</span>
@@ -174,7 +174,7 @@
       </div>
     </div>
 
-    <input type="hidden" name="status" v-model="currentQuotation.status">
+    <input type="hidden" :name="'status'" v-model="currentQuotation.status">
     <div class="row col-md-12 text-end">
       <div class="col-md-12 text-end">
         <button type="submit" @click="currentQuotation.status = 20" class="btn btn-success m-4" :disabled="disabled">Generate S.O.</button>
@@ -300,15 +300,19 @@ export default {
       this.currentQuotation.grand_total = 0;
       this.currentQuotation.item_total = 0;
       this.products.forEach(item => {
-        this.currentQuotation.item_total = item.product.selling_price * item.quantity;
-        this.currentQuotation.sub_total += this.currentQuotation.item_total;
+        if (item.product) {
+          this.currentQuotation.item_total = item.product.selling_price * item.quantity;
+          this.currentQuotation.sub_total += this.currentQuotation.item_total;
+        }
       });
       this.currentQuotation.grand_total += parseFloat(this.currentQuotation.sub_total) + (parseFloat(this.currentQuotation.sub_total) * (this.currentQuotation.tax_rate / 100));
     },
 
     updateItemTotalPrice() {
       this.products.forEach(item => {
-        item.subTotal = item.product.selling_price * item.quantity
+        if (item.product) {
+          item.subTotal = item.product.selling_price * item.quantity
+        }
       });
       this.updateTotalPrice();
     },
@@ -328,8 +332,9 @@ export default {
           });
         })
       }
-    },
+    }
   }
 }
 </script>
+
 

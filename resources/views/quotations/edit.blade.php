@@ -16,7 +16,7 @@
         </div>
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow py-3 px-4">
-            @can('edit-quotation')
+            @can('update', $quotation)
                 <form action="{{ route('admin.quotations.update', [$quotation->getRouteKey()]) }}" method="POST" enctype="multipart/form-data">
                     @method('PUT')
                     @csrf
@@ -30,7 +30,7 @@
                 </form>
             @endcan
             <hr>
-            @can('delete-quotation')
+            @can('delete', $quotation)
                 @if($quotation->status == \App\Models\Quotation::STATUS_PENDING)
                     <form action="{{ route('admin.quotations.destroy', $quotation) }}" method="POST" enctype="multipart/form-data">
                         @method('DELETE')
@@ -43,17 +43,17 @@
                     </form>
                 @endif
             @endcan
-            @can('edit-quotation')
-                @if ($quotation->status == \App\Models\Quotation::STATUS_APPROVED && in_array($quotation->salesOrder->status, [\App\Models\SalesOrder::STATUS_OUTSTANDING, \App\Models\SalesOrder::STATUS_DRAFT])))
-                <form action="{{ route('admin.quotations.update.status', $quotation) }}" method="POST" enctype="multipart/form-data">
-                    @method('PUT')
-                    @csrf
-                    <div class="text-end">
-                        <button class="btn btn-danger px-2" type="submit">
-                            Void
-                        </button>
-                    </div>
-                </form>
+            @can('update', $quotation)
+                @if ($quotation->status == \App\Models\Quotation::STATUS_APPROVED && !empty($quotation->salesOrder) && ($quotation->salesOrder->status == \App\Models\SalesOrder::STATUS_DRAFT || $quotation->salesOrder->status == \App\Models\SalesOrder::STATUS_OUTSTANDING))
+                    <form action="{{ route('admin.quotations.void', $quotation) }}" method="POST" enctype="multipart/form-data">
+                        @method('PUT')
+                        @csrf
+                        <div class="text-end">
+                            <button class="btn btn-danger px-2" type="submit">
+                                Void
+                            </button>
+                        </div>
+                    </form>
                 @endif
             @endcan
         </div>

@@ -16,7 +16,7 @@
         </div>
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow py-3 px-4">
-            @can('create-quotation')
+            @can('create', \App\Models\Quotation::class)
                 <form action="{{ route('admin.quotations.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <quotation-form></quotation-form>

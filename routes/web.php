@@ -13,7 +13,7 @@ Route::group([
     Route::get('/sales-reports/export/', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.export');
     Route::get('/sales-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'SalesReportController@export')->name('sales-reports.index');
     Route::post('quotations/{quotation}/send', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController@send')->name('quotations.send');
-    Route::put('quotations/{quotation}/update/status', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController@updateStatus')->name('quotations.update.status');
+    Route::put('quotations/{quotation}/void', RouteServiceProvider::ADMIN_NAMESPACE . 'QuotationController@void')->name('quotations.void');
     Route::get('/inventory-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'InventoryReportController@index')->name('inventory-reports.index');
     Route::get('/inventory-reports/history', RouteServiceProvider::ADMIN_NAMESPACE . 'InventoryReportController@history')->name('inventory-reports.history');
     Route::post('/inventory-reports', RouteServiceProvider::ADMIN_NAMESPACE . 'InventoryReportController@generate')->name('inventory-reports.generate');

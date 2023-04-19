@@ -89,6 +89,7 @@ class ProductController extends VeController
                     'height' => $input['height'],
                     'sku' => $input['sku'],
                     'total_stock' => $input['total_stock'],
+                    'available_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
             } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
@@ -118,6 +119,7 @@ class ProductController extends VeController
                         'height' => $variantData['height'],
                         'sku' => $variantData['sku'],
                         'total_stock' => $input['total_stock'],
+                        'available_stock' => $input['total_stock'],
                         'status' => $input['status']
                     ]);
                 }

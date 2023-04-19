@@ -20,8 +20,13 @@
         <div class="bg-white card shadow py-3 px-4">
             <form action="{{ route('admin.sales-orders.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <sales-order-form :tax_rate="7"></sales-order-form>
+                <sales-order-form></sales-order-form>
             </form>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-1">
+                <a href="{{ route('admin.sales-orders.index') }}" class="col-12 col-md-2"><button class="btn btn-secondary">Cancel</button></a>
+            </div>
         </div>
     </div>
 @endsection

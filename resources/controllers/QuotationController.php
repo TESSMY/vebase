@@ -220,7 +220,7 @@ class QuotationController extends VeController
         $quotation->quotationItems()->delete();
         $quotation->delete();
 
-        flash()->success($quotation->name . 'deleted successfully!');
+        flash()->success($quotation->name . ' deleted successfully!');
         return redirect()->route('admin.quotations.index');
     }
 

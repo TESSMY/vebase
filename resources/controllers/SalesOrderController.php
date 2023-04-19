@@ -46,7 +46,7 @@ class SalesOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            if (!empty($input['is_draft']) && $input['is_draft'] == 1) {
+            if (!empty($input['is_draft'])) {
                 $input['status'] = SalesOrder::STATUS_DRAFT;
             } else {
                 $input['status'] = SalesOrder::STATUS_ONGOING;
@@ -55,9 +55,7 @@ class SalesOrderController extends VeController
             $salesOrder = SalesOrder::create($input);
 
             $this->updateOrCreateItem($salesOrder, $input['products']);
-
-            $salesOrder->tax_amount = $salesOrder->sub_total * ($input['tax_rate'] ?? 0) / 100;
-            $salesOrder->save();
+            $salesOrder->holdStock();
 
             DB::commit();
             flash()->success('Successfully created the sales order.');
@@ -84,10 +82,15 @@ class SalesOrderController extends VeController
             return back()->withInput($request->input())->withErrors($validator);
         }
 
+        if (!in_array($salesOrder->status, [SalesOrder::STATUS_DRAFT, SalesOrder::STATUS_OUTSTANDING])) {
+            flash()->error("Can only update sales orders that are draft or outstanding.");
+            return back();
+        }
+
         DB::beginTransaction();
         try {
             if ($salesOrder->status == SalesOrder::STATUS_DRAFT) {
-                if (!empty($input['is_draft']) && $input['is_draft'] == 1) {
+                if (!empty($input['is_draft'])) {
                     $input['status'] = SalesOrder::STATUS_DRAFT;
                 } else {
                     $input['status'] = SalesOrder::STATUS_ONGOING;
@@ -97,9 +100,7 @@ class SalesOrderController extends VeController
             $salesOrder->update($input);
 
             $this->updateOrCreateItem($salesOrder, $input['products']);
-
-            $salesOrder->tax_amount = $salesOrder->sub_total * ($input['tax_rate'] ?? 0) / 100;
-            $salesOrder->save();
+            $salesOrder->holdStock();
 
             DB::commit();
             flash()->success('Successfully updated the sales order.');
@@ -149,18 +150,12 @@ class SalesOrderController extends VeController
                                 $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
-                            } else {
-                                $productVariant->stock_on_hold -= $onHoldQuantity;
-                                $productVariant->save();
                             }
                         } else {
                             if ($product->available_stock < $selectedProduct['quantity']) {
                                 $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
                                 $salesOrderItem->save();
-                            } else {
-                                $product->stock_on_hold -= $onHoldQuantity;
-                                $product->save();
                             }
                         }
                     }
@@ -258,6 +253,7 @@ class SalesOrderController extends VeController
             $salesOrder->salesOrderItems()->whereNotIn('sales_order_items.id', $salesOrderItemIds)->delete();
             $salesOrder->item_count = count($selectedProducts);
             $salesOrder->sub_total = $subTotal;
+            $salesOrder->tax_amount = $salesOrder->sub_total * ($salesOrder->tax_rate ?? 0) / 100;
             $salesOrder->grand_total = $subTotal - $salesOrder->discount_amount + $salesOrder->tax_amount;
             $salesOrder->total_cost = $totalCost;
             $salesOrder->status = $status;

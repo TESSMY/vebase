@@ -6,7 +6,7 @@
                     <label class="form-label">{{ $createField['displayName'] }}</label>
                 @endif
                 @if ($createField['inputType'] == 'select')
-                    <select class="form-select" name="{{ $createField['name'] }}" {{ !empty($createField['required']) && $createField['required'] == 'true' ? 'required' : '' }}>
+                    <select class="form-select" name="{{ $createField['name'] }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                         @foreach ($createField['options'] as $key => $option)
                             <option value="{{ $key }}">{{ $option }}</option>
                         @endforeach
@@ -47,7 +47,7 @@
                     <label class="form-label">{{ $updateField['displayName'] }}</label>
                 @endif
                 @if ($updateField['inputType'] == 'select')
-                    <select class="form-select" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
+                    <select class="form-select" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
                         @foreach ($updateField['options'] as $key => $option)
                             <option value="{{ $key }}" {{ !empty($$routeModel) && $$routeModel[$updateField['name']] == $key ? 'selected' : '' }}>{{ $option }}</option>
                         @endforeach

@@ -33,7 +33,7 @@ class PurchaseOrderController extends VeController
             return back()->withInput($request->input());
         }
 
-        if ($input['shipment_type'] == PurchaseOrder::SHIPMENT_TYPE_NON_DIRECT) {
+        if ($input['shipment_type'] == PurchaseOrder::SHIPMENT_TYPE_DIRECT_TO_CUSTOMER) {
             $client = Client::find($input['client_id']);
 
             if (empty($client)) {

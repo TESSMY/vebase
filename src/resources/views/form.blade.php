@@ -6,11 +6,13 @@
                     <label class="form-label">{{ $createField['displayName'] }}</label>
                 @endif
                 @if ($createField['inputType'] == 'select')
-                    <select class="form-select" name="{{ $createField['name'] }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
+                    <select class="form-select" name="{{ $createField['name'] }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                         @foreach ($createField['options'] as $key => $option)
                             <option value="{{ $key }}">{{ $option }}</option>
                         @endforeach
                     </select>
+                @elseif ($createField['inputType'] == 'countryselect') 
+                    <country-select :countries="{{ json_encode(array_values(countries())) }}" name="{{ $createField['name'] }}" data-name="{{ $createField['dataName'] }}"></country-select>
                 @elseif ($createField['inputType'] == 'textarea') 
                     <textarea class="form-control" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" rows="{{ $createField['rows'] ?? 5 }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
                         {{ old($createField['name']) ?? '' }}
@@ -45,11 +47,13 @@
                     <label class="form-label">{{ $updateField['displayName'] }}</label>
                 @endif
                 @if ($updateField['inputType'] == 'select')
-                    <select class="form-select" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
+                    <select class="form-select" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
                         @foreach ($updateField['options'] as $key => $option)
                             <option value="{{ $key }}" {{ !empty($$routeModel) && $$routeModel[$updateField['name']] == $key ? 'selected' : '' }}>{{ $option }}</option>
                         @endforeach
                     </select>
+                @elseif ($updateField['inputType'] == 'countryselect') 
+                    <country-select :countries="{{ json_encode(array_values(countries())) }}" name="{{ $updateField['name'] }}" data-name="{{ $updateField['dataName'] }}"></country-select>
                 @elseif ($updateField['inputType'] == 'textarea') 
                     <textarea class="form-control" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" rows="{{ $updateField['rows'] ?? 5 }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
                         {{ old($updateField['value']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}

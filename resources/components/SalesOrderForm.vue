@@ -276,14 +276,27 @@ function updateTotalPrice() {
 const productArray = reactive({ options: [] });
 const fetchProducts = (query) => {
     if (query) {
-        axios.get(`/web/products?search=${query}`).then((response) => {
+        axios.get(`/web/products?search=${query}&with=productVariants`).then((response) => {
             productArray.options = []
             response.data.response.items.forEach(product => {
                 if (product.type == 3) { // bundle type
                     productArray.options.push(product);
                 } else {
-                    product.variants.forEach(variant => {
-                        productArray.options.push(variant)
+                    product.product_variants.forEach(variant => {
+                        productArray.options.push(product)
+                    });
+                }
+            });
+        });
+    } else {
+        axios.get(`/web/products?with=productVariants`).then((response) => {
+            productArray.options = []
+            response.data.response.items.forEach(product => {
+                if (product.type == 3) { // bundle type
+                    productArray.options.push(product);
+                } else {
+                    product.product_variants.forEach(variant => {
+                        productArray.options.push(product)
                     });
                 }
             });
@@ -297,10 +310,16 @@ const fetchClients = (query) => {
         axios.get(`/web/clients?search=${query}`).then((response) => {
             clientArray.options = response.data.response.items;
         });
+    } else {
+        axios.get(`/web/clients`).then((response) => {
+            clientArray.options = response.data.response.items;
+        });
     }
 };
 
 onBeforeMount(() => {
+    fetchClients();
+    fetchProducts();
     if (props.salesOrder !== undefined) {
         salesOrder.value = props.salesOrder;
 

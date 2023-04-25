@@ -89,12 +89,10 @@ class SalesOrderController extends VeController
 
         DB::beginTransaction();
         try {
-            if ($salesOrder->status == SalesOrder::STATUS_DRAFT) {
-                if (!empty($input['is_draft'])) {
-                    $input['status'] = SalesOrder::STATUS_DRAFT;
-                } else {
-                    $input['status'] = SalesOrder::STATUS_ONGOING;
-                }
+            if (!empty($input['is_draft'])) {
+                $input['status'] = SalesOrder::STATUS_DRAFT;
+            } else {
+                $input['status'] = SalesOrder::STATUS_ONGOING;
             }
 
             $salesOrder->update($input);
@@ -252,6 +250,10 @@ class SalesOrderController extends VeController
             $salesOrder->total_cost = $totalCost;
             $salesOrder->status = $status;
             $salesOrder->save();
+
+            if ($salesOrder->status == SalesOrder::STATUS_OUTSTANDING) {
+                flash('Error: There are product(s) within Sales Order ID: ' . $salesOrder->id . ' that do not have enough available stock. Sales Order has been updated to outstanding.')->error();
+            }
 
             return $salesOrder;
         } catch (Exception $exception) {

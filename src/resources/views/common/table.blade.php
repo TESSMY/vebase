@@ -10,24 +10,22 @@
         @forelse ($models as $$routeModel)
             <tr>
                 @foreach ($model->indexFields as $indexField)
-                    @if ($indexField['displayName'] == 'Actions') 
+                    @if (strtolower($indexField['columnName']) == 'show') 
+                        @can('view', $$routeModel)
+                            <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
+                        @endcan
+                    @elseif (strtolower($indexField['columnName']) == 'edit') 
+                        @can('update', $$routeModel)
+                            <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
+                        @endcan
+                    @elseif (strtolower($indexField['columnName']) == 'show_and_edit') 
                         <td>
-                            @if ($indexField['columnName'] == 'show')
-                                @can('view', $$routeModel)
-                                    <a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
-                                @endcan
-                            @elseif ($indexField['columnName'] == 'edit')
-                                @can('update', $$routeModel)
-                                    <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a>
-                                @endcan
-                            @elseif ($indexField['columnName'] == 'show_and_edit')
-                                @can('view', $$routeModel)
-                                    <a class="me-4" href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
-                                @endcan
-                                @can('update', $$routeModel)
-                                    <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a>
-                                @endcan
-                            @endif
+                            @can('view', $$routeModel)
+                                <a class="me-4" href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
+                            @endcan
+                            @can('update', $$routeModel)
+                                <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a>
+                            @endcan
                         </td>
                     @else
                         @if (empty($$routeModel[$indexField['columnName']]))

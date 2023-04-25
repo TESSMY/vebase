@@ -150,7 +150,7 @@ class VeController extends Controller
             if (!empty($this->model->files)) {
                 foreach ($this->model->files as $file) {
                     if ($request->hasFile($file)) {
-                        $input[$file] = Storage::url($request->file($file)->store(strtolower($file)));
+                        $input[$file] = Storage::url($request->file($file)->store($this->modelName . '/' . strtolower($file)));
                     }
                 }
             }
@@ -248,7 +248,12 @@ class VeController extends Controller
             if (!empty($this->model->files)) {
                 foreach ($this->model->files as $file) {
                     if ($request->hasFile($file)) {
-                        $input[$file] = Storage::url($request->file($file)->store(strtolower($file)));
+                        if (!empty($model[$file])) {
+                            $initialPath = config('filesystems.disks.public.url');
+                            $path = substr($model[$file], strlen($initialPath));
+                            Storage::delete($path);
+                        }
+                        $input[$file] = Storage::url($request->file($file)->store($this->modelName . '/' . strtolower($file)));
                     }
                 }
             }

@@ -120,7 +120,7 @@ class ProductController extends VeController
                         'status' => $input['status']
                     ]);
 
-                    if ($variantData['image']) {
+                    if (!empty($variantData['image'])) {
                         $url = Storage::url($variantData['image']->store('product-variants/' . $productVariant->id));
                         $productVariant->image = $url;
                         $productVariant->save();
@@ -199,7 +199,7 @@ class ProductController extends VeController
 
         try {
             DB::beginTransaction();
-            if ($input['image']) {
+            if (!empty($input['image'])) {
                 $url = Storage::url($request->file('image')->store('products/' . $product->id));
                 $input['image'] = $url;
             }

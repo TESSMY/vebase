@@ -157,7 +157,7 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Barcode</label>
             <div class="col-md-12">
-              <input type="text" name="barcode" v-model="product.barcode" class="form-control" required/>
+              <input type="text" name="barcode" v-model="product.barcode" class="form-control"/>
             </div>
           </div>
         </div>
@@ -299,7 +299,7 @@ import Swal from "sweetalert2";
 
 export default {
   name: "ProductForm",
-  props: ['products', 'edit_product', 'variants', 'product_bundles', 'productBrand', 'productSupplier'],
+  props: ['products', 'edit_product', 'variants', 'product_bundles'],
   data() {
     return {
       isEdit: false,
@@ -353,7 +353,6 @@ export default {
       this.selectedBrand = this.edit_product.brand;
       this.selectedSupplier = this.edit_product.supplier;
       this.bundles = this.edit_product.bundles;
-
       this.getOptions();
       this.recalculateTotal();
     }

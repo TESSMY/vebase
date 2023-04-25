@@ -116,7 +116,7 @@ class ProductController extends VeController
                         'width' => $variantData['width'],
                         'height' => $variantData['height'],
                         'sku' => $variantData['sku'],
-                        'total_stock' => $input['total_stock'],
+                        'total_stock' => $variantData['quantity'],
                         'status' => $input['status']
                     ]);
 

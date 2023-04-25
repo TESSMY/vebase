@@ -18,7 +18,7 @@
         </div>
         <div class="border my-2 mb-3"></div>
 
-        {{--Supplier Information--}}
+        {{--Client Information--}}
         <div class="bg-white card shadow py-3 px-4">
             <div>
                 <div class="header-card shadow my-3" style= "background-color: #727CF5;">
@@ -100,7 +100,7 @@
                             <p class="card-text text-muted">Company Name : {{ $client->company_name }}</p>
                             <p class="card-text text-muted">Email : {{ $client->email }}</p>
                             <p class="card-text text-muted">Mobile : {{ $client->phone }}</p>
-                            <p class="card-text text-muted">Address : {{ $client->address_1 }}, {{ $client->address_2 }}, {{ $client->city }}, {{ $client->postcode }}, {{ $client->state }}, {{ $client->country }}</p>
+                            <p class="card-text text-muted">Address : {{ $client->full_address }}</p>
                         </div>
                     </div>
                 </div>
@@ -121,32 +121,32 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <h5 class="card-title align-middle py-lg-2">SALES ORDERS</h5>
-                                    <table class="table table-sm">
-                                        <thead>
-                                        <tr>
-                                            <th class="px-4 text-muted" style="width:20%">Sales Order ID</th>
-                                            <th class="px-4 text-muted" style="width:30%">Customer Name</th>
-                                            <th class="px-4 text-muted" style="width:20%">Date</th>
-                                            <th class="px-4 text-muted" style="width:15%">Status</th>
-                                            <th class="px-4 text-muted" style="width:15%">Amount(SGD)</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {{--                                        @forelse ($client->salesOrders as $salesOrder)--}}
-                                        {{--                                            <tr>--}}
-                                        {{--                                                <td class="ps-4">{{ $salesOrder->id }}</td>--}}
-                                        {{--                                                <td>{{ $salesOrder->customer_po }}</td>--}}
-                                        {{--                                                <td>{{ $salesOrder->date }}</td>--}}
-                                        {{--                                                <td>{{ $salesOrder->status }}</td>--}}
-                                        {{--                                                <td>{{ $salesOrder->grand_total }}</td>--}}
-                                        {{--                                            </tr>--}}
-                                        {{--                                        @empty--}}
-                                        {{--                                            <tr>--}}
-                                        <td colspan="100%" class="text-center">There are No Sales Orders found.</td>
-                                        {{--                                            </tr>--}}
-                                        {{--                                        @endforelse--}}
-                                        </tbody>
-                                    </table>
+                                    <div class="table-responsive-sm">
+                                        <table class="table">
+                                            <thead>
+                                            <tr>
+                                                <th class="px-4 text-muted" style="width: auto;">Sales Order ID</th>
+                                                <th class="px-4 text-muted" style="width: auto;">Date</th>
+                                                <th class="px-4 text-muted" style="width: auto;">Status</th>
+                                                <th class="px-4 text-muted" style="width: auto;">Amount(SGD)</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse ($client->salesOrders as $salesOrder)
+                                                <tr>
+                                                    <td class="ps-4">{{ $salesOrder->id }}</td>
+                                                    <td>{{ $salesOrder->date }}</td>
+                                                    <td>{{ $salesOrder->status }}</td>
+                                                    <td>{{ $salesOrder->grand_total }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="100%" class="text-center">There are No Sales Orders found.</td>
+                                                </tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
                                     <div class="float-end">
                                         <a href="{{ route('admin.sales-orders.index') }}" class="card-link">View All</a>
                                     </div>
@@ -171,11 +171,3 @@
         </div>
     </div>
 @endsection
-
-@push('css')
-    <style>
-        .header-card {
-            background-color: rgb(114,124,245);
-        }
-    </style>
-@endpush

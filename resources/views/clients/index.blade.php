@@ -18,9 +18,9 @@
                 </div>
                 <div class="col-md-4 text-end">
                     <button type="button" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-secondary rounded ms-1" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
-                    <form action="{{ route('admin.clients.export') }}" method="POST" enctype="multipart/form-data">
+                    <form class="d-inline" action="{{ route('admin.clients.export') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <button type="submit" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-secondary rounded my-1">Export</button>
+                        <button type="submit" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-secondary rounded">Export</button>
                     </form>
                 </div>
             </div>

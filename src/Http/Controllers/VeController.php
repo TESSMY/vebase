@@ -249,8 +249,11 @@ class VeController extends Controller
                 foreach ($this->model->files as $file) {
                     if ($request->hasFile($file)) {
                         if (!empty($model[$file])) {
-                            $initialPath = config('filesystems.disks.public.url');
-                            $path = substr($model[$file], strlen($initialPath));
+                            $path = $model[$file];
+                            if (config('filesystems.default') == 'public') {
+                                $initialPath = config('filesystems.disks.public.url');
+                                $path = substr($path, strlen($initialPath));
+                            }
                             Storage::delete($path);
                         }
                         $input[$file] = Storage::url($request->file($file)->store($this->modelName . '/' . strtolower($file)));

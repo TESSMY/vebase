@@ -10,17 +10,17 @@
         @forelse ($models as $$routeModel)
             <tr>
                 @foreach ($model->indexFields as $indexField)
-                    @if (strtolower($indexField['columnName']) == 'show_and_edit') 
+                    @if ($indexField['displayName'] == 'Actions') 
                         <td>
-                            @if ($indexField['action'] == 'show')
+                            @if ($indexField['columnName'] == 'show')
                                 @can('view', $$routeModel)
                                     <a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
                                 @endcan
-                            @elseif ($indexField['action'] == 'edit')
+                            @elseif ($indexField['columnName'] == 'edit')
                                 @can('update', $$routeModel)
                                     <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a>
                                 @endcan
-                            @elseif ($indexField['action'] == 'show_and_edit')
+                            @elseif ($indexField['columnName'] == 'show_and_edit')
                                 @can('view', $$routeModel)
                                     <a class="me-4" href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
                                 @endcan

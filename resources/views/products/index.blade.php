@@ -61,14 +61,17 @@
                         <tr>
                             <td>{{ $product->name }}</td>
                             <td>{{ $product->sku }}</td>
-                            <td>{{ $product->type }}</td>
+                            <td>{{ $product->type_text }}</td>
                             <td>{{ $product->supplier ? $product->supplier->name : '-' }}</td>
                             <td>{{ $product->brand ? $product->brand->name : '-' }}</td>
                             <td>{{ $product->total_stock }}</td>
                             <td>{{ $product->available_stock }}</td>
                             <td>
-                                @can('view-product')
+                                @can('view', $product)
                                     <a href="{{ route('admin.products.show', [$product->getRouteKey()]) }}"><i class="uil-eye"></i></a>
+                                @endcan
+                                @can('update', $product)
+                                    <a href="{{ route('admin.products.edit', [$product->getRouteKey()]) }}"><i class="uil-edit"></i></a>
                                 @endcan
                             </td>
                         </tr>

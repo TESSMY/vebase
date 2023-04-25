@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\View;
@@ -146,6 +147,14 @@ class VeController extends Controller
         try {
             DB::beginTransaction();
 
+            if (!empty($this->model->files)) {
+                foreach ($this->model->files as $file) {
+                    if ($request->hasFile($file)) {
+                        $input[$file] = Storage::url($request->file($file)->store(strtolower($file)));
+                    }
+                }
+            }
+
             $this->model::create($input);
 
             DB::commit();
@@ -236,10 +245,18 @@ class VeController extends Controller
         try {
             DB::beginTransaction();
 
+            if (!empty($this->model->files)) {
+                foreach ($this->model->files as $file) {
+                    if ($request->hasFile($file)) {
+                        $input[$file] = Storage::url($request->file($file)->store(strtolower($file)));
+                    }
+                }
+            }
+
             $model->update($input);
 
             DB::commit();
-            flash()->success('Successfully create ' .  $this->modelName);
+            flash()->success('Successfully updated ' .  $this->modelName);
             return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {
             DB::rollBack();

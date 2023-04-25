@@ -190,7 +190,7 @@
               </div>
             </div>
             <div class="row mb-3">
-              <label class="mb-2l">Option Variables</label>
+              <label class="mb-2l">Option Values</label>
               <div class="d-flex gap-2 align-items-center" v-for="(value, v) in option.value" :key="v">
                 <input class="form-control w-50 mt-2" type="text" v-model="option.value[v]" @change="addVariant()">
                 <i class="uil-trash cursor mt-2" v-if="v > 0" @click="removeValue(i, v)"></i>

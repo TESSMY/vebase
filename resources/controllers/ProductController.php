@@ -91,6 +91,8 @@ class ProductController extends VeController
                     'total_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
+                $product->brand->countTotalProducts();
+
             } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
                 foreach($input['variants'] as $variantData) {
                     $option1 = '';
@@ -120,12 +122,15 @@ class ProductController extends VeController
                         'status' => $input['status']
                     ]);
 
+                    $productVariant->save();
+
                     if (!empty($variantData['image'])) {
                         $url = Storage::url($variantData['image']->store('product-variants/' . $productVariant->id));
                         $productVariant->image = $url;
                         $productVariant->save();
                     }
                 }
+                $product->brand->countTotalProducts();
             } elseif ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
                 $productCost = 0;
                 foreach($input['bundles'] as $bundle) {
@@ -204,6 +209,7 @@ class ProductController extends VeController
                 $input['image'] = $url;
             }
             $product->update($input);
+            $product->brand->countTotalProducts();
             if (!empty($input['variants']) && Product::TYPE_VARIANT_PRODUCT) {
                 $variantId = [];
                 foreach ($input['variants'] as $variant) {
@@ -236,6 +242,8 @@ class ProductController extends VeController
                 }
 
                 $product->productVariants()->whereNotIn('id', $variantId)->delete();
+
+                $product->brand->countTotalProducts();
             }
             if (!empty($input['bundles']) && Product::TYPE_PRODUCT_BUNDLE) {
                 $bundleId = [];
@@ -282,6 +290,8 @@ class ProductController extends VeController
             }
             $product->productVariants()->delete();
             $product->delete();
+
+            $product->brand->countTotalProducts();
 
             flash()->success($product->name . ' deleted successfully!');
             return redirect()->route('admin.products.index');

@@ -40,7 +40,11 @@
             </div>
             <div class="col-md-3 pe-6">
                 <div class="fw-bold">{{ __('Barcode') }}:</div>
-                <span>#{{ $product->barcode }}</span>
+                @if(!empty($product->barcode))
+                    <span>#{{ $product->barcode }}</span>
+                @else
+                    <span>-</span>
+                @endif
             </div>
             <div class="col-md-3 pe-6">
                 <div class="fw-bold">{{ __('Available Stock') }}:</div>
@@ -48,7 +52,11 @@
             </div>
             <div class="col-md-3 pe-6">
                 <div class="fw-bold">{{ __('Supplier') }}:</div>
-                <span>{{ $product->supplier->name }}</span>
+                @if(!empty($product->supplier_id))
+                    <span>{{ $product->supplier->name }}</span>
+                @else
+                    <span>-</span>
+                @endif
             </div>
         </div>
     </div>

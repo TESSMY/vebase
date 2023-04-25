@@ -89,7 +89,6 @@ class ProductController extends VeController
                     'height' => $input['height'],
                     'sku' => $input['sku'],
                     'total_stock' => $input['total_stock'],
-                    'available_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
             } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
@@ -103,9 +102,8 @@ class ProductController extends VeController
                         $option2 = $explodedValue[2] ?? null;
                         $option3 = $explodedValue[3] ?? null;
                     }
-                    ProductVariant::create([
+                    $productVariant = ProductVariant::create([
                         'product_id' => $product->id,
-                        'image' => $variantData['image'] ?? null,
                         'option_1' => $option1,
                         'option_2' => $option2,
                         'option_3' => $option3,
@@ -119,9 +117,14 @@ class ProductController extends VeController
                         'height' => $variantData['height'],
                         'sku' => $variantData['sku'],
                         'total_stock' => $input['total_stock'],
-                        'available_stock' => $input['total_stock'],
                         'status' => $input['status']
                     ]);
+
+                    if ($variantData['image']) {
+                        $url = Storage::url($variantData['image']->store('product-variants/' . $productVariant->id));
+                        $productVariant->image = $url;
+                        $productVariant->save();
+                    }
                 }
             } elseif ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
                 $productCost = 0;
@@ -196,20 +199,28 @@ class ProductController extends VeController
 
         try {
             DB::beginTransaction();
-            if ($request->hasFile('image')) {
+            if ($input['image']) {
                 $url = Storage::url($request->file('image')->store('products/' . $product->id));
-                $product->image = $url;
-                $product->save();
+                $input['image'] = $url;
             }
             $product->update($input);
             if (!empty($input['variants']) && Product::TYPE_VARIANT_PRODUCT) {
                 $variantId = [];
                 foreach ($input['variants'] as $variant) {
                     $currentVariant = $product->productVariants->where('id', $variant['product_variant_id'])->first();
+                    if ($variant['image']) {
+                        $url = Storage::url($variant['image']->store('product-variants/' . $currentVariant->id));
+                        $variant['image'] = $url;
+                    }
                     if ($currentVariant) {
                         $currentVariant->update($variant);
                     } else {
-                        ProductVariant::create($variant + ['product_id' => $product->id]);
+                        $productVariant = ProductVariant::create($variant + ['product_id' => $product->id]);
+                        if ($variant['image']) {
+                            $url = Storage::url($variant['image']->store('product-variants/' . $productVariant->id));
+                            $productVariant->image = $url;
+                            $productVariant->save();
+                        }
                     }
                     $variantId[] = $currentVariant->id;
                 }

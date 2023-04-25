@@ -71,7 +71,7 @@
                                     <a href="{{ route('admin.products.show', [$product->getRouteKey()]) }}"><i class="uil-eye"></i></a>
                                 @endcan
                                 @can('update', $product)
-                                    <a href="{{ route('admin.products.edit', [$product->getRouteKey()]) }}"><i class="uil-edit"></i></a>
+                                    <a href="{{ route('admin.products.edit', [$product->getRouteKey()]) }}"><i class="uil-edit ms-1"></i></a>
                                 @endcan
                             </td>
                         </tr>

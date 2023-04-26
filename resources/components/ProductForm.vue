@@ -36,6 +36,7 @@
             <label class="col-md-4 text-right form-label text-sm-start">Brand</label>
             <div class="col-md-12">
               <input type="hidden" name="brand_id" :value="selectedBrand.id" v-if="selectedBrand">
+              <input type="hidden" name="brand_id" :value="null" v-else>
               <multi-select placeholder="Search Brand" v-model="selectedBrand" label="name" :options="brandArray" @search-change="fetchBrands"></multi-select>
             </div>
           </div>
@@ -220,7 +221,7 @@
               <tr v-for="(variant, i) in product.variants" :key="i">
                 <input type="hidden" :name="'variants[' + i + '][product_variant_id]'" :value="variant.id" v-if="variant.id !== 'undefined'">
                 <td>
-                  <input name="image" type="file" class="form-control mt-1 block w-15"/>
+                  <input :name="'variants[' + i + '][image]'" type="file" class="form-control mt-1 block w-15"/>
                 </td>
                 <td>
                   <input :name="'variants[' + i + '][name]'" type="text" class="form-control mt-1 block w-15" v-model="variant.name" required/>
@@ -229,10 +230,10 @@
                   <input :name="'variants[' + i + '][sku]'" type="text" class="form-control mt-1 block w-15" v-model="variant.sku" required readonly/>
                 </td>
                 <td>
-                  <input :name="'variants[' + i + '][quantity]'" type="text" class="form-control mt-1 block w-15" v-model="variant.quantity" @input="recalculateTotalStock()" required/>
+                  <input :name="'variants[' + i + '][quantity]'" type="text" class="form-control mt-1 block w-15" v-model="variant.total_stock" @input="recalculateTotalStock()" required/>
                 </td>
                 <td>
-                  <input :name="'variants[' + i + '][unit_cost]'" type="number" class="form-control mt-1 block w-15 " min="0" step=".01" v-model="variant.unit_cost" required/>
+                  <input :name="'variants[' + i + '][unit_cost]'" type="number" class="form-control mt-1 block w-15 " min="0" step=".01" v-model="variant.cost_price" required/>
                 </td>
                 <td>
                   <input :name="'variants[' + i + '][selling_price]'" type="number" class="form-control mt-1 block w-15" min="0" step=".01" v-model="variant.selling_price" required/>

@@ -75,6 +75,11 @@ class ProductController extends VeController
                 $product->image = $url;
                 $product->save();
             }
+
+            if (!empty($product->brand)) {
+                $product->brand->countTotalProducts();
+            }
+
             if ($product->type == Product::TYPE_SINGLE_PRODUCT) {
                 ProductVariant::create([
                     'product_id' => $product->id,
@@ -111,7 +116,7 @@ class ProductController extends VeController
                         'barcode' => $product->barcode,
                         'cost_price' => $variantData['unit_cost'],
                         'selling_price' => $variantData['selling_price'],
-                        'measurement_unit' => $product->measurement_unit,
+                        'measurement_unit' => $input['measurement_unit'],
                         'length' => $variantData['length'],
                         'width' => $variantData['width'],
                         'height' => $variantData['height'],
@@ -203,20 +208,33 @@ class ProductController extends VeController
                 $url = Storage::url($request->file('image')->store('products/' . $product->id));
                 $input['image'] = $url;
             }
+            $oldBrand = $product->brand;
+
             $product->update($input);
+            unset($product->brand);
+
+            if (!empty($oldBrand) && $oldBrand->id != $product->brand_id) {
+                $oldBrand->countTotalProducts();
+            }
+
+            if (!empty($product->brand) && $product->brand_id != $oldBrand?->id) {
+                $product->brand->countTotalProducts();
+            }
+
             if (!empty($input['variants']) && Product::TYPE_VARIANT_PRODUCT) {
                 $variantId = [];
                 foreach ($input['variants'] as $variant) {
                     $currentVariant = $product->productVariants->where('id', $variant['product_variant_id'])->first();
-                    if ($variant['image']) {
+                    if (!empty($variant['image'])) {
                         $url = Storage::url($variant['image']->store('product-variants/' . $currentVariant->id));
                         $variant['image'] = $url;
                     }
+
                     if ($currentVariant) {
                         $currentVariant->update($variant);
                     } else {
                         $productVariant = ProductVariant::create($variant + ['product_id' => $product->id]);
-                        if ($variant['image']) {
+                        if (!empty($variant['image'])) {
                             $url = Storage::url($variant['image']->store('product-variants/' . $productVariant->id));
                             $productVariant->image = $url;
                             $productVariant->save();
@@ -230,14 +248,8 @@ class ProductController extends VeController
                     throw new Exception('Product Variants associated with a Product Bundle cannot be deleted.');
                 }
 
-                $quotationItemVariants = QuotationItem::whereIn('product_variant_id', $variantId)->get();
-                if ($quotationItemVariants->isNotEmpty()) {
-                    throw new Exception('Product Variants associated with a Quotation cannot be deleted.');
-                }
-
                 $product->productVariants()->whereNotIn('id', $variantId)->delete();
-            }
-            if (!empty($input['bundles']) && Product::TYPE_PRODUCT_BUNDLE) {
+            } elseif (!empty($input['bundles']) && Product::TYPE_PRODUCT_BUNDLE) {
                 $bundleId = [];
                 foreach ($input['bundles'] as $bundle) {
                     $currentBundle = $product->bundles()->where('id', $bundle['product_bundle_id'])->first();
@@ -246,15 +258,8 @@ class ProductController extends VeController
                     } else {
                         $currentBundle = ProductBundle::create($bundle + ['product_id' => $product->id]);
                     }
+
                     $bundleId[] = $currentBundle->id;
-                }
-
-                $quotationItems = QuotationItem::whereHas('product', function ($query) use ($bundleId) {
-                    $query->whereIn('id', $bundleId);
-                })->get();
-
-                if ($quotationItems->isNotEmpty()) {
-                    throw new Exception('Product Bundles or their Items associated with a Quotation Item cannot be deleted.');
                 }
 
                 $product->bundles()->whereNotIn('id', $bundleId)->delete();
@@ -282,6 +287,10 @@ class ProductController extends VeController
             }
             $product->productVariants()->delete();
             $product->delete();
+
+            if (!empty($product->brand)) {
+                $product->brand->countTotalProducts();
+            }
 
             flash()->success($product->name . ' deleted successfully!');
             return redirect()->route('admin.products.index');

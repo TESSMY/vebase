@@ -75,6 +75,11 @@ class ProductController extends VeController
                 $product->image = $url;
                 $product->save();
             }
+
+            if (!empty($product->brand)) {
+                $product->brand->countTotalProducts();
+            }
+
             if ($product->type == Product::TYPE_SINGLE_PRODUCT) {
                 ProductVariant::create([
                     'product_id' => $product->id,
@@ -91,10 +96,6 @@ class ProductController extends VeController
                     'total_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
-
-                if (!empty($product->brand)) {
-                    $product->brand->countTotalProducts();
-                }
 
             } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
                 foreach($input['variants'] as $variantData) {
@@ -124,8 +125,6 @@ class ProductController extends VeController
                         'total_stock' => $variantData['quantity'],
                         'status' => $input['status']
                     ]);
-
-                    $productVariant->save();
 
                     if (!empty($variantData['image'])) {
                         $url = Storage::url($variantData['image']->store('product-variants/' . $productVariant->id));

@@ -96,7 +96,6 @@ class ProductController extends VeController
                     'total_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
-
             } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
                 foreach($input['variants'] as $variantData) {
                     $option1 = '';
@@ -115,14 +114,14 @@ class ProductController extends VeController
                         'option_3' => $option3,
                         'name' => $variantData['name'],
                         'barcode' => $product->barcode,
-                        'cost_price' => $variantData['unit_cost'],
+                        'cost_price' => $variantData['cost_price'],
                         'selling_price' => $variantData['selling_price'],
                         'measurement_unit' => $input['measurement_unit'],
                         'length' => $variantData['length'],
                         'width' => $variantData['width'],
                         'height' => $variantData['height'],
                         'sku' => $variantData['sku'],
-                        'total_stock' => $variantData['quantity'],
+                        'total_stock' => $variantData['total_stock'],
                         'status' => $input['status']
                     ]);
 
@@ -230,7 +229,6 @@ class ProductController extends VeController
                         $url = Storage::url($variant['image']->store('product-variants/' . $currentVariant->id));
                         $variant['image'] = $url;
                     }
-
                     if ($currentVariant) {
                         $currentVariant->update($variant);
                     } else {

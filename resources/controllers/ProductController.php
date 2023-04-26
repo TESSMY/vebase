@@ -134,10 +134,6 @@ class ProductController extends VeController
                     }
                 }
 
-                if (!empty($product->brand)) {
-                    $product->brand->countTotalProducts();
-                }
-
             } elseif ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
                 $productCost = 0;
                 foreach($input['bundles'] as $bundle) {

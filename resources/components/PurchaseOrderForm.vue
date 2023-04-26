@@ -344,7 +344,20 @@ const fetchProducts = (query) => {
                 if (product.type == 3) { // bundle type
                     productArray.options.push(product);
                 } else {
-                    product.variants.forEach(variant => {
+                    product.product_variants.forEach(variant => {
+                        productArray.options.push(variant)
+                    });
+                }
+            });
+        });
+    } else {
+        axios.get(`/web/products`).then((response) => {
+            productArray.options = []
+            response.data.response.items.forEach(product => {
+                if (product.type == 3) { // bundle type
+                    productArray.options.push(product);
+                } else {
+                    product.product_variants.forEach(variant => {
                         productArray.options.push(variant)
                     });
                 }
@@ -359,6 +372,10 @@ const fetchSuppliers = (query) => {
         axios.get(`/web/suppliers?search=${query}`).then((response) => {
             supplierArray.options = response.data.response.items;
         });
+    } else {
+        axios.get(`/web/suppliers`).then((response) => {
+            supplierArray.options = response.data.response.items;
+        });
     }
 };
 
@@ -368,10 +385,17 @@ const fetchClients = (query) => {
         axios.get(`/web/clients?search=${query}`).then((response) => {
             clientArray.options = response.data.response.items;
         });
+    } else {
+        axios.get(`/web/clients`).then((response) => {
+            clientArray.options = response.data.response.items;
+        });
     }
 };
 
 onBeforeMount(() => {
+    fetchProducts();
+    fetchSuppliers();
+    fetchClients();
     if (props.purchaseOrder !== undefined) {
         purchaseOrder.value = props.purchaseOrder;
 

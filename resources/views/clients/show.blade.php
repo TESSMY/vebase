@@ -42,9 +42,8 @@
                             <div class="card-group row">
                                 <div class="card col-sm-3 me-1">
                                     <div class="card-body">
-                                        <h6 class="card-subtitle text-muted fs-6">NUMBER OF ORDERS</h6>
-                                        {{--                                        <h5>{{ $client->salesOrders->count() }}</h5>--}}
-                                        <h5> 0 </h5>
+                                        <h6 class="card-subtitle text-muted fs-6">TOTAL ORDERS</h6>
+                                        <h5>{{ $client->salesReports()->whereNull('day')->where('month', date('n'))->where('year', date('Y'))->sum('total_sales_order') }}</h5>
                                         <div class="d-flex justify-content-start">
                                             <h8 class="text-muted"><span class="badge rounded-pill bg-warning">-20%</span> This month </h8>
                                         </div>
@@ -52,12 +51,8 @@
                                 </div>
                                 <div class="card col-sm-3 me-1">
                                     <div class="card-body">
-                                        <h6 class="card-subtitle text-muted fs-6">AVERAGE REVENUE</h6>
-                                        {{--                                        @if (($client->salesOrders->count()) != 0)--}}
-                                        {{--                                            <h5 class="card-text text-muted">{{($client->saleOrders->sum('grand_total')) / ($client->salesOrders->count())}} </h5>--}}
-                                        {{--                                        @else--}}
-                                        <h5> 0 </h5>
-                                        {{--                                        @endif--}}
+                                        <h6 class="card-subtitle text-muted fs-6">REVENUE (THIS MONTH)</h6>
+                                        <h5>{{ $client->salesReports()->whereNull('day')->where('month', date('n'))->where('year', date('Y'))->sum('total_revenue') }}</h5>
                                         <div class="d-flex justify-content-start">
                                             <h8 class="text-muted"><span class="badge rounded-pill bg-danger">-50%</span> This month </h8>
                                         </div>
@@ -65,14 +60,30 @@
                                 </div>
                                 <div class="card col-sm-3 me-1">
                                     <div class="card-body">
-                                        <h6 class="card-subtitle text-muted fs-6">AVERAGE ANNUAL REVENUE</h6>
-                                        {{--                                        @if (($client->salesOrders->count()) != 0)--}}
-                                        {{--                                            <h5 class="card-text text-muted">{{($client->saleOrders->sum('grand_total')) }} </h5> //??--}}
-                                        {{--                                        @else--}}
-                                        <h5> 0 </h5>
-                                        {{--                                        @endif--}}
+                                        <h6 class="card-subtitle text-muted fs-6">REVENUE (PAST 6 MONTHS)</h6>
+                                        @php
+                                            $revenue = 0;
+                                            if (date('Y', strtotime('-6 months')) != date('Y')) {
+                                               $prevYear = $client->salesReports()->where('year', date('Y', strtotime('-6 months')))
+                                               ->where('month', '>=', date('n', strtotime('-6 months')))
+                                               ->sum('total_revenue');
+
+                                               $currentYear = $client->salesReports()->where('year', date('Y'))
+                                               ->where('month', '>=', 1)
+                                               ->where('month', '<=', date('n'))
+                                               ->sum('total_revenue');
+
+                                               $revenue = $prevYear + $currentYear;
+                                            } else {
+                                               $revenue = $client->salesReports()->where('year', date('Y'))
+                                               ->where('month', '>=', date('n', strtotime('-6 months')))
+                                               ->where('month', '<=', date('n'))
+                                               ->sum('total_revenue');
+                                            }
+                                        @endphp
+                                        <h5>{{ number_format($revenue, 2) }}</h5>
                                         <div class="d-flex justify-content-start">
-                                            <h8 class="text-muted"><span class="badge rounded-pill bg-info">20%</span> This year </h8>
+                                            <h8 class="text-muted"><span class="badge rounded-pill bg-info">20%</span> Past 6 Months </h8>
                                         </div>
                                     </div>
                                 </div>

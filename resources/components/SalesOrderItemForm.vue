@@ -39,6 +39,7 @@
                             <th>UOM</th>
                             <th>Unit Price</th>
                             <th>Status</th>
+                            <th>Type of Shipment</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,6 +58,12 @@
                                     <option value="10" :selected="item.status == 10">Quote Received</option>
                                     <option value="20" :selected="item.status == 20">Rejected by Client</option>
                                     <option value="40" :selected="item.status == 40">Client Approved</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select" :name="'products[' + index + '][shipment_type]'" required v-model="item.shipmentType">
+                                    <option selected value="0">Direct</option>
+                                    <option selected value="1">Non Direct</option>
                                 </select>
                             </td>
                         </tr>

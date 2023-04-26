@@ -334,12 +334,19 @@ class SalesOrderController extends VeController
                 return null;
             }
 
-            $product = $salesOrderItem->product;
-            $productVariant = $salesOrderItem->productVariant;
+            $productModel = $salesOrderItem->product;
+            $productVariantModel = $salesOrderItem->productVariant;
+
+            if (empty($productModel) && empty($productVariantModel)) {
+                flash()->error("Unable to generate delivery order, sales order item does not have product / product variant. Sales Order Item ID: " . $product['sales_order_item_id']);
+                return null;
+            }
+
+            $model = $productVariantModel ?? $productModel;
 
             if ($salesOrderItem->status == SalesOrderItem::STATUS_ORDER_CONFIRMED) { // outstanding item manually confirmed by admin
-                if (!empty($productVariant)) {
-                    if ($productVariant->available_stock < $salesOrderItem->quantity) {
+                if (!empty($productVariantModel)) {
+                    if ($productVariantModel->available_stock < $salesOrderItem->quantity) {
                         flash()->error("Unable to generate delivery order, there is not enough product variant quantity available. Sales Order Item ID: " . $product['sales_order_item_id'] . ". Product Variant ID: " . $productVariant->id);
                         return null;
                     }
@@ -357,16 +364,20 @@ class SalesOrderController extends VeController
                 'delivery_order_id' => $deliveryOrder->id,
                 'sales_order_item_id' => $salesOrderItem->id,
                 'product_id' => $salesOrderItem->product->id,
-                'product_variant_id' => $salesOrderItem->productVariant->id,
-                'name' => !empty($productVariant) ? $productVariant->name : $product->name,
-                'sku' => !empty($productVariant) ? $productVariant->sku : $product->sku,
+                'product_variant_id' => $salesOrderItem->productVariant->id ?? null,
+                'name' => !empty($productVariantModel) ? $productVariantModel->name : $product->name,
+                'sku' => !empty($productVariantModel) ? $productVariantModel->sku : $product->sku,
                 'quantity' => $salesOrderItem->quantity,
                 'unit_price' => $salesOrderItem->unit_price,
                 'total_amount' => $salesOrderItem->total_amount,
                 'status' => DeliveryOrderItem::STATUS_PENDING,
             ]);
 
+            $model->stock_on_hold -= $salesOrderItem->quantity_held;
+            $model->total_stock -= $salesOrderItem->quantity_held;
+            $model->save();
             $salesOrderItem->status = SalesOrderItem::STATUS_PENDING_SHIPMENT;
+            $salesOrderItem->quantity_held = 0;
             $salesOrderItem->save();
             $subTotal += $salesOrderItem->total_amount;
         }
@@ -454,6 +465,16 @@ class SalesOrderController extends VeController
                     return null;
                 }
 
+                $productModel = $salesOrderItem->product;
+                $productVariantModel = $salesOrderItem->productVariant;
+
+                if (empty($productModel) && empty($productVariantModel)) {
+                    flash()->error("Unable to generate purchase order, sales order item does not have product / product variant. Sales Order Item ID: " . $product['sales_order_item_id']);
+                    return null;
+                }
+
+                $model = $productVariantModel ?? $productModel;
+
                 PurchaseOrderItem::create([
                     'purchase_order_id' => $purchaseOrder->id,
                     'sales_order_item_id' => $salesOrderItem->id,
@@ -470,7 +491,11 @@ class SalesOrderController extends VeController
                     'status' => PurchaseOrderItem::STATUS_PENDING,
                 ]);
 
+                $model->stock_on_hold -= $salesOrderItem->quantity_held;
+                $model->total_stock -= $salesOrderItem->quantity_held;
+                $model->save();
                 $salesOrderItem->status = SalesOrderItem::STATUS_PENDING_SHIPMENT;
+                $salesOrderItem->quantity_held = 0;
                 $salesOrderItem->save();
                 $itemCount++;
                 $subTotal += $salesOrderItem->total_amount;
@@ -524,7 +549,7 @@ class SalesOrderController extends VeController
 
                 $salesOrderItem->update([
                     'status' => $product['status'],
-                    'shipment_type' => SalesOrderItem::SHIPMENT_TYPE_DIRECT_FROM_SUPPLIER
+                    'shipment_type' => $product['shipment_type']
                 ]);
             }
 
@@ -538,6 +563,7 @@ class SalesOrderController extends VeController
                 $salesOrder->save();
             }
 
+            $salesOrder->refresh();
             $salesOrder->holdStock();
 
             DB::commit();

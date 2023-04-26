@@ -159,7 +159,7 @@
 </template>
 
 <script setup>
-import { defineComponent, reactive, ref, onBeforeMount, computed } from 'vue';
+import { defineComponent, reactive, ref, onBeforeMount, computed, onMounted } from 'vue';
 
 let props = defineProps({
     deliveryOrder: Object,
@@ -230,6 +230,19 @@ const fetchProducts = (query) => {
                 }
             });
         });
+    } else {
+        axios.get(`/web/products`).then((response) => {
+            productArray.options = []
+            response.data.response.items.forEach(product => {
+                if (product.type == 3) { // bundle type
+                    productArray.options.push(product);
+                } else {
+                    product.product_variants.forEach(variant => {
+                        productArray.options.push(variant)
+                    });
+                }
+            });
+        });
     }
 };
 
@@ -237,6 +250,10 @@ const clientArray = reactive({ options: [] });
 const fetchClients = (query) => {
     if (query) {
         axios.get(`/web/clients?search=${query}`).then((response) => {
+            clientArray.options = response.data.response.items;
+        });
+    } else {
+        axios.get(`/web/clients`).then((response) => {
             clientArray.options = response.data.response.items;
         });
     }
@@ -291,6 +308,11 @@ onBeforeMount(() => {
             updateTotalPrice();
         }
     }
+})
+
+onMounted(() => {
+    fetchProducts();
+    fetchClients();
 })
 
 </script>

@@ -23,7 +23,7 @@
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Currency</label>
-        <input type="text" :name="'currency'" class="form-control" v-model="currentQuotation.currency" :disabled="disabled"/>
+        <input type="text" :name="'currency'" class="form-control" v-model="currentQuotation.currency" :disabled="disabled" required/>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Name</label>
@@ -31,11 +31,11 @@
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Contact Number</label>
-        <input class="form-control" type="text" :name="'billing_contact_number'" v-model="currentQuotation.billing_contact_number" :disabled="disabled">
+        <input class="form-control" type="text" :name="'billing_contact_number'" v-model="currentQuotation.billing_contact_number" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Contact Email</label>
-        <input class="form-control" type="email" :name="'billing_contact_email'" v-model="currentQuotation.billing_contact_email" :disabled="disabled">
+        <input class="form-control" type="email" :name="'billing_contact_email'" v-model="currentQuotation.billing_contact_email" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Billing Address 1</label>
@@ -67,11 +67,11 @@
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Contact Number</label>
-        <input class="form-control" type="text" :name="'ship_to_contact_number'" v-model="currentQuotation.ship_to_contact_number" :disabled="disabled">
+        <input class="form-control" type="text" :name="'ship_to_contact_number'" v-model="currentQuotation.ship_to_contact_number" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Contact Email</label>
-        <input class="form-control" type="email" :name="'ship_to_contact_email'" v-model="currentQuotation.ship_to_contact_email" :disabled="disabled">
+        <input class="form-control" type="email" :name="'ship_to_contact_email'" v-model="currentQuotation.ship_to_contact_email" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Address 1</label>
@@ -79,7 +79,7 @@
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Address 2</label>
-        <input class="form-control" type="text" :name="'ship_to_address_2'" v-model="currentQuotation.ship_to_address_2" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'ship_to_address_2'" v-model="currentQuotation.ship_to_address_2" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To City</label>
@@ -87,7 +87,7 @@
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To State</label>
-        <input class="form-control" type="text" :name="'ship_to_state'" v-model="currentQuotation.ship_to_state" :disabled="disabled" required>
+        <input class="form-control" type="text" :name="'ship_to_state'" v-model="currentQuotation.ship_to_state" :disabled="disabled">
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Postcode</label>
@@ -95,7 +95,7 @@
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Ship To Country</label>
-        <input class="form-control" type="text" :name="'ship_to_country'" v-model="currentQuotation.ship_to_country" :disabled="disabled">
+        <input class="form-control" type="text" :name="'ship_to_country'" v-model="currentQuotation.ship_to_country" :disabled="disabled" required>
       </div>
       <div class="col-12 col-md-6 mb-2">
         <label class="form-label">Expiration Date</label>

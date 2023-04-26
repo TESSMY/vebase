@@ -52,7 +52,7 @@
                                 <div class="card col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">REVENUE (THIS MONTH)</h6>
-                                        <h5>{{ $client->salesReports()->whereNull('day')->where('month', date('n'))->where('year', date('Y'))->sum('total_revenue') }}</h5>
+                                        <h5>{{ $client->salesReports()->where('year', date('Y'))->where('month', date('n'))->whereNull('day')->sum('total_revenue') }}</h5>
                                         <div class="d-flex justify-content-start">
                                             <h8 class="text-muted"><span class="badge rounded-pill bg-danger">-50%</span> This month </h8>
                                         </div>
@@ -66,11 +66,13 @@
                                             if (date('Y', strtotime('-6 months')) != date('Y')) {
                                                $prevYear = $client->salesReports()->where('year', date('Y', strtotime('-6 months')))
                                                ->where('month', '>=', date('n', strtotime('-6 months')))
+                                               ->whereNull('day')
                                                ->sum('total_revenue');
 
                                                $currentYear = $client->salesReports()->where('year', date('Y'))
                                                ->where('month', '>=', 1)
                                                ->where('month', '<=', date('n'))
+                                               ->whereNull('day')
                                                ->sum('total_revenue');
 
                                                $revenue = $prevYear + $currentYear;
@@ -78,6 +80,7 @@
                                                $revenue = $client->salesReports()->where('year', date('Y'))
                                                ->where('month', '>=', date('n', strtotime('-6 months')))
                                                ->where('month', '<=', date('n'))
+                                               ->whereNull('day')
                                                ->sum('total_revenue');
                                             }
                                         @endphp

@@ -67,9 +67,9 @@
                             <td>
                             </td>
                             <td>
-                                <select v-if="item.status != 20" class="form-select" name="shipment_type" :disabled="item.status == 80 || item.status == 0" required v-model="item.shipmentType">
-                                    <option v-if="item.product.available_stock > item.quantity" :selected="item.product.available_stock > item.quantity && item.status != 20" value="0">Direct</option>
-                                    <option :selected="item.product.available_stock < item.quantity && item.status != 20" value="1">Non Direct</option>
+                                <select v-if="item.status != 20" class="form-select" name="shipment_type" :disabled="item.status == 80 || item.status == 0 || item.onlyPOAvailable" required v-model="item.shipmentType">
+                                    <option :selected="item.shipmentType == 0" value="0">Direct</option>
+                                    <option :selected="item.shipmentType == 1" value="1">Non Direct</option>
                                 </select>
                             </td>
                         </tr>
@@ -162,14 +162,12 @@ onBeforeMount(() => {
 
         if (props.salesOrder.sales_order_items !== undefined) {
             products.value = []
+            let onlyPOAvailable = false;
             props.salesOrder.sales_order_items.forEach(salesOrderItem => {
                 if (salesOrderItem.product_variant == null) {
-                    if (salesOrderItem.status == 40) { // for outstanding items
-                        if (salesOrderItem.product.available_stock < salesOrderItem.quantity) {
+                    if (salesOrderItem.product_variant.available_stock <= 0) { // if product has no stock, default to non-direct shipment
                             salesOrderItem.shipment_type = 1;
-                        } else {
-                            salesOrderItem.shipment_type = 0;
-                        }
+                            onlyPOAvailable = true;
                     }
 
                     // bundles
@@ -183,14 +181,12 @@ onBeforeMount(() => {
                         'status': salesOrderItem.status,
                         'deliveryOrderChecked' : false,
                         'purchaseOrderChecked' : false,
+                        'onlyPOAvailable' : onlyPOAvailable,
                     });
                 } else {
-                    if (salesOrderItem.status == 40) { // for outstanding items
-                        if (salesOrderItem.product.available_stock < salesOrderItem.quantity) {
+                    if (salesOrderItem.product_variant.available_stock <= 0) { // if product has no stock, default to non-direct shipment
                             salesOrderItem.shipment_type = 1;
-                        } else {
-                            salesOrderItem.shipment_type = 0;
-                        }
+                            onlyPOAvailable = true;
                     }
 
                     // product variants & single products
@@ -204,6 +200,7 @@ onBeforeMount(() => {
                         'status': salesOrderItem.status,
                         'deliveryOrderChecked' : false,
                         'purchaseOrderChecked' : false,
+                        'onlyPOAvailable' : onlyPOAvailable,
                     });
                 }
             });

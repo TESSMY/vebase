@@ -232,7 +232,7 @@ class SalesOrderController extends VeController
                         $subTotal += $selectedProduct['quantity'] * $product->selling_price;
                         $totalCost += $selectedProduct['quantity'] * $product->cost_price;
 
-                        if ($salesOrder->status == SalesOrder::STATUS_DRAFT) {
+                        if ($salesOrder->status != SalesOrder::STATUS_DRAFT) {
                             if ($product->available_stock < $selectedProduct['quantity']) {
                                 $status = SalesOrder::STATUS_OUTSTANDING;
                                 $salesOrderItem->status = SalesOrderItem::STATUS_OUTSTANDING;
@@ -492,7 +492,6 @@ class SalesOrderController extends VeController
                 ]);
 
                 $model->stock_on_hold -= $salesOrderItem->quantity_held;
-                $model->total_stock -= $salesOrderItem->quantity_held;
                 $model->save();
                 $salesOrderItem->status = SalesOrderItem::STATUS_PENDING_SHIPMENT;
                 $salesOrderItem->quantity_held = 0;

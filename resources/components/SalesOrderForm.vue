@@ -274,29 +274,30 @@ function updateTotalPrice() {
 }
 
 const productArray = reactive({ options: [] });
+
 const fetchProducts = (query) => {
     if (query) {
-        axios.get(`/web/products?search=${query}&with=productVariants`).then((response) => {
+        axios.get(`/web/products?search=${query}`).then((response) => {
             productArray.options = []
             response.data.response.items.forEach(product => {
                 if (product.type == 3) { // bundle type
                     productArray.options.push(product);
                 } else {
                     product.product_variants.forEach(variant => {
-                        productArray.options.push(product)
+                        productArray.options.push(variant)
                     });
                 }
             });
         });
     } else {
-        axios.get(`/web/products?with=productVariants`).then((response) => {
+        axios.get(`/web/products`).then((response) => {
             productArray.options = []
             response.data.response.items.forEach(product => {
                 if (product.type == 3) { // bundle type
                     productArray.options.push(product);
                 } else {
                     product.product_variants.forEach(variant => {
-                        productArray.options.push(product)
+                        productArray.options.push(variant)
                     });
                 }
             });

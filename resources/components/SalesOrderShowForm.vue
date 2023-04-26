@@ -165,7 +165,7 @@ onBeforeMount(() => {
             let onlyPOAvailable = false;
             props.salesOrder.sales_order_items.forEach(salesOrderItem => {
                 if (salesOrderItem.product_variant == null) {
-                    if (salesOrderItem.product_variant.available_stock <= 0) { // if product has no stock, default to non-direct shipment
+                    if (salesOrderItem.product.available_stock <= 0) { // if product has no stock, default to non-direct shipment
                             salesOrderItem.shipment_type = 1;
                             onlyPOAvailable = true;
                     }

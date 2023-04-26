@@ -96,7 +96,6 @@ class ProductController extends VeController
                     'total_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
-
             } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
                 foreach($input['variants'] as $variantData) {
                     $option1 = '';
@@ -115,14 +114,14 @@ class ProductController extends VeController
                         'option_3' => $option3,
                         'name' => $variantData['name'],
                         'barcode' => $product->barcode,
-                        'cost_price' => $variantData['unit_cost'],
+                        'cost_price' => $variantData['cost_price'],
                         'selling_price' => $variantData['selling_price'],
-                        'measurement_unit' => $product->measurement_unit,
+                        'measurement_unit' => $input['measurement_unit'],
                         'length' => $variantData['length'],
                         'width' => $variantData['width'],
                         'height' => $variantData['height'],
                         'sku' => $variantData['sku'],
-                        'total_stock' => $variantData['quantity'],
+                        'total_stock' => $variantData['total_stock'],
                         'status' => $input['status']
                     ]);
 
@@ -209,7 +208,6 @@ class ProductController extends VeController
                 $url = Storage::url($request->file('image')->store('products/' . $product->id));
                 $input['image'] = $url;
             }
-
             $oldBrand = $product->brand;
 
             $product->update($input);
@@ -227,7 +225,7 @@ class ProductController extends VeController
                 $variantId = [];
                 foreach ($input['variants'] as $variant) {
                     $currentVariant = $product->productVariants->where('id', $variant['product_variant_id'])->first();
-                    if ($variant['image']) {
+                    if (!empty($variant['image'])) {
                         $url = Storage::url($variant['image']->store('product-variants/' . $currentVariant->id));
                         $variant['image'] = $url;
                     }
@@ -235,7 +233,7 @@ class ProductController extends VeController
                         $currentVariant->update($variant);
                     } else {
                         $productVariant = ProductVariant::create($variant + ['product_id' => $product->id]);
-                        if ($variant['image']) {
+                        if (!empty($variant['image'])) {
                             $url = Storage::url($variant['image']->store('product-variants/' . $productVariant->id));
                             $productVariant->image = $url;
                             $productVariant->save();

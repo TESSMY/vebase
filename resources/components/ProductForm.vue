@@ -56,8 +56,8 @@
           <div class="form-group row mb-3">
             <label class="col-md-4 text-right form-label text-sm-start">Total Stock</label>
             <div class="col-md-12">
-              <input type="text" name="total_stock"  class="form-control" v-model="product.total_stock" :readonly="isEdit == true || type == 2" required/>
-            </div>
+              <input type="text" name="total_stock"  class="form-control" v-model="product.total_stock" :readonly="type == 2" required/>
+            </div>`
           </div>
         </div>
       </div>
@@ -221,7 +221,7 @@
               <tr v-for="(variant, i) in product.variants" :key="i">
                 <input type="hidden" :name="'variants[' + i + '][product_variant_id]'" :value="variant.id" v-if="variant.id !== 'undefined'">
                 <td>
-                  <input name="image" type="file" class="form-control mt-1 block w-15"/>
+                  <input :name="'variants[' + i + '][image]'" type="file" class="form-control mt-1 block w-15"/>
                 </td>
                 <td>
                   <input :name="'variants[' + i + '][name]'" type="text" class="form-control mt-1 block w-15" v-model="variant.name" required/>
@@ -230,10 +230,10 @@
                   <input :name="'variants[' + i + '][sku]'" type="text" class="form-control mt-1 block w-15" v-model="variant.sku" required readonly/>
                 </td>
                 <td>
-                  <input :name="'variants[' + i + '][quantity]'" type="text" class="form-control mt-1 block w-15" v-model="variant.quantity" @input="recalculateTotalStock()" required/>
+                  <input :name="'variants[' + i + '][total_stock]'" type="text" class="form-control mt-1 block w-15" v-model="variant.total_stock" @input="recalculateTotalStock()" required/>
                 </td>
                 <td>
-                  <input :name="'variants[' + i + '][unit_cost]'" type="number" class="form-control mt-1 block w-15 " min="0" step=".01" v-model="variant.unit_cost" required/>
+                  <input :name="'variants[' + i + '][cost_price]'" type="number" class="form-control mt-1 block w-15 " min="0" step=".01" v-model="variant.cost_price" required/>
                 </td>
                 <td>
                   <input :name="'variants[' + i + '][selling_price]'" type="number" class="form-control mt-1 block w-15" min="0" step=".01" v-model="variant.selling_price" required/>
@@ -499,7 +499,7 @@ export default {
     recalculateTotalStock() {
       let total = 0;
       this.product.variants.forEach(variant => {
-        total += parseInt(variant.quantity)
+        total += parseInt(variant.total_stock)
       })
       this.product.total_stock = total;
     },

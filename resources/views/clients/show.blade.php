@@ -43,7 +43,7 @@
                                 <div class="card col-sm-3 me-1">
                                     <div class="card-body">
                                         <h6 class="card-subtitle text-muted fs-6">TOTAL ORDERS</h6>
-                                        <h5>{{ $client->salesReports()->whereNull('day')->where('month', date('n'))->where('year', date('Y'))->sum('total_sales_order') }}</h5>
+                                        <h5>{{ $client->salesReports()->where('year', date('Y'))->where('month', date('n'))->whereNull('day')->sum('total_sales_order') }}</h5>
                                         <div class="d-flex justify-content-start">
                                             <h8 class="text-muted"><span class="badge rounded-pill bg-warning">-20%</span> This month </h8>
                                         </div>

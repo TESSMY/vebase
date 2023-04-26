@@ -36,6 +36,7 @@
             <label class="col-md-4 text-right form-label text-sm-start">Brand</label>
             <div class="col-md-12">
               <input type="hidden" name="brand_id" :value="selectedBrand.id" v-if="selectedBrand">
+              <input type="hidden" name="brand_id" :value="null" v-else>
               <multi-select placeholder="Search Brand" v-model="selectedBrand" label="name" :options="brandArray" @search-change="fetchBrands"></multi-select>
             </div>
           </div>

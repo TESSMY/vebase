@@ -256,7 +256,7 @@ class VeController extends Controller
                             }
                             Storage::delete($path);
                         }
-                        $input[$file] = Storage::url($request->file($file)->store($this->modelName . '/' . strtolower($file)));
+                        $input[$file] = Storage::url($request->file($file)->store($this->modelName . '/' . $model->id));
                     }
                 }
             }

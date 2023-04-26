@@ -133,7 +133,6 @@ class ProductController extends VeController
                         $productVariant->save();
                     }
                 }
-
             } elseif ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
                 $productCost = 0;
                 foreach($input['bundles'] as $bundle) {

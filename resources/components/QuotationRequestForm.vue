@@ -259,6 +259,7 @@ function removeProduct(index) {
 }
 
 const productArray = reactive({ options: [] });
+
 const fetchProducts = (query) => {
     if (query) {
         axios.get(`/web/products?search=${query}`).then((response) => {
@@ -267,7 +268,20 @@ const fetchProducts = (query) => {
                 if (product.type == 3) { // bundle type
                     productArray.options.push(product);
                 } else {
-                    product.variants.forEach(variant => {
+                    product.product_variants.forEach(variant => {
+                        productArray.options.push(variant)
+                    });
+                }
+            });
+        });
+    } else {
+        axios.get(`/web/products`).then((response) => {
+            productArray.options = []
+            response.data.response.items.forEach(product => {
+                if (product.type == 3) { // bundle type
+                    productArray.options.push(product);
+                } else {
+                    product.product_variants.forEach(variant => {
                         productArray.options.push(variant)
                     });
                 }
@@ -282,10 +296,16 @@ const fetchSuppliers = (query) => {
         axios.get(`/web/suppliers?search=${query}`).then((response) => {
             supplierArray.options = response.data.response.items;
         });
+    } else {
+        axios.get(`/web/suppliers`).then((response) => {
+            supplierArray.options = response.data.response.items;
+        });
     }
 };
 
 onBeforeMount(() => {
+    fetchProducts();
+    fetchSuppliers();
     if (props.quotationRequest !== undefined) {
         quotationRequest.value = props.quotationRequest;
 

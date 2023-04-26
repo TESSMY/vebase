@@ -91,7 +91,10 @@ class ProductController extends VeController
                     'total_stock' => $input['total_stock'],
                     'status' => $input['status']
                 ]);
-                $product->brand->countTotalProducts();
+
+                if (!empty($product->brand)) {
+                    $product->brand->countTotalProducts();
+                }
 
             } elseif ($product->type == Product::TYPE_VARIANT_PRODUCT) {
                 foreach($input['variants'] as $variantData) {
@@ -130,7 +133,11 @@ class ProductController extends VeController
                         $productVariant->save();
                     }
                 }
-                $product->brand->countTotalProducts();
+
+                if (!empty($product->brand)) {
+                    $product->brand->countTotalProducts();
+                }
+
             } elseif ($product->type == Product::TYPE_PRODUCT_BUNDLE) {
                 $productCost = 0;
                 foreach($input['bundles'] as $bundle) {
@@ -208,8 +215,20 @@ class ProductController extends VeController
                 $url = Storage::url($request->file('image')->store('products/' . $product->id));
                 $input['image'] = $url;
             }
+
+            $oldBrand = $product->brand;
+
             $product->update($input);
-            $product->brand->countTotalProducts();
+            unset($product->brand);
+
+            if (!empty($oldBrand) && $oldBrand->id != $product->brand_id) {
+                $oldBrand->countTotalProducts();
+            }
+
+            if (!empty($product->brand) && $product->brand_id != $oldBrand?->id) {
+                $product->brand->countTotalProducts();
+            }
+
             if (!empty($input['variants']) && Product::TYPE_VARIANT_PRODUCT) {
                 $variantId = [];
                 foreach ($input['variants'] as $variant) {
@@ -236,16 +255,8 @@ class ProductController extends VeController
                     throw new Exception('Product Variants associated with a Product Bundle cannot be deleted.');
                 }
 
-                $quotationItemVariants = QuotationItem::whereIn('product_variant_id', $variantId)->get();
-                if ($quotationItemVariants->isNotEmpty()) {
-                    throw new Exception('Product Variants associated with a Quotation cannot be deleted.');
-                }
-
                 $product->productVariants()->whereNotIn('id', $variantId)->delete();
-
-                $product->brand->countTotalProducts();
-            }
-            if (!empty($input['bundles']) && Product::TYPE_PRODUCT_BUNDLE) {
+            } elseif (!empty($input['bundles']) && Product::TYPE_PRODUCT_BUNDLE) {
                 $bundleId = [];
                 foreach ($input['bundles'] as $bundle) {
                     $currentBundle = $product->bundles()->where('id', $bundle['product_bundle_id'])->first();
@@ -254,15 +265,8 @@ class ProductController extends VeController
                     } else {
                         $currentBundle = ProductBundle::create($bundle + ['product_id' => $product->id]);
                     }
+
                     $bundleId[] = $currentBundle->id;
-                }
-
-                $quotationItems = QuotationItem::whereHas('product', function ($query) use ($bundleId) {
-                    $query->whereIn('id', $bundleId);
-                })->get();
-
-                if ($quotationItems->isNotEmpty()) {
-                    throw new Exception('Product Bundles or their Items associated with a Quotation Item cannot be deleted.');
                 }
 
                 $product->bundles()->whereNotIn('id', $bundleId)->delete();
@@ -291,7 +295,9 @@ class ProductController extends VeController
             $product->productVariants()->delete();
             $product->delete();
 
-            $product->brand->countTotalProducts();
+            if (!empty($product->brand)) {
+                $product->brand->countTotalProducts();
+            }
 
             flash()->success($product->name . ' deleted successfully!');
             return redirect()->route('admin.products.index');

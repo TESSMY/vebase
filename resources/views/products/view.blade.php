@@ -40,7 +40,7 @@
             </div>
             <div class="col-md-3 pe-6">
                 <div class="fw-bold">{{ __('Barcode') }}:</div>
-                @if(!empty($product->barcode))
+                @if (!empty($product->barcode))
                     <span>#{{ $product->barcode }}</span>
                 @else
                     <span>-</span>
@@ -52,7 +52,7 @@
             </div>
             <div class="col-md-3 pe-6">
                 <div class="fw-bold">{{ __('Supplier') }}:</div>
-                @if(!empty($product->supplier_id))
+                @if (!empty($product->supplier_id))
                     <span>{{ $product->supplier->name }}</span>
                 @else
                     <span>-</span>

@@ -12,14 +12,14 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'vebase:install';
+    protected $signature = '';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Install the UI for vebase';
+    protected $description = '';
 
     /**
      * Create a new command instance.

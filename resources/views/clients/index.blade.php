@@ -13,10 +13,10 @@
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow py-3 px-4">
             <div class="row mb-3">
-                <div class="col-md-8">
+                <div class="col-md-6">
                     <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New {{ $modelName }} </a>
                 </div>
-                <div class="col-md-4 text-end">
+                <div class="col-md-6 text-end">
                     <button type="button" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-secondary rounded ms-1" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
                     <form class="d-inline" action="{{ route('admin.clients.export') }}" method="POST" enctype="multipart/form-data">
                         @csrf

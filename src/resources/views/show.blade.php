@@ -25,15 +25,19 @@
                 
             </div>
             <div class="row col-12">
-                <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}" class="col-12 col-md-1 btn btn-success m-2">Edit</a>
+                @can('update', $$routeModel)
+                    <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}" class="col-12 col-md-1 btn btn-success m-2">Edit</a>
+                @endcan
                 <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
-                <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $$routeModel->getRouteKey()) }}" class="col-12 col-md-1 m-2 px-0" method="POST">
-                    @method('DELETE')
-                    @csrf
-                    <button class="col-12 btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete? You cannot revert this.')">
-                        Delete
-                    </button>
-                </form>
+                @can('delete', $$routeModel)
+                    <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $$routeModel->getRouteKey()) }}" class="col-12 col-md-1 m-2 px-0" method="POST">
+                        @method('DELETE')
+                        @csrf
+                        <button class="col-12 btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete? You cannot revert this.')">
+                            Delete
+                        </button>
+                    </form>
+                @endcan
             </div>
         </div>
     </div>

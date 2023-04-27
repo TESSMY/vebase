@@ -11,8 +11,8 @@
             </div>
             <nav class="col-12 col-md-6">
                 <ol class="breadcrumb d-md-flex justify-content-md-end my-auto">
-                  <li class="breadcrumb-item"><a href="{{ route($routePrefix . '.' . $routeName . '.index') }}">{{ $modelName }}</a></li>
-                  <li class="breadcrumb-item active">Edit {{ $modelName }}</li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix . '.' . $routeName . '.index') }}">{{ $modelName }}</a></li>
+                    <li class="breadcrumb-item active">Edit {{ $modelName }}</li>
                 </ol>
             </nav>
         </div>

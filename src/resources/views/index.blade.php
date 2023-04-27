@@ -13,8 +13,8 @@
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow py-3 px-4">
             
-            @if (View::exists($routePrefix . '.' . $routeName . '.button'))
-                @include($routePrefix . '.' . $routeName . '.button')
+            @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
+                @include($routePrefix . '.' . $routeName . '.index-header')
             @else
                 <div class="row mb-3">
                     <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New {{ $modelName }} </a>

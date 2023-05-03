@@ -36,7 +36,7 @@
                 @elseif ($createField['inputType'] == 'number')
                     <input class="form-control" type="{{ $createField['inputType'] }}" min={{ $createField['min'] ?? '' }} max={{ $createField['max'] ?? '' }} step={{ $createField['step'] ?? '' }} name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
                 @else 
-                    <input class="form-control" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
+                    <input class="form-control" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createField['required']) && $createField['required'] == 'true' ? 'required' : '' }}>
                 @endif
             </div>
         @endforeach

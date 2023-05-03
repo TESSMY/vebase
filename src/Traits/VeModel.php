@@ -3,10 +3,12 @@
 namespace Vecapital\Vebase\Traits;
 
 use Illuminate\Database\Eloquent\Model;
+use Kyslik\ColumnSortable\Sortable;
 
 abstract class VeModel extends Model
 {
-
+    use Sortable;
+    
     /**
      * The fields that can be searched in the `index` functions
      * Make sure if there are a lot of fields, a composite index is used

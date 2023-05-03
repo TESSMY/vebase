@@ -53,7 +53,7 @@
                         @endforeach
                     </select>
                 @elseif ($updateField['inputType'] == 'countryselect') 
-                    <country-select :countries="{{ json_encode(array_values(countries())) }}" name="{{ $updateField['name'] }}" data-name="{{ $updateField['dataName'] }}"></country-select>
+                    <country-select :countries="{{ json_encode(array_values(countries())) }}" :current-country="{{ json_encode($$routeModel[$updateField['name']]) }}" name="{{ $updateField['name'] }}" data-name="{{ $updateField['dataName'] }}"></country-select>
                 @elseif ($updateField['inputType'] == 'textarea') 
                     <textarea class="form-control" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" rows="{{ $updateField['rows'] ?? 5 }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
                         {{ old($updateField['value']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}

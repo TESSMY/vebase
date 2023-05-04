@@ -69,18 +69,7 @@ class VeController extends Controller
             }
         }
 
-        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
-            $models = $models->orderBy($orderColumn, $orderBy);
-        }
-
-        $sortBy = $request->input('sort_by', 'latest');
-        if ($sortBy === 'oldest'){
-            $models->oldest();
-        } elseif ($sortBy === 'latest'){
-            $models->latest();
-        }
-
-        $models = $models->paginate($limit)->withQueryString();
+        $models = $models->sortable()->paginate($limit)->withQueryString();
         
         $compact = [
             'routeModel' => Str::singular($this->routeName),

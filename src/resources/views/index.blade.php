@@ -11,38 +11,41 @@
             </div>
         </div>
         <div class="border my-2 mb-3"></div>
-        <div class="bg-white card shadow py-3 px-4">
+        <div class="bg-white card shadow">
             
-            @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
-                @include($routePrefix . '.' . $routeName . '.index-header')
-            @else
-                <div class="row mb-3">
-                    <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="col-12 col-md-2 mb-3 mb-md-0 btn btn-primary rounded"><i class="uil-plus-circle"></i> Create New {{ $modelName }} </a>
-                </div>
-            @endif
-
-            <form action="{{ route($routePrefix . '.' . $routeName . '.index') }}" method="GET" id="form">
-                @csrf
-                <div class="row mb-3">
-                    <div class="col-12 col-md-2 mb-3 mb-md-0 d-md-flex">
-                        <label class="form-label my-auto me-md-2">Search: </label>
-                        <input class="form-control" type="search" placeholder="Search" name="search" value="{{ request()->input('search') }}">
+            <div class="card-body">
+                @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
+                    @include($routePrefix . '.' . $routeName . '.index-header')
+                @else
+                    <div class="d-flex">
+                        <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="btn btn-primary rounded me-2"><i class="uil-plus-circle"></i> Create </a>
                     </div>
-                    <div class="col-md-8"></div>
-                    <div class="col-12 col-md-2 d-flex">
-                        <span class="my-auto">Display:</span>
-                        <select class="form-select mx-2" name="limit">
-                            <option selected>10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                        </select>
-                        <span class="my-auto">{{ $modelName }}</span>
+                @endif
+                <div class="row my-3">
+                    <div class="col-md-6">
+                        <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex" method="GET">
+                            @csrf
+                            <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
+                        </form>
+                    </div>
+                    <div class="col-md-6 mt-2 mt-md-0">
+                        <div class="row justify-content-md-end">
+                            <div class="col-auto">
+                                <label class="col-form-label">Display:</label>
+                            </div>
+                            <div class="col-auto">
+                                <select class="form-select">
+                                    <option selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </form>
-
-            <div class="overflow-auto">
-                @include('vebase::common.table')
+                <div class="overflow-auto">
+                    @include('vebase::common.table')
+                </div>
             </div>
         </div>
         <div class="mt-2">

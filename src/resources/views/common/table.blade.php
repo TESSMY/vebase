@@ -49,7 +49,7 @@
                                     @endcan
                                 </td>
                             @else
-                                @if (empty($$routeModel[$indexField['columnName']]))
+                                @if (is_null($$routeModel[$indexField['columnName']]))
                                     <td>-</td>
                                 @else
                                     @if (!empty($indexField['relation']))

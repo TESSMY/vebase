@@ -35,7 +35,7 @@
                         @elseif (strtolower($indexField['columnName']) == 'show_and_edit') 
                             <td>
                                 @can('view', $$routeModel)
-                                    <a class="me-4" href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
+                                    <a class="me-3" href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
                                 @endcan
                                 @can('update', $$routeModel)
                                     <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a>

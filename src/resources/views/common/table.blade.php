@@ -31,15 +31,15 @@
                 @else
                     <tr>
                         @foreach ($model->indexFields as $indexField)
-                            @if (strtolower($indexField['columnName']) == 'show') 
+                            @if (!empty($indexField['columnName']) && strtolower($indexField['columnName']) == 'show') 
                                 @can('view', $$routeModel)
                                     <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
                                 @endcan
-                            @elseif (strtolower($indexField['columnName']) == 'edit') 
+                            @elseif (!empty($indexField['columnName']) && strtolower($indexField['columnName']) == 'edit') 
                                 @can('update', $$routeModel)
                                     <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
                                 @endcan
-                            @elseif (strtolower($indexField['columnName']) == 'show_and_edit') 
+                            @elseif (!empty($indexField['columnName']) && strtolower($indexField['columnName']) == 'show_and_edit') 
                                 <td>
                                     @can('view', $$routeModel)
                                         <a class="me-3" href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
@@ -49,11 +49,31 @@
                                     @endcan
                                 </td>
                             @else
-                                @if (is_null($$routeModel[$indexField['columnName']]))
-                                    <td>-</td>
+                                @if (!empty($indexField['type']) && $indexField['type'] == 'span')
+                                    <td>
+                                        <span class="{{ $$routeModel[$indexField['class']] }}">{{ $$routeModel[$indexField['columnName']] }}</span>
+                                    </td>
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'relation')
+                                    @if (empty($$routeModel[$indexField['columnName']]))
+                                        <td>-</td>
+                                    @else
+                                        <td>{{ $$routeModel[$indexField['relation']][$indexField['relatedColumnName']] }}</td>
+                                    @endif
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'html')
+                                    <td>{!! $indexField['html'] !!}</td>
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'decimal')
+                                    <td>
+                                        @if (!empty($indexField['symbol']))
+                                            {{ $indexField['symbol'] . ' '}}
+                                        @endif
+                                        {{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}
+                                        @if (!empty($indexField['currency']))
+                                            {{ $indexField['currency'] }}
+                                        @endif
+                                    </td>
                                 @else
-                                    @if (!empty($indexField['relation']))
-                                        <td>{{ $$routeModel[$indexField['relation']]->name }}</td>
+                                    @if (empty($$routeModel[$indexField['columnName']]))
+                                        <td>-</td>
                                     @else
                                         <td>{{ $$routeModel[$indexField['columnName']] }}</td>
                                     @endif

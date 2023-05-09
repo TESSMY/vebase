@@ -22,26 +22,26 @@
                     </div>
                 @endif
                 <div class="row my-3">
-                    <div class="col-md-6">
-                        <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex" method="GET">
-                            @csrf
+                    <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex" method="GET">
+                        @csrf
+                        <div class="col-md-6">
                             <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
-                        </form>
-                    </div>
-                    <div class="col-md-6 mt-2 mt-md-0">
-                        <div class="row justify-content-md-end">
-                            <div class="col-auto">
-                                <label class="col-form-label">Display:</label>
-                            </div>
-                            <div class="col-auto">
-                                <select class="form-select">
-                                    <option selected>10</option>
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                </select>
+                        </div>
+                        <div class="col-md-6 mt-2 mt-md-0">
+                            <div class="row justify-content-md-end">
+                                <div class="col-auto">
+                                    <label class="col-form-label">Display:</label>
+                                </div>
+                                <div class="col-auto">
+                                    <select class="form-select" name="limit" onchange="this.form.submit()">
+                                        <option value="10" {{ empty(request()->input('limit')) || request()->input('limit') == '10' ? 'selected' : '' }}>10</option>
+                                        <option value="25" {{ request()->input('limit') == '25' ? 'selected' : '' }}>25</option>
+                                        <option value="50" {{ request()->input('limit') == '50' ? 'selected' : '' }}>50</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
                 <div class="overflow-auto">
                     @include('vebase::common.table')

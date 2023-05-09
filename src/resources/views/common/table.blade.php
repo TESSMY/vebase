@@ -66,15 +66,11 @@
                                 @elseif (!empty($indexField['type']) && $indexField['type'] == 'html')
                                     <td>{!! $indexField['html'] !!}</td>
                                 @elseif (!empty($indexField['type']) && $indexField['type'] == 'decimal')
-                                    <td>
-                                        @if (!empty($indexField['symbol']))
-                                            {{ $indexField['symbol'] . ' '}}
-                                        @endif
-                                        {{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}
-                                        @if (!empty($indexField['currency']))
-                                            {{ $indexField['currency'] }}
-                                        @endif
-                                    </td>
+                                    <td>{{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}</td>
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'decimal_with_currency')
+                                    <td>{{ $$routeModel[$indexField['columnName']] . ' ' . $indexField['currency'] }}</td>
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'dollar_decimal')
+                                    <td>$ {{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}</td>
                                 @else
                                     @if (empty($$routeModel[$indexField['columnName']]))
                                         <td>-</td>

@@ -12,7 +12,11 @@
                             @if (strtolower($indexField['displayName']) == strtolower('Actions') || strtolower($indexField['displayName']) == strtolower('Action'))
                                 {{ $indexField['displayName'] }}
                             @else
-                                @sortablelink($indexField['columnName'], $indexField['displayName'])
+                                @if (!empty($model->sortable) && in_array($indexField['columnName'], $model->sortable))
+                                    @sortablelink($indexField['columnName'], $indexField['displayName'])    
+                                @else
+                                    {{ $indexField['displayName'] }}
+                                @endif
                             @endif
                         </th>
                     @endif
@@ -31,15 +35,15 @@
                 @else
                     <tr>
                         @foreach ($model->indexFields as $indexField)
-                            @if (strtolower($indexField['columnName']) == 'show') 
+                            @if (!empty($indexField['columnName']) && strtolower($indexField['columnName']) == 'show') 
                                 @can('view', $$routeModel)
                                     <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
                                 @endcan
-                            @elseif (strtolower($indexField['columnName']) == 'edit') 
+                            @elseif (!empty($indexField['columnName']) && strtolower($indexField['columnName']) == 'edit') 
                                 @can('update', $$routeModel)
                                     <td><a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a></td>
                                 @endcan
-                            @elseif (strtolower($indexField['columnName']) == 'show_and_edit') 
+                            @elseif (!empty($indexField['columnName']) && strtolower($indexField['columnName']) == 'show_and_edit') 
                                 <td>
                                     @can('view', $$routeModel)
                                         <a class="me-3" href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a>
@@ -49,11 +53,27 @@
                                     @endcan
                                 </td>
                             @else
-                                @if (is_null($$routeModel[$indexField['columnName']]))
-                                    <td>-</td>
+                                @if (!empty($indexField['type']) && $indexField['type'] == 'span')
+                                    <td>
+                                        <span class="{{ $$routeModel[$indexField['class']] }}">{{ $$routeModel[$indexField['columnName']] }}</span>
+                                    </td>
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'relation')
+                                    @if (empty($$routeModel[$indexField['columnName']]))
+                                        <td>-</td>
+                                    @else
+                                        <td>{{ $$routeModel[$indexField['relation']][$indexField['relatedColumnName']] }}</td>
+                                    @endif
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'html')
+                                    <td>{!! $indexField['html'] !!}</td>
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'decimal')
+                                    <td>{{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}</td>
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'decimal_with_currency')
+                                    <td>{{ $$routeModel[$indexField['columnName']] . ' ' . $indexField['currency'] }}</td>
+                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'dollar_decimal')
+                                    <td>$ {{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}</td>
                                 @else
-                                    @if (!empty($indexField['relation']))
-                                        <td>{{ $$routeModel[$indexField['relation']]->name }}</td>
+                                    @if (empty($$routeModel[$indexField['columnName']]))
+                                        <td>-</td>
                                     @else
                                         <td>{{ $$routeModel[$indexField['columnName']] }}</td>
                                     @endif

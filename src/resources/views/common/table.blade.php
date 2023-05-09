@@ -12,10 +12,10 @@
                             @if (strtolower($indexField['displayName']) == strtolower('Actions') || strtolower($indexField['displayName']) == strtolower('Action'))
                                 {{ $indexField['displayName'] }}
                             @else
-                                @if (!empty($indexField['sortable']) && $indexField['sortable'] == 'false')
-                                    {{ $indexField['displayName'] }}
+                                @if (!empty($model->sortable) && in_array($indexField['columnName'], $model->sortable))
+                                    @sortablelink($indexField['columnName'], $indexField['displayName'])    
                                 @else
-                                    @sortablelink($indexField['columnName'], $indexField['displayName'])
+                                    {{ $indexField['displayName'] }}
                                 @endif
                             @endif
                         </th>

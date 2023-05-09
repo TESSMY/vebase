@@ -12,7 +12,11 @@
                             @if (strtolower($indexField['displayName']) == strtolower('Actions') || strtolower($indexField['displayName']) == strtolower('Action'))
                                 {{ $indexField['displayName'] }}
                             @else
-                                @sortablelink($indexField['columnName'], $indexField['displayName'])
+                                @if (!empty($indexField['sortable']) && $indexField['sortable'] == 'false')
+                                    {{ $indexField['displayName'] }}
+                                @else
+                                    @sortablelink($indexField['columnName'], $indexField['displayName'])
+                                @endif
                             @endif
                         </th>
                     @endif

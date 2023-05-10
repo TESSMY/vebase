@@ -53,30 +53,30 @@
                                     @endcan
                                 </td>
                             @else
-                                @if (!empty($indexField['type']) && $indexField['type'] == 'span')
-                                    <td>
-                                        <span class="{{ $$routeModel[$indexField['class']] }}">{{ $$routeModel[$indexField['columnName']] }}</span>
-                                    </td>
-                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'relation')
-                                    @if (empty($$routeModel[$indexField['columnName']]))
-                                        <td>-</td>
-                                    @else
-                                        <td>{{ $$routeModel[$indexField['relation']][$indexField['relatedColumnName']] }}</td>
-                                    @endif
-                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'html')
-                                    <td>{!! $indexField['html'] !!}</td>
-                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'decimal')
-                                    <td>{{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}</td>
-                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'decimal_with_currency')
-                                    <td>{{ $$routeModel[$indexField['columnName']] . ' ' . $indexField['currency'] }}</td>
-                                @elseif (!empty($indexField['type']) && $indexField['type'] == 'dollar_decimal')
-                                    <td>$ {{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}</td>
-                                @else
+                                @if (empty($indexField['type']))
                                     @if (empty($$routeModel[$indexField['columnName']]))
                                         <td>-</td>
                                     @else
                                         <td>{{ $$routeModel[$indexField['columnName']] }}</td>
                                     @endif
+                                @elseif ($indexField['type'] == 'span')
+                                    <td>
+                                        <span class="{{ $$routeModel[$indexField['class']] ?? '' }}">{{ $$routeModel[$indexField['columnName']] }}</span>
+                                    </td>
+                                @elseif ($indexField['type'] == 'relation')
+                                    @if (empty($$routeModel[$indexField['relation']][$indexField['relatedColumnName']]))
+                                        <td>-</td>
+                                    @else
+                                        <td>{{ $$routeModel[$indexField['relation']][$indexField['relatedColumnName']] }}</td>
+                                    @endif
+                                @elseif ($indexField['type'] == 'html')
+                                    <td>{!! $indexField['html'] !!}</td>
+                                @elseif ($indexField['type'] == 'decimal')
+                                    <td>{{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}</td>
+                                @elseif ($indexField['type'] == 'decimal_with_currency')
+                                    <td>{{ $$routeModel[$indexField['columnName']] . ' ' . $indexField['currency'] }}</td>
+                                @elseif ($indexField['type'] == 'dollar_decimal')
+                                    <td>$ {{ number_format($$routeModel[$indexField['columnName']], $indexField['decimal']) }}</td>
                                 @endif
                             @endif
                         @endforeach

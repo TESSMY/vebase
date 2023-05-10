@@ -17,18 +17,21 @@
             </nav>
         </div>
         <div class="border my-2 mb-3"></div>
-        <div class="bg-white card shadow py-3 px-4">
-            <form action="{{ route($routePrefix . '.' . $routeName . '.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="row border-bottom mb-2">
-                    <span class="h5">{{ $modelName }} Information</span>
-                </div>
-                @include('vebase::form')
-                <div class="row col-12">
-                    <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Create</button>
-                    <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
-                </div>
-            </form>
+        <div class="bg-white card shadow">
+           <div class="card-body">
+                <form action="{{ route($routePrefix . '.' . $routeName . '.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="row">
+                        <span class="h5">Information</span>
+                    </div>
+                    <div class="border mb-2"></div>
+                    @include('vebase::form')
+                    <div class="d-flex">
+                        <button type="submit" class="btn btn-success me-2">Create</button>
+                        <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="btn btn-dark">Back</a>
+                    </div>
+                </form>
+           </div>
         </div>
     </div>
 @endsection

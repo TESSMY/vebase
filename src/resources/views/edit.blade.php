@@ -17,19 +17,31 @@
             </nav>
         </div>
         <div class="border my-2 mb-3"></div>
-        <div class="bg-white card shadow py-3 px-4">
-            <form action="{{ route($routePrefix . '.' . $routeName . '.update', $$routeModel->getRouteKey()) }}" method="POST" enctype="multipart/form-data">
-                @method('PUT')
-                @csrf
-                <div class="row border-bottom mb-2">
-                    <span class="h5">Information</span>
-                </div>
-                @include('vebase::form')
-                <div class="row col-12">
-                    <button type="submit" class="col-12 col-md-1 btn btn-success m-2">Update</button>
-                    <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
-                </div>
-            </form>
+        <div class="bg-white card shadow">
+            <div class="card-body">
+                <form action="{{ route($routePrefix . '.' . $routeName . '.update', $$routeModel->getRouteKey()) }}" method="POST" enctype="multipart/form-data">
+                    @method('PUT')
+                    @csrf
+                    <div class="row">
+                        <span class="h5">Information</span>
+                    </div>
+                    <div class="border mb-2"></div>
+                    @include('vebase::form')
+                    <div class="d-flex">
+                        <button type="submit" class="btn btn-success me-2">Update</button>
+                        <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="btn btn-dark">Back</a>
+                    </div>
+                </form>
+                <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $$routeModel) }}" style="margin-top: -65px" method="POST" enctype="multipart/form-data">
+                    @method('DELETE')
+                    @csrf
+                    <div class="mt-3 text-end">
+                        <button class="btn btn-danger px-2" type="submit" onclick="return confirm('Are you sure you want to delete? You cannot revert this.')">
+                            Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 @endsection

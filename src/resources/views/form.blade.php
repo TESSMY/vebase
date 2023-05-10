@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row mb-2">
     @if (request()->routeIs($routePrefix . '.' . $routeName . '.create'))
         @foreach ($model->createFields as $createField)
             <div class="col-12 {{ $createField['size'] ?? 'col-md-6' }} mb-md-2 mb-2">

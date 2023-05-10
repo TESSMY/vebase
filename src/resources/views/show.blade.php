@@ -20,31 +20,36 @@
         @if (View::exists($routePrefix . '.' . $routeName . '.show-body'))
             @include($routePrefix . '.' . $routeName . '.show-body')
         @else
-            <div class="bg-white card shadow py-3 px-4">
-                <div class="row border-bottom mb-2">
-                    <span class="h5">Information</span>
-                </div>
-                <div class="row">
-                    @if (!empty($model->showFields))
-                        @foreach ($model->showFields as $showField)
-                            <span class="col-md-1 mb-2">{{ $showField['displayName'] }}: </span><span class="col-md-11">{{ $$routeModel[$showField['columnName']] }}</span>
-                        @endforeach
-                    @endif
-                </div>
-                <div class="row col-12">
-                    @can('update', $$routeModel)
-                        <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}" class="col-12 col-md-1 btn btn-success m-2">Edit</a>
-                    @endcan
-                    <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="col-12 col-md-1 btn btn-dark m-2">Back</a>
-                    @can('delete', $$routeModel)
-                        <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $$routeModel->getRouteKey()) }}" class="col-12 col-md-1 m-2 px-0" method="POST">
-                            @method('DELETE')
-                            @csrf
-                            <button class="col-12 btn btn-danger" type="submit" onclick="return confirm('Are you sure you want to delete? You cannot revert this.')">
-                                Delete
-                            </button>
-                        </form>
-                    @endcan
+            <div class="bg-white card shadow">
+                <div class="card-body">
+                    <div class="row">
+                        <span class="h5">Information</span>
+                    </div>
+                    <div class="border mb-2"></div>
+                    <div class="row mb-2">
+                        @if (!empty($model->showFields))
+                            @foreach ($model->showFields as $showField)
+                                <span class="col-4 mb-2">{{ $showField['displayName'] }}: </span><span class="col-8 mb-2">{{ $$routeModel[$showField['columnName']] }}</span>
+                            @endforeach
+                        @endif
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            @can('update', $$routeModel)
+                                <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}" class="btn btn-success me-3">Edit</a>
+                            @endcan
+                            <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="btn btn-dark me-3">Back</a>
+                        </div>
+                        @can('delete', $$routeModel)
+                            <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $$routeModel->getRouteKey()) }}" method="POST" enctype="multipart/form-data">
+                                @method('DELETE')
+                                @csrf
+                                <button class="btn btn-danger px-2" type="submit" onclick="return confirm('Are you sure you want to delete? You cannot revert this.')">
+                                    Delete
+                                </button>
+                            </form>
+                        @endcan
+                    </div>
                 </div>
             </div>
         @endif

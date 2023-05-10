@@ -12,7 +12,6 @@
         </div>
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow">
-            
             <div class="card-body">
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
                     @include($routePrefix . '.' . $routeName . '.index-header')

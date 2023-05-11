@@ -59,6 +59,12 @@
                                     @else
                                         <td>{{ $$routeModel[$indexField['columnName']] }}</td>
                                     @endif
+                                @elseif ($indexField['type'] == 'image')
+                                    <td>
+                                        @if (!empty($$routeModel[$indexField['columnName']]))
+                                            <img src="{{ $$routeModel[$indexField['columnName']] }}" class="avatar">
+                                        @endif
+                                    </td>
                                 @elseif ($indexField['type'] == 'span')
                                     <td>
                                         <span class="{{ $$routeModel[$indexField['class']] ?? '' }}">{{ $$routeModel[$indexField['columnName']] }}</span>

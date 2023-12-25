@@ -14,9 +14,7 @@
                 @elseif ($createField['inputType'] == 'countryselect') 
                     <country-select :countries="{{ json_encode(array_values(countries())) }}" name="{{ $createField['name'] }}" data-name="{{ $createField['dataName'] }}"></country-select>
                 @elseif ($createField['inputType'] == 'textarea') 
-                    <textarea class="form-control" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" rows="{{ $createField['rows'] ?? 5 }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
-                        {{ old($createField['name']) ?? '' }}
-                    </textarea>
+                    <textarea class="form-control" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" rows="{{ $createField['rows'] ?? 5 }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>{{ old($createField['name']) ?? '' }}</textarea>
                 @elseif ($createField['inputType'] == 'radio' || $createField['inputType'] == 'checkbox')
                     @if (!empty($createField['multipleInput']))
                         @foreach ($createField['options'] as $option)

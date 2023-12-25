@@ -90,7 +90,7 @@
                 @endif
             @empty
                 <tr>
-                    <td colspan="100%" class="text-center">There are no {{ $modelName }} found.</td>
+                    <td colspan="100%" class="text-center">There are no {{ \Illuminate\Support\Str::plural(strtolower($modelName)) }} found.</td>
                 </tr>
             @endforelse
         </tbody>

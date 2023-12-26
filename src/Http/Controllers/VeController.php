@@ -149,7 +149,7 @@ class VeController extends Controller
             }
 
             DB::commit();
-            flash()->success('Successfully create ' .  $this->modelName);
+            flash()->success('Successfully created ' .  strtolower($this->modelName));
 
             if (!empty($this->create_redirect_route)) {
                 if (!empty($this->create_redirect_object)) {
@@ -162,7 +162,7 @@ class VeController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error creating ' . $this->modelName);
+            flash()->error('There was an error creating ' . strtolower($this->modelName));
             return back()->withInput();
         }
     }
@@ -263,12 +263,12 @@ class VeController extends Controller
             }
 
             DB::commit();
-            flash()->success('Successfully updated ' .  $this->modelName);
+            flash()->success('Successfully updated ' .  strtolower($this->modelName) . '. ID: ' . $this->model->id);
             return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error creating ' . $this->modelName);
+            flash()->error('There was an error updating ' . strtolower($this->modelName));
             return back()->withInput();
         }
     }

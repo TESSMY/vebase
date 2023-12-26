@@ -148,6 +148,10 @@ class VeController extends Controller
 
             DB::commit();
             flash()->success('Successfully create ' .  $this->modelName);
+
+            if (!empty($this->create_redirect_route)) {
+                return redirect()->route($this->create_redirect_route);
+            }
             
             return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {

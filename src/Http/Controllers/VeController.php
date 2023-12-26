@@ -122,16 +122,14 @@ class VeController extends Controller
         
         $input = $request->all();
 
-        if (empty($this->model->createValidator)) {
-            flash('Error: ' . $this->modelName . " create is empty")->error();
-            return back()->withInput($request->input());
+        if (!empty($this->model->createValidator)) {
+            $validator = Validator::make($input, $this->model->createValidator);
+            if ($validator->fails()) {
+                flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+                return back()->withInput($request->input())->withErrors($validator);
+            }
         }
 
-        $validator = Validator::make($input, $this->model->createValidator);
-        if ($validator->fails()) {
-            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            return back()->withInput($request->input())->withErrors($validator);
-        }
 
         try {
             DB::beginTransaction();
@@ -230,15 +228,12 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (empty($this->model->updateValidator())) {
-            flash('Error:  updateValidator is empty')->error();
-            return back()->withInput($request->input());
-        }
-
-        $validator = Validator::make($input, $model->updateValidator());
-        if ($validator->fails()) {
-            flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
-            return back()->withInput($request->input())->withErrors($validator);
+        if (!empty($this->model->updateValidator())) {
+            $validator = Validator::make($input, $model->updateValidator());
+            if ($validator->fails()) {
+                flash('Error: ' . implode(" ", $validator->errors()->all()))->error();
+                return back()->withInput($request->input())->withErrors($validator);
+            }
         }
 
 

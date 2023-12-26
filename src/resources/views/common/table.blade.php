@@ -54,7 +54,7 @@
                                 </td>
                             @else
                                 @if (empty($indexField['type']))
-                                    @if (empty($$routeModel[$indexField['columnName']]))
+                                    @if (!isset($$routeModel[$indexField['columnName']]))
                                         <td>-</td>
                                     @else
                                         <td>{{ $$routeModel[$indexField['columnName']] }}</td>

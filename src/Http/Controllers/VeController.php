@@ -147,7 +147,7 @@ class VeController extends Controller
             $created = $this->model::create($input);
 
             if (method_exists($this, 'storeAfter')) {
-                $this->storeAfter($created);
+                $this->storeAfter($request, $created);
             }
 
             DB::commit();
@@ -264,7 +264,7 @@ class VeController extends Controller
             $model->update($input);
 
             if (method_exists($this, 'updateAfter')) {
-                $this->updateAfter($model);
+                $this->updateAfter($request, $model);
             }
 
             DB::commit();

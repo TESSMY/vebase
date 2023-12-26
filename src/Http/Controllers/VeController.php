@@ -144,12 +144,15 @@ class VeController extends Controller
                 }
             }
 
-            $this->model::create($input);
+            $created = $this->model::create($input);
 
             DB::commit();
             flash()->success('Successfully create ' .  $this->modelName);
 
             if (!empty($this->create_redirect_route)) {
+                if (!empty($this->create_redirect_object)) {
+                    return redirect()->route($this->create_redirect_route, [$created]);
+                }
                 return redirect()->route($this->create_redirect_route);
             }
             

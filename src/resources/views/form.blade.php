@@ -85,4 +85,4 @@
     @endif
 </div>
 
-@includeIf($routePrefix . '.' . $routeName . '.form-after'))
+@includeIf($routePrefix . '.' . $routeName . '.form-after')

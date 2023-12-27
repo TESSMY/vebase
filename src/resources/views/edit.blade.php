@@ -26,7 +26,7 @@
                         <span class="h5">Information</span>
                     </div>
                     <div class="border mb-2"></div>
-                    @includeFirst($routePrefix . '.' . $routeName . '.form', 'vebase::form')
+                    @includeFirst([$routePrefix . '.' . $routeName . '.form', 'vebase::form'])
                     <div class="d-flex">
                         <button type="submit" class="btn btn-success me-2">Update</button>
                         <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="btn btn-dark">Back</a>

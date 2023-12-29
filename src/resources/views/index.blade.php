@@ -22,7 +22,6 @@
                 @endif
                 <div class="row my-3">
                     <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex" method="GET">
-                        @csrf
                         <div class="col-md-6">
                             <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
                         </div>

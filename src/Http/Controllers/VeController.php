@@ -263,7 +263,7 @@ class VeController extends Controller
             }
 
             DB::commit();
-            flash()->success('Successfully updated ' .  strtolower($this->modelName) . '. ID: ' . $this->model->id);
+            flash()->success('Successfully updated ' .  strtolower($this->modelName) . '. ID: ' . $model->id);
             return redirect()->route($this->folder . '.' . $this->routeName . '.index');
         } catch (\Exception $exception) {
             DB::rollBack();

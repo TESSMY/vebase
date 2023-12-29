@@ -69,7 +69,7 @@ class VeController extends Controller
             }
         }
 
-        $models = $models->sortable()->paginate($limit)->withQueryString();
+        $models = $models->sortable()->latest()->paginate($limit)->withQueryString();
         
         $compact = [
             'routeModel' => Str::singular($this->routeName),

@@ -86,9 +86,11 @@ abstract class VeModel extends Model
 
     abstract public function hasAdminResourceRoute() : bool;
 
-    abstract public function hasDashboardResourceRoute() : bool;
-
     abstract public function getParentClass() : string|null;
+
+    public function hasPolicies() {
+        return false;
+    }
 
 
 }

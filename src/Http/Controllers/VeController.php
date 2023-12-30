@@ -142,6 +142,10 @@ class VeController extends Controller
                 }
             }
 
+            if (method_exists($this, 'storeInput')) {
+                $input = $this->storeInput($input);
+            }
+
             $created = $this->model::create($input);
 
             if (method_exists($this, 'storeAfter')) {
@@ -254,6 +258,10 @@ class VeController extends Controller
                         $input[$file] = Storage::url($request->file($file)->store($this->modelName . '/' . md5($model->id)));
                     }
                 }
+            }
+
+            if (method_exists($this, 'updateInput')) {
+                $input = $this->updateInput($input);
             }
 
             $model->update($input);

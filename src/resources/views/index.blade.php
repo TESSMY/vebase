@@ -22,23 +22,27 @@
                 @endif
                 <div class="row my-3">
                     <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex" method="GET">
-                        <div class="col-md-6">
-                            <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
-                        </div>
-                        <div class="col-md-6 mt-2 mt-md-0">
-                            <div class="row justify-content-md-end">
-                                <div class="col-auto">
-                                    <label class="col-form-label">Display:</label>
-                                </div>
-                                <div class="col-auto">
-                                    <select class="form-select" name="limit" onchange="this.form.submit()">
-                                        <option value="10" {{ empty(request()->input('limit')) || request()->input('limit') == '10' ? 'selected' : '' }}>10</option>
-                                        <option value="25" {{ request()->input('limit') == '25' ? 'selected' : '' }}>25</option>
-                                        <option value="50" {{ request()->input('limit') == '50' ? 'selected' : '' }}>50</option>
-                                    </select>
+                        @if (View::exists($routePrefix . '.' . $routeName . '.index-search'))
+                            @include($routePrefix . '.' . $routeName . '.index-search')
+                        @else
+                            <div class="col-md-6">
+                                <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
+                            </div>
+                            <div class="col-md-6 mt-2 mt-md-0">
+                                <div class="row justify-content-md-end">
+                                    <div class="col-auto">
+                                        <label class="col-form-label">Display:</label>
+                                    </div>
+                                    <div class="col-auto">
+                                        <select class="form-select" name="limit" onchange="this.form.submit()">
+                                            <option value="10" {{ empty(request()->input('limit')) || request()->input('limit') == '10' ? 'selected' : '' }}>10</option>
+                                            <option value="25" {{ request()->input('limit') == '25' ? 'selected' : '' }}>25</option>
+                                            <option value="50" {{ request()->input('limit') == '50' ? 'selected' : '' }}>50</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @endif
                     </form>
                 </div>
                 <div class="overflow-auto">

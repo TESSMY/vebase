@@ -69,6 +69,10 @@ class VeController extends Controller
             }
         }
 
+        if (method_exists($this, 'indexFilter')) {
+            $models = $this->indexFilter($request, $models);
+        }
+
         $models = $models->sortable()->latest()->paginate($limit)->withQueryString();
         
         $compact = [

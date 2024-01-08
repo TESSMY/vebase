@@ -32,15 +32,17 @@
                         <a href="{{ route($routePrefix . '.' . $routeName . '.index') }}" class="btn btn-dark">Back</a>
                     </div>
                 </form>
-                <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $$routeModel) }}" style="margin-top: -65px" method="POST" enctype="multipart/form-data">
-                    @method('DELETE')
-                    @csrf
-                    <div class="mt-3 text-end">
-                        <button class="btn btn-danger px-2" type="submit" onclick="return confirm('Are you sure you want to delete? You cannot revert this.')">
-                            Delete
-                        </button>
-                    </div>
-                </form>
+                @can('delete', $$routeModel)
+                    <form action="{{ route($routePrefix . '.' . $routeName . '.destroy', $$routeModel) }}" style="margin-top: -65px" method="POST" enctype="multipart/form-data">
+                        @method('DELETE')
+                        @csrf
+                        <div class="mt-3 text-end">
+                            <button class="btn btn-danger px-2" type="submit" onclick="return confirm('Are you sure you want to delete? You cannot revert this.')">
+                                Delete
+                            </button>
+                        </div>
+                    </form>
+                @endcan
             </div>
         </div>
     </div>

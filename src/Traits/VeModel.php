@@ -8,7 +8,7 @@ use Kyslik\ColumnSortable\Sortable;
 abstract class VeModel extends Model
 {
     use Sortable;
-    
+
     /**
      * @var array
      * The fields that can be searched in the `index` functions
@@ -41,7 +41,6 @@ abstract class VeModel extends Model
      *  E.g. id, name
      */
     public array $indexFields = [];
-
 
     /**
      * @var array
@@ -88,25 +87,20 @@ abstract class VeModel extends Model
 
     /**
      * @return bool
+     * Register route resource for api
      */
-    abstract public function hasApiResourceRoute() : bool;
+    abstract public function hasApiResourceRoute(): bool;
 
     /**
      * @return bool
+     *  Register route resource for admin
      */
-    abstract public function hasAdminResourceRoute() : bool;
+    abstract public function hasAdminResourceRoute(): bool;
 
-    /**
-     * @return string|null
-     */
-    abstract public function getParentClass() : string|null;
+    abstract public function getParentClass(): ?string;
 
-    /**
-     * @return bool
-     */
     public function hasPolicies(): bool
     {
         return false;
     }
-
 }

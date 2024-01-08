@@ -7,7 +7,6 @@ use Vecapital\Vebase\Console\InstallCommand;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
-
     public function boot()
     {
         $this->publishes([
@@ -43,7 +42,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->registerCommands();
     }
 
-     /**
+    /**
      * Register the Invoices Artisan commands.
      *
      * @return void
@@ -56,5 +55,4 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
             ]);
         }
     }
-
 }

@@ -11,6 +11,12 @@ abstract class VeModel extends Model
 
     /**
      * @var array
+     * Observers that are to be used by the current model
+     */
+    public array $observers = [];
+
+    /**
+     * @var array
      * The fields that can be searched in the `index` functions
      * Make sure if there are a lot of fields, a composite index is used
      */

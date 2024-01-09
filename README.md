@@ -18,15 +18,28 @@ VE Base is built on top of Laravel framework to allow for minimal development ef
 ---
 
 ## Installation
+Add this line in composer.json
+
+```
+"repositories": [
+    ...,
+    {
+        "type": "vcs",
+        "url":  "git@bitbucket.org:VECapitalAsia/vecapital-verp.git"
+    }
+],
+```
+
 Run the command to install the package
 ```
 composer install vecapital/vebase
 ```
 
-Run the command below to install all the UI, Controllers, Vue Components, Blade views and Exports
+If there are updates to this package run the following command
 ```
-php artisan vebase:install
+composer update vecapital/verp
 ```
+
 
 ---
 
@@ -215,7 +228,6 @@ Below are the option to override the index table. The order in which the files t
 4. index-table-th.blade.php
 5. index-table-body.blade.php
 6. index-table-tr.blade.php
-   ![Screenshot](public/images/index.png)
 ---
 
 ## Overriding views

@@ -2,12 +2,13 @@
 
 namespace Vecapital\Vebase\Traits;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Kyslik\ColumnSortable\Sortable;
 
 abstract class VeModel extends Model
 {
-    use Sortable;
+    use Sortable, HasFactory;
 
     /**
      * @var array

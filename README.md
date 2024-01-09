@@ -22,11 +22,11 @@ Add this line in composer.json
 
 ```
 "repositories": [
-    ...,
-    {
-        "type": "vcs",
-        "url":  "git@bitbucket.org:VECapitalAsia/vecapital-verp.git"
-    }
+   ...,
+   {
+      "type": "vcs",
+      "url":  "git@bitbucket.org:pixelafy/vebase.git"
+   }
 ],
 ```
 

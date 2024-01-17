@@ -141,7 +141,7 @@ class VeController extends Controller
             if (!empty($this->model->files)) {
                 foreach ($this->model->files as $file) {
                     if ($request->hasFile($file)) {
-                        $input[$file] = Storage::url($request->file($file)->store($this->modelName . '/' . time()));
+                        $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . time()));
                     }
                 }
             }
@@ -259,7 +259,7 @@ class VeController extends Controller
                             }
                             Storage::delete($path);
                         }
-                        $input[$file] = Storage::url($request->file($file)->store($this->modelName . '/' . md5($model->id)));
+                        $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . md5($model->id)));
                     }
                 }
             }

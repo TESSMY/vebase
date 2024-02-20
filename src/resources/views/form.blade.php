@@ -76,7 +76,10 @@
                 @elseif ($updateField['inputType'] == 'number')
                     <input class="form-control" type="{{ $updateField['inputType'] }}" min={{ $updateField['min'] ?? '' }} max={{ $updateField['max'] ?? '' }} step={{ $updateField['step'] ?? '' }} name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
                 @elseif ($updateField['inputType'] == 'file')
-                    <input class="form-control" type="{{ $updateField['inputType'] }}" accept="{{ !empty($createField['accept']) ? $createField['accept'] : '*' }}" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
+                        @if (!empty($$routeModel) && $$routeModel[$updateField['name']] && !empty($updateField['show']))
+                            <Br /><img src="{{ $$routeModel[$updateField['name']] }}" height="50" width="100" style="object-fit: contain" />
+                        @endif
+                    <input class="form-control" type="{{ $updateField['inputType'] }}" accept="{{ !empty($updateField['accept']) ? $updateField['accept'] : '*' }}" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
                 @else
                     <input class="form-control" type="{{ $updateField['inputType'] }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
                 @endif

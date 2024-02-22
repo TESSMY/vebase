@@ -70,11 +70,14 @@
                                         <span class="{{ $$routeModel[$indexField['class']] ?? '' }}">{{ $$routeModel[$indexField['columnName']] }}</span>
                                     </td>
                                 @elseif ($indexField['type'] == 'relation')
-                                    @if (empty($$routeModel[$indexField['relation']][$indexField['relatedColumnName']]))
-                                        <td>-</td>
-                                    @else
-                                        <td>{{ $$routeModel[$indexField['relation']][$indexField['relatedColumnName']] }}</td>
-                                    @endif
+                                    @php
+                                        $relation = explode('.', $indexField['relation']);
+                                        $data = $$routeModel;
+                                        for ($i = 0; $i < count($relation); $i++) {
+                                            $data = $data?->{$relation[$i]};
+                                        }
+                                    @endphp
+                                    <td>{{ $data?->{$indexField['relatedColumnName']} ?? '-' }}</td>
                                 @elseif ($indexField['type'] == 'html')
                                     <td>{!! $indexField['html'] !!}</td>
                                 @elseif ($indexField['type'] == 'decimal')

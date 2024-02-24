@@ -3,39 +3,40 @@
 namespace Vecapital\Vebase\Http\Controllers;
 
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ApiController extends Controller
 {
-
     const DEFAULT_MAX_LIMIT = 1000;
 
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    protected $statusCode = 200;
-    protected $message = '';
-    protected $error = false;
-    protected $debugInfo = [];
-    protected $errorCode = 0;
+    protected int $statusCode = 200;
 
+    protected string $message = '';
+
+    protected bool $error = false;
+
+    protected array $debugInfo = [];
+
+    protected int $errorCode = 0;
 
     /**
      * Function to return an error response.
-     *
-     * @param $message
-     * @return mixed
      */
-    public function respondWithError($message)
+    public function respondWithError($message): mixed
     {
         $this->error = true;
         $this->message = $message;
-        return $this->respond(array());
+
+        return $this->respond([]);
     }
 
     /**
@@ -44,12 +45,12 @@ class ApiController extends Controller
      * @param string $message
      * @return mixed
      */
-    public function respondUnauthorizedError($message = 'Unauthorized!')
+    public function respondUnauthorizedError(string $message = 'Unauthorized!'): mixed
     {
         $this->statusCode = Response::HTTP_UNAUTHORIZED;
+
         return $this->respondWithError($message);
     }
-
 
     /**
      * Function to return a bad request response.
@@ -57,9 +58,10 @@ class ApiController extends Controller
      * @param string $message
      * @return mixed
      */
-    public function respondBadRequestError($message = 'Bad Request!')
+    public function respondBadRequestError(string $message = 'Bad Request!'): mixed
     {
         $this->statusCode = Response::HTTP_BAD_REQUEST;
+
         return $this->respondWithError($message);
     }
 
@@ -67,12 +69,12 @@ class ApiController extends Controller
      * Function to return forbidden error response.
      *
      * @param string $message
-     *
      * @return mixed
      */
-    public function respondForbiddenError($message = 'Forbidden!')
+    public function respondForbiddenError(string $message = 'Forbidden!'): mixed
     {
         $this->statusCode = Response::HTTP_FORBIDDEN;
+
         return $this->respondWithError($message);
     }
 
@@ -82,9 +84,10 @@ class ApiController extends Controller
      * @param string $message
      * @return mixed
      */
-    public function respondNotFound($message = 'Resource Not Found')
+    public function respondNotFound(string $message = 'Resource Not Found'): mixed
     {
         $this->statusCode = Response::HTTP_NOT_FOUND;
+
         return $this->respondWithError($message);
     }
 
@@ -92,15 +95,15 @@ class ApiController extends Controller
      * Function to return an internal error response.
      *
      * @param string $message
-     * @param null $errors
-     *
+     * @param  null  $errors
      * @return mixed
      */
-    public function respondInternalError($message = 'Internal Server Error!', $errors = null)
+    public function respondInternalError(string $message = 'Internal Server Error!', $errors = null): mixed
     {
         $this->statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
 
         $this->addDebugInfo($errors);
+
         return $this->respondWithError($message);
     }
 
@@ -110,9 +113,10 @@ class ApiController extends Controller
      * @param string $message
      * @return mixed
      */
-    public function respondMethodNotAllowed($message = 'Method not allowed!')
+    public function respondMethodNotAllowed(string $message = 'Method not allowed!'): mixed
     {
         $this->statusCode = Response::HTTP_METHOD_NOT_ALLOWED;
+
         return $this->respondWithError($message);
     }
 
@@ -122,9 +126,10 @@ class ApiController extends Controller
      * @param string $message
      * @return mixed
      */
-    public function respondServiceUnavailable($message = "Service Unavailable!")
+    public function respondServiceUnavailable(string $message = 'Service Unavailable!'): mixed
     {
         $this->statusCode = Response::HTTP_SERVICE_UNAVAILABLE;
+
         return $this->respondWithError($message);
     }
 
@@ -132,14 +137,14 @@ class ApiController extends Controller
      * Throws a bad request exception with the validator's error messages.
      *
      * @param Validator $validator The validator to get the message from
-     *
      * @return mixed
      */
-    public function showValidationError($validator)
+    public function showValidationError(Validator $validator): mixed
     {
         $this->error = true;
         $this->statusCode = Response::HTTP_BAD_REQUEST;
-        $this->message = implode("|", $validator->errors()->all());
+        $this->message = implode('|', $validator->errors()->all());
+
         return $this->respond();
     }
 
@@ -147,13 +152,12 @@ class ApiController extends Controller
      * Function to return a created response
      *
      * @param $data array The data to be included
-     *
      * @return mixed
-     *
      */
-    public function respondCreated($data)
+    public function respondCreated(array $data): mixed
     {
         $this->statusCode = Response::HTTP_CREATED;
+
         return $this->respond($data);
     }
 
@@ -161,29 +165,26 @@ class ApiController extends Controller
      * Function to return a response with a message
      *
      * @param $data array The data to be included
-     *
      * @param $message string The message to be shown in the meta of the response
-     *
      * @return mixed
      */
-    public function respondWithMessage($data, $message)
+    public function respondWithMessage(array $data, string $message): mixed
     {
         $this->statusCode = Response::HTTP_OK;
         $this->message = $message;
+
         return $this->respond($data);
     }
 
     /**
      * Adds debugging information to the response
-     *
-     * @param $data
      */
-    public function addDebugInfo($data)
+    public function addDebugInfo($data): void
     {
         $this->debugInfo[] = $data;
-    //    if (config('app.debug')) {
-    //        $this->debugInfo[] = $data;
-    //    }
+        //    if (config('app.debug')) {
+        //        $this->debugInfo[] = $data;
+        //    }
     }
 
     /**
@@ -193,21 +194,22 @@ class ApiController extends Controller
      * @param array $headers Headers to b used in response.
      * @return mixed Return the response.
      */
-    public function respond($data = [], $headers = [])
+    public function respond(array $data = [], array $headers = []): mixed
     {
         $meta = [
             'meta' => [
                 'error' => $this->error,
                 'message' => $this->message,
                 'status_code' => $this->statusCode,
-            ]
+            ],
         ];
-        if (empty($data) && !is_array($data))
+        if (empty($data) && ! is_array($data)) {
             $data = array_merge($meta, ['response' => null]);
-        else
+        } else {
             $data = array_merge($meta, ['response' => $data]);
+        }
 
-        if (!empty($this->debugInfo)) {
+        if (! empty($this->debugInfo)) {
             $data = array_merge($data, ['debug' => $this->debugInfo]);
         }
 
@@ -217,16 +219,16 @@ class ApiController extends Controller
     /**
      * Returns a LengthAwarePaginator for an array collection
      *
-     * @param Request $request
      * @param array $items
      * @return LengthAwarePaginator
      */
-    public function paginate(Request $request, $items) 
+    public function paginate(Request $request, array $items): LengthAwarePaginator
     {
         $limit = min(intval($request->get('limit', 10)), self::DEFAULT_MAX_LIMIT);
-        $page = (int)$request->get('page', 1);
-        $offset = ($page-1) * $limit;
+        $page = (int) $request->get('page', 1);
+        $offset = ($page - 1) * $limit;
         $items = new LengthAwarePaginator(array_slice($items, $offset, $limit), count($items), $limit, $page);
+
         return $items;
     }
 
@@ -234,35 +236,31 @@ class ApiController extends Controller
      * Responds paginated items
      *
      * @param Request $request
-     * @param array|\Illuminate\Contracts\Pagination\LengthAwarePaginator $items
-     *
-     * @param array $options
-     * @return \Illuminate\Http\JsonResponse
+     * @param \Illuminate\Contracts\Pagination\LengthAwarePaginator|array $items
+     * @return JsonResponse
      */
-    public function respondPagination($request, $items)
+    public function respondPagination(Request $request, \Illuminate\Contracts\Pagination\LengthAwarePaginator|array $items): \Illuminate\Http\JsonResponse
     {
-        if (!($items instanceof LengthAwarePaginator)) {
+        if (! ($items instanceof LengthAwarePaginator)) {
             $pagination = $this->paginate($request, $items);
         } else {
             $pagination = $items;
         }
+
         return $this->respond(['pagination' => $this->getPagination($pagination), 'items' => $pagination->items()]);
     }
 
     /**
      * Retrieves the pagination meta in an array format
-     *
-     * @param LengthAwarePaginator $item
-     * @return array
      */
-    public function getPagination(LengthAwarePaginator $item) 
+    public function getPagination(LengthAwarePaginator $item): array
     {
         return [
             'total' => $item->total(),
             'current_page' => $item->currentPage(),
             'last_page' => $item->lastPage(),
             'from' => $item->firstItem(),
-            'to' => $item->lastItem()
+            'to' => $item->lastItem(),
         ];
     }
 }

@@ -4,5 +4,4 @@ namespace Vecapital\Vebase;
 
 class VeHelper
 {
-
 }

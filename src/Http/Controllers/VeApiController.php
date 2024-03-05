@@ -2,33 +2,29 @@
 
 namespace Vecapital\Vebase\Http\Controllers;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Vecapital\Vebase\Http\Controllers\ApiController;
 
 class VeApiController extends ApiController
 {
     protected $model;
-    protected $modelName;
-    protected $routeName;
 
+    protected $modelName;
+
+    protected $routeName;
 
     /**
      * creates the model from the request path
      */
     public function __construct(Request $request)
     {
-        if (!empty($request->segments())) {
+        if (! empty($request->segments())) {
             $this->routeName = $request->segment(2);
             $name = Str::singular(Str::camel($this->routeName));
-            $this->model = app('App\\Models\\' . ucfirst($name));
-            $this->modelName = preg_replace('/([a-z])([A-Z])/s','$1 $2', ucFirst($name));
+            $this->model = app('App\\Models\\'.ucfirst($name));
+            $this->modelName = preg_replace('/([a-z])([A-Z])/s', '$1 $2', ucfirst($name));
         }
     }
 
@@ -53,17 +49,17 @@ class VeApiController extends ApiController
 
         $models = $this->model::query();
 
-        if (!empty($search)) {
-            if (!empty($this->model->searchable)) {
-                $models = $models->where(function($query) use ($search) {
+        if (! empty($search)) {
+            if (! empty($this->model->searchable)) {
+                $models = $models->where(function ($query) use ($search) {
                     foreach ($this->model->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%' . $search . '%');
+                        $query->orWhere($value, 'LIKE', '%'.$search.'%');
                     }
                 });
             }
         }
 
-        if (!empty($with)) {
+        if (! empty($with)) {
             if (is_array($with)) {
                 foreach ($with as $relatable) {
                     if (in_array($relatable, $this->model->relatable)) {
@@ -75,13 +71,13 @@ class VeApiController extends ApiController
             }
         }
 
-        if (!empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
+        if (! empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
             $models = $models->orderBy($orderColumn, $orderBy);
         } else {
             $sortBy = $request->input('sort_by', 'latest');
-            if ($sortBy === 'oldest'){
+            if ($sortBy === 'oldest') {
                 $models->oldest();
-            } elseif ($sortBy === 'latest'){
+            } elseif ($sortBy === 'latest') {
                 $models->latest();
             }
         }
@@ -96,7 +92,7 @@ class VeApiController extends ApiController
         $input = $request->all();
 
         if (empty($this->model->createValidator)) {
-            throw new \Exception($this->model . " createValidator is empty");
+            throw new \Exception($this->model.' createValidator is empty');
         }
 
         $validator = Validator::make($input, $this->model->createValidator);
@@ -110,6 +106,7 @@ class VeApiController extends ApiController
             return $this->respondCreated($model);
         } catch (\Exception $exception) {
             Log::error($exception);
+
             return $this->respondInternalError();
         }
     }
@@ -120,7 +117,7 @@ class VeApiController extends ApiController
         $model = $this->findModel($id);
         $this->authorize('view', $model);
 
-        if (!empty($input['relatable'])) {
+        if (! empty($input['relatable'])) {
             foreach ($input['relatable'] as $relatable) {
                 if (in_array($relatable, $model->relatable)) {
                     $model->with($relatable);
@@ -139,7 +136,7 @@ class VeApiController extends ApiController
         $input = $request->all();
 
         if (empty($this->model->updateValidator())) {
-            throw new \Exception($this->model . " updateValidator is empty");
+            throw new \Exception($this->model.' updateValidator is empty');
         }
 
         $validator = Validator::make($input, $model->updateValidator());
@@ -153,6 +150,7 @@ class VeApiController extends ApiController
             return $this->respond($model);
         } catch (\Exception $exception) {
             Log::error($exception);
+
             return $this->respondInternalError();
         }
     }
@@ -166,5 +164,4 @@ class VeApiController extends ApiController
 
         return $this->respond();
     }
-
 }

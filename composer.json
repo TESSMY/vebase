@@ -25,5 +25,8 @@
                 "Vecapital\\Vebase\\ServiceProvider"
             ]
         }
+    },
+    "require-dev": {
+        "laravel/pint": "^1.13"
     }
 }

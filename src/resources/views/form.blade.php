@@ -1,6 +1,18 @@
 <div class="row mb-2">
     @if (request()->routeIs($routePrefix . '.' . $routeName . '.create'))
         @foreach ($model->createFields as $createField)
+            @php
+                if (empty($createField['displayName'])) {
+                    $createField['displayName'] = ucwords(str_replace('_', ' ', $createField['name']));
+                }
+                if (empty($createField['inputType'])) {
+                    $createField['inputType'] = 'text';
+                }
+                if (empty($createField['placeholder'])) {
+                    $createField['placeholder'] = $createField['displayName'];
+                }
+            @endphp
+
             <div class="col-12 {{ $createField['size'] ?? 'col-md-6' }} mb-md-2 mb-2">
                 @if (!empty($createField['displayName']))
                     <label class="form-label">{{ $createField['displayName'] }}</label>
@@ -43,6 +55,17 @@
         @endforeach
     @else
         @foreach ($model->updateFields as $updateField)
+            @php
+                if (empty($updateField['displayName'])) {
+                    $updateField['displayName'] = ucwords(str_replace('_', ' ', $updateField['name']));
+                }
+                if (empty($updateField['inputType'])) {
+                    $updateField['inputType'] = 'text';
+                }
+                if (empty($updateField['placeholder'])) {
+                    $updateField['placeholder'] = $updateField['displayName'];
+                }
+            @endphp
             <div class="col-12 {{ $updateField['size'] ?? 'col-md-6' }} mb-md-2 mb-2">
                 @if (!empty($updateField['displayName']))
                     <label class="form-label">{{ $updateField['displayName'] }}</label>

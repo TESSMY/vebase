@@ -54,7 +54,7 @@ abstract class VeModel extends Model
      *  The fields that are needed during creation along with its type
      *  E.g. [
      *   'required' => 'required',
-     *   'type' => 'string',
+     *   'type' => 'text',
      *   'name' => 'name',
      *   'displayName' => 'Name'
      *  ],

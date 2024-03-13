@@ -47,7 +47,7 @@ class VeController extends Controller
 
     public function findModel($id)
     {
-        $routeKey = $this->model->getRouteKey() ?? 'id';
+        $routeKey = $this->model->getRouteKeyName() ?? 'id';
         $model = $this->model::where($routeKey, $id)->first();
         abort_if(empty($model), 404);
 

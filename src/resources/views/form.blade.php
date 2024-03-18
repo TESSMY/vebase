@@ -29,6 +29,9 @@
                             }
                         @endphp
                         @foreach ($createField['options'] as $key => $option)
+                            @if ($createField['includeEmpty'])
+                                <option value="">N/A</option>
+                            @endif
                             <option value="{{ $key }}">{{ $option }}</option>
                         @endforeach
                     </select>
@@ -91,6 +94,9 @@
                             }
                         @endphp
                         @foreach ($updateField['options'] as $key => $option)
+                            @if ($updateField['includeEmpty'])
+                                <option value="">N/A</option>
+                            @endif
                             <option value="{{ $key }}" {{ !empty($$routeModel) && $$routeModel[$updateField['name']] == $key ? 'selected' : '' }}>{{ $option }}</option>
                         @endforeach
                     </select>

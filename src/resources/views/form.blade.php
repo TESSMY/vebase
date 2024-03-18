@@ -19,6 +19,15 @@
                 @endif
                 @if ($createField['inputType'] == 'select')
                     <select class="form-select" name="{{ $createField['name'] }}" {{ !empty($createField['required']) ? 'required' : '' }}>
+                        @php
+                            if (!empty($createField['class'])) {
+                                $data = $createField['class']::all();
+                                $createField['options'] = [];
+                                foreach ($data as $item) {
+                                    $createField['options'][$item[$createField['key']]] = $item[$createField['value']];
+                                }
+                            }
+                        @endphp
                         @foreach ($createField['options'] as $key => $option)
                             <option value="{{ $key }}">{{ $option }}</option>
                         @endforeach
@@ -72,6 +81,15 @@
                 @endif
                 @if ($updateField['inputType'] == 'select')
                     <select class="form-select" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
+                        @php
+                            if (!empty($updateField['class'])) {
+                                $data = $updateField['class']::all();
+                                $updateField['options'] = [];
+                                foreach ($data as $item) {
+                                    $updateField['options'][$item[$updateField['key']]] = $item[$updateField['value']];
+                                }
+                            }
+                        @endphp
                         @foreach ($updateField['options'] as $key => $option)
                             <option value="{{ $key }}" {{ !empty($$routeModel) && $$routeModel[$updateField['name']] == $key ? 'selected' : '' }}>{{ $option }}</option>
                         @endforeach

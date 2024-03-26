@@ -93,6 +93,38 @@ abstract class VeModel extends Model
     public $updateValidator = [];
 
     /**
+     *  Register route resource except those stated
+     */
+    public $routesExcept = [];
+
+    /**
+     *  Register route resource except those stated
+     */
+    public $routesOnly = [];
+
+    /*
+     * Icon for sidebar
+     */
+    public $icon = '';
+
+    /*
+     * Sidebar name - if planning to override
+     */
+    public $sidebarName = '';
+
+    /*
+     * Sidebar order - in ascending order
+     */
+    public $sidebarOrder = 0;
+
+    /*
+     * Permissions needed or used - to disable, either set this to empty or override hasPolicies()
+     */
+    public $permissions = [
+        'view', 'create', 'edit', 'delete'
+    ];
+
+    /**
      * @return bool
      * Register route resource for api
      */
@@ -104,20 +136,8 @@ abstract class VeModel extends Model
      */
     abstract public function hasAdminResourceRoute(): bool;
 
-    /*
-     * Policies needed or used
-     */
-    public $policies = [
-        'view', 'create', 'edit', 'delete'
-    ];
-
-    /**
-     *  Register route resource except those stated
-     */
-    public $routesExcept = [];
-
-    /**
-     *  Register route resource except those stated
-     */
-    public $routesOnly = [];
+    public function hasPolicies()
+    {
+        return count($this->permissions) > 0;
+    }
 }

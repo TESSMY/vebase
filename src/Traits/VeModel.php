@@ -104,12 +104,12 @@ abstract class VeModel extends Model
      */
     abstract public function hasAdminResourceRoute(): bool;
 
-    abstract public function getParentClass(): ?string;
-
-    public function hasPolicies(): bool
-    {
-        return false;
-    }
+    /*
+     * Policies needed or used
+     */
+    public $policies = [
+        'view', 'create', 'edit', 'delete'
+    ];
 
     /**
      *  Register route resource except those stated

@@ -28,6 +28,8 @@ class ApiController extends Controller
 
     protected int $errorCode = 0;
 
+    public int $defaultPaginateLimit = 10;
+
     /**
      * Function to return an error response.
      */
@@ -224,7 +226,7 @@ class ApiController extends Controller
      */
     public function paginate(Request $request, array $items): LengthAwarePaginator
     {
-        $limit = min(intval($request->get('limit', 10)), self::DEFAULT_MAX_LIMIT);
+        $limit = min(intval($request->get('limit', $this->defaultPaginateLimit)), self::DEFAULT_MAX_LIMIT);
         $page = (int) $request->get('page', 1);
         $offset = ($page - 1) * $limit;
         $items = new LengthAwarePaginator(array_slice($items, $offset, $limit), count($items), $limit, $page);

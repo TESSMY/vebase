@@ -8,7 +8,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller;
 
@@ -153,10 +153,10 @@ class ApiController extends Controller
     /**
      * Function to return a created response
      *
-     * @param $data array The data to be included
+     * @param $data mixed The data to be included
      * @return mixed
      */
-    public function respondCreated(array $data): mixed
+    public function respondCreated(mixed $data): mixed
     {
         $this->statusCode = Response::HTTP_CREATED;
 
@@ -166,11 +166,11 @@ class ApiController extends Controller
     /**
      * Function to return a response with a message
      *
-     * @param $data array The data to be included
+     * @param $data mixed The data to be included
      * @param $message string The message to be shown in the meta of the response
      * @return mixed
      */
-    public function respondWithMessage(array $data, string $message): mixed
+    public function respondWithMessage(mixed $data, string $message): mixed
     {
         $this->statusCode = Response::HTTP_OK;
         $this->message = $message;
@@ -192,11 +192,11 @@ class ApiController extends Controller
     /**
      * Function to return a generic response.
      *
-     * @param $data array to be used in response.
+     * @param $data mixed to be used in response.
      * @param array $headers Headers to b used in response.
      * @return mixed Return the response.
      */
-    public function respond(array $data = [], array $headers = []): mixed
+    public function respond(mixed $data = [], array $headers = []): mixed
     {
         $meta = [
             'meta' => [

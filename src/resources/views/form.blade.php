@@ -28,7 +28,7 @@
                                 }
                             }
                         @endphp
-                        @if ($createField['includeEmpty'])
+                        @if ($createField['includeEmpty'] ?? null)
                             <option value="">N/A</option>
                         @endif
                         @foreach ($createField['options'] as $key => $option)
@@ -93,7 +93,7 @@
                                 }
                             }
                         @endphp
-                        @if ($updateField['includeEmpty'])
+                        @if ($updateField['includeEmpty'] ?? null)
                             <option value="">N/A</option>
                         @endif
                         @foreach ($updateField['options'] as $key => $option)

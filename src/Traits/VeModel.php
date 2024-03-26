@@ -120,7 +120,7 @@ abstract class VeModel extends Model
     /*
      * Permissions needed or used - to disable, either set this to empty or override hasPolicies()
      */
-    public $permissions = [
+    public $permissionsList = [
         'view', 'create', 'edit', 'delete'
     ];
 
@@ -138,6 +138,6 @@ abstract class VeModel extends Model
 
     public function hasPolicies()
     {
-        return count($this->permissions) > 0;
+        return count($this->permissionsList) > 0;
     }
 }

@@ -24,7 +24,7 @@
                                 $data = $createField['class']::all();
                                 $createField['options'] = [];
                                 foreach ($data as $item) {
-                                    $createField['options'][$item[$createField['key']]] = $item[$createField['value']];
+                                    $createField['options'][$item[$createField['key'] ?? 'id']] = $item[$createField['value'] ?? 'name'];
                                 }
                             }
                         @endphp
@@ -89,7 +89,7 @@
                                 $data = $updateField['class']::all();
                                 $updateField['options'] = [];
                                 foreach ($data as $item) {
-                                    $updateField['options'][$item[$updateField['key']]] = $item[$updateField['value']];
+                                    $updateField['options'][$item[$updateField['key'] ?? 'id']] = $item[$updateField['value'] ?? 'name'];
                                 }
                             }
                         @endphp

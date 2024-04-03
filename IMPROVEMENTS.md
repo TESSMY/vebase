@@ -5,5 +5,6 @@
 5. simplify relation name to columnName => 'company.name' and check if there is '.'
 6. ~~remove strict array type for fields, files and etc~~
 7. add support to route resource for only and except
-8. support for default policy + additional policies. e.g. $policies = ['viewAny', 'update', 'destroy']
-9. combine update / create fields if possible
+8. ~~support for default policy + additional policies. e.g. $policies~~ = ['viewAny', 'update', 'destroy']
+9. combine update / create fields 
+10. for select class in form, allow for "where" array

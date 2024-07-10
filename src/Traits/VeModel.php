@@ -140,4 +140,9 @@ abstract class VeModel extends Model
     {
         return count($this->permissionsList) > 0;
     }
+
+    public function updateValidator()
+    {
+        return [];
+    }
 }

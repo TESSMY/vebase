@@ -16,7 +16,7 @@
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
                     @include($routePrefix . '.' . $routeName . '.index-header')
                 @else
-                    @can('create', $$routeModel)
+                    @can('create-', $model)
                         <div class="d-flex">
                             <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="btn btn-primary rounded me-2"><i class="uil-plus-circle"></i> Create </a>
                         </div>

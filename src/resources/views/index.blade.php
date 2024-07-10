@@ -16,9 +16,11 @@
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
                     @include($routePrefix . '.' . $routeName . '.index-header')
                 @else
-                    <div class="d-flex">
-                        <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="btn btn-primary rounded me-2"><i class="uil-plus-circle"></i> Create </a>
-                    </div>
+                    @can('create', $$routeModel)
+                        <div class="d-flex">
+                            <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="btn btn-primary rounded me-2"><i class="uil-plus-circle"></i> Create </a>
+                        </div>
+                    @endcan
                 @endif
                 <div class="row my-3">
                     <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex" method="GET">

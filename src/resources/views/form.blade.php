@@ -57,6 +57,8 @@
                     <input class="form-range" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
                 @elseif ($createField['inputType'] == 'number')
                     <input class="form-control" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
+                @elseif ($createField['inputType'] == 'date')
+                    <input class="form-control" type="date" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
 
                 @elseif ($createField['inputType'] == 'file')
                     <input class="form-control" type="file" name="{{ $createField['name'] }}" accept="{{ !empty($createField['accept']) ? $createField['accept'] : '*' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
@@ -122,6 +124,8 @@
                     <input class="form-range" type="{{ $updateField['inputType'] }}" min="{{ $updateField['min'] ?? '' }}" max="{{ $updateField['max'] ?? '' }}" step="{{ $updateField['step'] ?? '' }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
                 @elseif ($updateField['inputType'] == 'number')
                     <input class="form-control" type="{{ $updateField['inputType'] }}" min="{{ $updateField['min'] ?? '' }}" max="{{ $updateField['max'] ?? '' }}" step="{{ $updateField['step'] ?? '' }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
+                @elseif ($updateField['inputType'] == 'date')
+                    <input class="form-control" type="date" min="{{ $updateField['min'] ?? '' }}" max="{{ $updateField['max'] ?? '' }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? ($$routeModel[$updateField['name']] instanceof \Illuminate\Support\Carbon ? $$routeModel[$updateField['name']]->format('Y-m-d') : $$routeModel[$updateField['name']]) : '') }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
                 @elseif ($updateField['inputType'] == 'file')
                         @if (!empty($$routeModel) && $$routeModel[$updateField['name']] && !empty($updateField['show']))
                             <Br /><img src="{{ $$routeModel[$updateField['name']] }}" height="50" width="100" style="object-fit: contain" />

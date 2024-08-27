@@ -191,7 +191,7 @@ class VeController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error creating '.strtolower($this->modelName));
+            flash()->error('There was an error creating ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
 
             return back()->withInput();
         }
@@ -321,7 +321,7 @@ class VeController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error updating '.strtolower($this->modelName));
+            flash()->error('There was an error updating ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
 
             return back()->withInput();
         }

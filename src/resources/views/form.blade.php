@@ -1,5 +1,5 @@
 <div class="row mb-2">
-    @if (request()->routeIs($routePrefix . '.' . $routeName . '.create'))
+    @if (request()->routeIs('*.create'))
         @foreach ($model->createFields as $createField)
             @php
                 if (empty($createField['displayName'])) {

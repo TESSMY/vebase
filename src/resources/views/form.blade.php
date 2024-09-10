@@ -38,27 +38,27 @@
                 @elseif ($createField['inputType'] == 'countryselect') 
                     <country-select :countries="{{ json_encode(array_values(countries())) }}" name="{{ $createField['name'] }}" data-name="{{ $createField['dataName'] }}"></country-select>
                 @elseif ($createField['inputType'] == 'textarea') 
-                    <textarea class="form-control" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" rows="{{ $createField['rows'] ?? 5 }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>{{ old($createField['name']) ?? '' }}</textarea>
+                    <textarea class="form-control" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" rows="{{ $createField['rows'] ?? 5 }}" {{ !empty($createFields['required']) ? 'required' : '' }}>{{ old($createField['name']) ?? '' }}</textarea>
                 @elseif ($createField['inputType'] == 'radio' || $createField['inputType'] == 'checkbox')
                     @if (!empty($createField['multipleInput']))
                         @foreach ($createField['options'] as $option)
                             <div class="form-check mb-2 {{ !empty($createField['switchType']) && $createField['switchType'] == 'true' ? 'form-switch' : '' }}">
-                                <input class="form-check-input" type="{{ $option['inputType'] }}" name="{{ $option['name'] }}" id="{{ $option['id'] }}" value="{{ $option['value'] }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
+                                <input class="form-check-input" type="{{ $option['inputType'] }}" name="{{ $option['name'] }}" id="{{ $option['id'] }}" value="{{ $option['value'] }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
                                 <label class="form-check-label" for="{{ $option['id'] }}">{{ $option['displayValue'] }}</label>
                             </div>
                         @endforeach
                     @else
                         <div class="form-check">
-                            <input class="form-check-input" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" id="{{ $createField['id'] }}" value="{{ $createField['value'] }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
+                            <input class="form-check-input" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" id="{{ $createField['id'] }}" value="{{ $createField['value'] }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
                             <label class="form-check-label" for="{{ $createField['id'] }}">{{ $createField['displayValue'] }}</label>
                         </div>
                     @endif
                 @elseif ($createField['inputType'] == 'range')
-                    <input class="form-range" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
+                    <input class="form-range" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
                 @elseif ($createField['inputType'] == 'number')
-                    <input class="form-control" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
+                    <input class="form-control" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
                 @elseif ($createField['inputType'] == 'date')
-                    <input class="form-control" type="date" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) && $createFields['required'] == 'true' ? 'required' : '' }}>
+                    <input class="form-control" type="date" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
 
                 @elseif ($createField['inputType'] == 'file')
                     <input class="form-control" type="file" name="{{ $createField['name'] }}" accept="{{ !empty($createField['accept']) ? $createField['accept'] : '*' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
@@ -125,7 +125,7 @@
                 @elseif ($updateField['inputType'] == 'number')
                     <input class="form-control" type="{{ $updateField['inputType'] }}" min="{{ $updateField['min'] ?? '' }}" max="{{ $updateField['max'] ?? '' }}" step="{{ $updateField['step'] ?? '' }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
                 @elseif ($updateField['inputType'] == 'date')
-                    <input class="form-control" type="date" min="{{ $updateField['min'] ?? '' }}" max="{{ $updateField['max'] ?? '' }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? ($$routeModel[$updateField['name']] instanceof \Illuminate\Support\Carbon ? $$routeModel[$updateField['name']]->format('Y-m-d') : $$routeModel[$updateField['name']]) : '') }}" {{ !empty($updateField['required']) && $updateField['required'] == 'true' ? 'required' : '' }}>
+                    <input class="form-control" type="date" min="{{ $updateField['min'] ?? '' }}" max="{{ $updateField['max'] ?? '' }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? ($$routeModel[$updateField['name']] instanceof \Illuminate\Support\Carbon ? $$routeModel[$updateField['name']]->format('Y-m-d') : $$routeModel[$updateField['name']]) : '') }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
                 @elseif ($updateField['inputType'] == 'file')
                         @if (!empty($$routeModel) && $$routeModel[$updateField['name']] && !empty($updateField['show']))
                             <Br /><img src="{{ $$routeModel[$updateField['name']] }}" height="50" width="100" style="object-fit: contain" />

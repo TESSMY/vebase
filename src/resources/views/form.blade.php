@@ -61,7 +61,7 @@
                     <input class="form-control" type="date" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
 
                 @elseif ($createField['inputType'] == 'file')
-                    <input class="form-control" type="file" name="{{ $createField['name'] }}" accept="{{ !empty($createField['accept']) ? $createField['accept'] : '*' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
+                    <input class="form-control" type="file" name="{{ $createField['name'] }}" {{ !empty($createField['multiple']) ? 'multiple' : '' }} accept="{{ !empty($createField['accept']) ? $createField['accept'] : '*' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                 @else
                     <input class="form-control" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                 @endif
@@ -128,9 +128,16 @@
                     <input class="form-control" type="date" min="{{ $updateField['min'] ?? '' }}" max="{{ $updateField['max'] ?? '' }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? ($$routeModel[$updateField['name']] instanceof \Illuminate\Support\Carbon ? $$routeModel[$updateField['name']]->format('Y-m-d') : $$routeModel[$updateField['name']]) : '') }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
                 @elseif ($updateField['inputType'] == 'file')
                         @if (!empty($$routeModel) && $$routeModel[$updateField['name']] && !empty($updateField['show']))
+                            @if (!empty($updateField['multiple']))
+                                <Br />
+                                @foreach ($$routeModel[$updateField['name']] as $image)
+                                    <img src="{{ $image }}" height="100" width="100" style="object-fit: contain" />
+                                @endforeach
+                            @else
                             <Br /><img src="{{ $$routeModel[$updateField['name']] }}" height="50" width="100" style="object-fit: contain" />
+                           @endif
                         @endif
-                    <input class="form-control" type="{{ $updateField['inputType'] }}" accept="{{ !empty($updateField['accept']) ? $updateField['accept'] : '*' }}" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
+                    <input class="form-control" type="{{ $updateField['inputType'] }}" {{ !empty($updateField['multiple']) ? 'multiple' : '' }} accept="{{ !empty($updateField['accept']) ? $updateField['accept'] : '*' }}" name="{{ $updateField['name'] }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
                 @else
                     <input class="form-control" type="{{ $updateField['inputType'] }}" name="{{ $updateField['name'] }}" placeholder="{{ $updateField['placeholder'] }}" value="{{ old($updateField['name']) ?? (!empty($$routeModel) ? $$routeModel[$updateField['name']] : '') }}" {{ !empty($updateField['required']) ? 'required' : '' }}>
                 @endif

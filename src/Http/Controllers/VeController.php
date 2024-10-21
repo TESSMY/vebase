@@ -161,7 +161,15 @@ class VeController extends Controller
             if (! empty($this->model->files)) {
                 foreach ($this->model->files as $file) {
                     if ($request->hasFile($file)) {
-                        $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . time()));
+                        if (is_array($request->file($file))) {
+                            $files = [];
+                            foreach ($request->file($file) as $item) {
+                                $files[] = Storage::url($item->store(strtolower($this->modelName) . '/' . time()));
+                            }
+                            $input[$file] = $files;
+                        } else {
+                            $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . time()));
+                        }
                     }
                 }
             }
@@ -292,14 +300,22 @@ class VeController extends Controller
                 foreach ($this->model->files as $file) {
                     if ($request->hasFile($file)) {
                         if (! empty($model[$file])) {
-                            $path = $model[$file];
-                            if (config('filesystems.default') == 'public') {
-                                $initialPath = config('filesystems.disks.public.url');
-                                $path = substr($path, strlen($initialPath));
+                            if (is_array($model[$file])) {
+                                $files = [];
+                                foreach ($request->file($file) as $item) {
+                                    $files[] = Storage::url($item->store(strtolower($this->modelName) . '/' . md5($model->id)));
+                                }
+                                $input[$file] = $files;
+                            } else {
+                                $path = $model[$file];
+                                if (config('filesystems.default') == 'public') {
+                                    $initialPath = config('filesystems.disks.public.url');
+                                    $path = substr($path, strlen($initialPath));
+                                }
+                                Storage::delete($path);
+                                $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . md5($model->id)));
                             }
-                            Storage::delete($path);
                         }
-                        $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . md5($model->id)));
                     }
                 }
             }

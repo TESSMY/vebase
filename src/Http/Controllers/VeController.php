@@ -299,13 +299,19 @@ class VeController extends Controller
             if (! empty($this->model->files)) {
                 foreach ($this->model->files as $file) {
                     if ($request->hasFile($file)) {
+
+                        // Handle deletion first
                         if (! empty($model[$file])) {
                             if (is_array($model[$file])) {
                                 $files = [];
-                                foreach ($request->file($file) as $item) {
-                                    $files[] = Storage::url($item->store(strtolower($this->modelName) . '/' . md5($model->id)));
+                                foreach ($model[$file] as $item) {
+                                    $path = $item;
+                                    if (config('filesystems.default') == 'public') {
+                                        $initialPath = config('filesystems.disks.public.url');
+                                        $path = substr($path, strlen($initialPath));
+                                    }
+                                    Storage::delete($path);
                                 }
-                                $input[$file] = $files;
                             } else {
                                 $path = $model[$file];
                                 if (config('filesystems.default') == 'public') {
@@ -313,9 +319,19 @@ class VeController extends Controller
                                     $path = substr($path, strlen($initialPath));
                                 }
                                 Storage::delete($path);
-                                $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . md5($model->id)));
                             }
                         }
+                        // Actually store the files now
+                        if (is_array($request->file($file))) {
+                            $files = [];
+                            foreach ($request->file($file) as $item) {
+                                $files[] = Storage::url($item->store(strtolower($this->modelName) . '/' . md5($model->id)));
+                            }
+                            $input[$file] = $files;
+                        } else {
+                            $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . md5($model->id)));
+                        }
+
                     }
                 }
             }

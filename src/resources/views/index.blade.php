@@ -56,4 +56,7 @@
             @include('vebase::common.pagination')
         </div>
     </div>
+    @if (View::exists($routePrefix . '.' . $routeName . '.index-after'))
+        @include($routePrefix . '.' . $routeName . '.index-after')
+    @endif
 @endsection

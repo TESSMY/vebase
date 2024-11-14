@@ -63,7 +63,7 @@
                 @elseif ($createField['inputType'] == 'file')
                     <input class="form-control" type="file" name="{{ $createField['name'] }}{{ !empty($createField['multiple']) ? '[]' : '' }}" {{ !empty($createField['multiple']) ? 'multiple' : '' }} accept="{{ !empty($createField['accept']) ? $createField['accept'] : '*' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                 @else
-                    <input class="form-control" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? $createFields['default'] ?? '' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
+                    <input class="form-control" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? $createField['default'] ?? '' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                 @endif
             </div>
         @endforeach

@@ -52,6 +52,8 @@
                                         <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a>
                                     @endcan
                                 </td>
+                            @elseif (View::exists($routePrefix . '.' . $routeName . '.index.' . $indexField['columnName']))
+                                @include($routePrefix . '.' . $routeName . '.index.' . $indexField['columnName'])
                             @else
                                 @if (empty($indexField['type']))
                                     @if (!isset($$routeModel[$indexField['columnName']]))

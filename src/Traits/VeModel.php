@@ -62,7 +62,7 @@ abstract class VeModel extends Model
     public $createFields = [];
 
     /**
-     *
+     *  !! This is deprecated. Please use createValidator() instead
      *  The fields that are needed during creation
      *  E.g. [
      *      'required' => 'required',
@@ -139,6 +139,11 @@ abstract class VeModel extends Model
     public function hasPolicies()
     {
         return count($this->permissionsList) > 0;
+    }
+
+    public function createValidator()
+    {
+        return [];
     }
 
     public function updateValidator()

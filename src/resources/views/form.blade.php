@@ -54,16 +54,16 @@
                         </div>
                     @endif
                 @elseif ($createField['inputType'] == 'range')
-                    <input class="form-range" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
+                    <input class="form-range" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                 @elseif ($createField['inputType'] == 'number')
-                    <input class="form-control" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
+                    <input class="form-control" type="{{ $createField['inputType'] }}" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" step="{{ $createField['step'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                 @elseif ($createField['inputType'] == 'date')
-                    <input class="form-control" type="date" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createFields['required']) ? 'required' : '' }}>
+                    <input class="form-control" type="date" min="{{ $createField['min'] ?? '' }}" max="{{ $createField['max'] ?? '' }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
 
                 @elseif ($createField['inputType'] == 'file')
                     <input class="form-control" type="file" name="{{ $createField['name'] }}{{ !empty($createField['multiple']) ? '[]' : '' }}" {{ !empty($createField['multiple']) ? 'multiple' : '' }} accept="{{ !empty($createField['accept']) ? $createField['accept'] : '*' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                 @else
-                    <input class="form-control" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? '' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
+                    <input class="form-control" type="{{ $createField['inputType'] }}" name="{{ $createField['name'] }}" placeholder="{{ $createField['placeholder'] }}" value="{{ old($createField['name']) ?? $createField['default'] ?? '' }}" {{ !empty($createField['required']) ? 'required' : '' }}>
                 @endif
             </div>
         @endforeach

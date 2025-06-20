@@ -11,7 +11,13 @@
             $value = old($field['name']) ?? (!$isCreate && !empty($$routeModel) ? $$routeModel[$field['name']] ?? '' : ($field['default'] ?? ''));
 
             if (!empty($field['class'])) {
-                $data = $field['class']::all();
+                $data = $field['class']::query();
+                if (!empty($field['where'])) {
+                    foreach ($field['where'] as $condition) {
+                        $data->where($condition[0], $condition[1], $condition[2]);
+                    }
+                }
+                $data = $data->get();
                 $field['options'] = [];
                 foreach ($data as $item) {
                     $field['options'][$item[$field['key'] ?? 'id']] = $item[$field['value'] ?? 'name'];

@@ -68,6 +68,8 @@
                     }
                 @endphp
                 <input class="form-control" type="date" min="{{ $field['min'] ?? '' }}" max="{{ $field['max'] ?? '' }}" name="{{ $field['name'] }}" value="{{ $value }}" {{ !empty($field['required']) ? 'required' : '' }}>
+            @elseif ($field['inputType'] === 'wysiwyg')
+                <textarea name="{{ $field['name'] }}" {{ !empty($field['required']) ? 'required' : '' }} class="tinymce">{{ $value }}</textarea>
             @elseif ($field['inputType'] == 'file')
                 @if (!$isCreate && !empty($field['show']) && !empty($value))
                     <br />

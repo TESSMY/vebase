@@ -14,40 +14,40 @@ abstract class VeModel extends Model
      *
      * Observers that are to be used by the current model
      */
-    public array $observers = [];
+    public $observers = [];
 
     /**
      *
      * The fields that can be searched in the `index` functions
      * Make sure if there are a lot of fields, a composite index is used
      */
-    public array $searchable = [];
+    public $searchable = [];
 
     /**
      *
      * If there are any files that can be uploaded / stored during creation or edit
      */
-    public array $files = [];
+    public $files = [];
 
     /**
      *
      * The relations that should be loaded in the `index` or `show` functions for api
      * Make sure to add the relation in the model before adding it here or the relatable will not work
      */
-    public array $relatable = [];
+    public $relatable = [];
 
     /**
      *
      * The fields that can be sorted in asc or desc in the `index` functions
      */
-    public array $sortable = [];
+    public $sortable = [];
 
     /**
      *
      *  The fields that are to be shown in the `index` page
      *  E.g. id, name
      */
-    public array $indexFields = [];
+    public $indexFields = [];
 
     /**
      *
@@ -59,7 +59,7 @@ abstract class VeModel extends Model
      *   'displayName' => 'Name'
      *  ],
      */
-    public array $createFields = [];
+    public $createFields = [];
 
     /**
      *  !! This is deprecated. Please use createValidator() instead
@@ -71,7 +71,7 @@ abstract class VeModel extends Model
      *      'displayName' => 'Name'
      *  ],
      */
-    public array $createValidator = [];
+    public $createValidator = [];
 
     /**
      *
@@ -83,39 +83,39 @@ abstract class VeModel extends Model
      *      'displayName' => 'Name'
      *  ],
      */
-    public array $updateFields = [];
+    public $updateFields = [];
 
     /**
      *
      *  The fields that are needed during update
      *  E.g. 'name' => 'required|min:3'
      */
-    public array $updateValidator = [];
+    public $updateValidator = [];
 
     /**
      *  Register route resource except those stated
      */
-    public array $routesExcept = [];
+    public $routesExcept = [];
 
     /**
      *  Register route resource except those stated
      */
-    public array $routesOnly = [];
+    public $routesOnly = [];
 
     /*
      * Icon for sidebar
      */
-    public String $icon = '';
+    public $icon = '';
 
     /*
      * Sidebar name - if planning to override
      */
-    public String $sidebarName = '';
+    public $sidebarName = '';
 
     /*
      * Sidebar order - in ascending order
      */
-    public int $sidebarOrder = 0;
+    public $sidebarOrder = 0;
 
     /*
      * Permissions needed or used - to disable, either set this to empty or override hasPolicies()
@@ -125,20 +125,20 @@ abstract class VeModel extends Model
     ];
 
     /**
-     * Whether or not to include resource route for API
+     * Whether to include resource route for API
      */
-    public bool $hasApiResource = false;
+    public $hasApiResource = false;
 
     /**
      * Whether or not to include resource route for Admin route
      */
-    public bool $hasAdminResource = true;
+    public $hasAdminResource = true;
 
     /**
      * @return bool
      * Register route resource for api
      */
-    public function hasApiResourceRoute(): bool
+    public function hasApiResourceRoute()
     {
         return $this->hasApiResource;
     }
@@ -147,22 +147,22 @@ abstract class VeModel extends Model
      * @return bool
      *  Register route resource for admin
      */
-    public function hasAdminResourceRoute(): bool
+    public function hasAdminResourceRoute()
     {
         return $this->hasAdminResource;
     }
 
-    public function hasPolicies(): bool
+    public function hasPolicies()
     {
         return count($this->permissionsList) > 0;
     }
 
-    public function createValidator(): array
+    public function createValidator()
     {
         return [];
     }
 
-    public function updateValidator(): array
+    public function updateValidator()
     {
         return [];
     }

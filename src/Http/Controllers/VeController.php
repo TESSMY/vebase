@@ -164,11 +164,11 @@ class VeController extends Controller
                         if (is_array($request->file($file))) {
                             $files = [];
                             foreach ($request->file($file) as $item) {
-                                $files[] = Storage::url($item->store(strtolower($this->modelName) . '/' . time()));
+                                $files[] = Storage::url($item->store(strtolower(Str::snake($this->modelName)) . '/' . time()));
                             }
                             $input[$file] = $files;
                         } else {
-                            $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . time()));
+                            $input[$file] = Storage::url($request->file($file)->store(strtolower(Str::snake($this->modelName)) . '/' . time()));
                         }
                     }
                 }
@@ -325,11 +325,11 @@ class VeController extends Controller
                         if (is_array($request->file($file))) {
                             $files = [];
                             foreach ($request->file($file) as $item) {
-                                $files[] = Storage::url($item->store(strtolower($this->modelName) . '/' . md5($model->id)));
+                                $files[] = Storage::url($item->store(strtolower(Str::snake($this->modelName)) . '/' . md5($model->id)));
                             }
                             $input[$file] = $files;
                         } else {
-                            $input[$file] = Storage::url($request->file($file)->store(strtolower($this->modelName) . '/' . md5($model->id)));
+                            $input[$file] = Storage::url($request->file($file)->store(strtolower(Str::snake($this->modelName)) . '/' . md5($model->id)));
                         }
 
                     }

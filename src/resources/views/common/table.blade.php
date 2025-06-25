@@ -5,6 +5,22 @@
         <thead>
         <tr>
             @foreach ($model->indexFields as $indexField)
+                @php
+                    $user = auth()->user();
+                    $showField = true;
+
+                    if (!empty($indexField['permissions'])) {
+                        foreach ($indexField['permissions'] as $permission) {
+                            if (empty($user) || !$user->can($permission)) {
+                                $showField = false;
+                                break;
+                            }
+                        }
+                        if (!$showField) {
+                            continue;
+                        }
+                    }
+                @endphp
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-table-th'))
                     @include($routePrefix . '.' . $routeName . '.index-table-th')
                 @else
@@ -37,6 +53,20 @@
                     @foreach ($model->indexFields as $indexField)
                         @php
                             $columnName = $indexField['columnName'] ?? strtolower(Str::snake($indexField['displayName']));
+                            $user = auth()->user();
+                            $showField = true;
+
+                            if (!empty($indexField['permissions'])) {
+                                foreach ($indexField['permissions'] as $permission) {
+                                    if (empty($user) || !$user->can($permission)) {
+                                        $showField = false;
+                                        break;
+                                    }
+                                }
+                                if (!$showField) {
+                                    continue;
+                                }
+                            }
                         @endphp
                         @if ($columnName == 'show')
                             @can('view', $$routeModel)

@@ -6,12 +6,12 @@
         <tr>
             @foreach ($model->indexFields as $indexField)
                 @php
-                    $user = auth()->user();
+                    $authUser = auth()->user();
                     $showField = true;
 
                     if (!empty($indexField['permissions'])) {
                         foreach ($indexField['permissions'] as $permission) {
-                            if (empty($user) || !$user->can($permission)) {
+                            if (empty($authUser) || !$authUser->can($permission)) {
                                 $showField = false;
                                 break;
                             }
@@ -53,12 +53,12 @@
                     @foreach ($model->indexFields as $indexField)
                         @php
                             $columnName = $indexField['columnName'] ?? strtolower(Str::snake($indexField['displayName']));
-                            $user = auth()->user();
+                            $authUser = auth()->user();
                             $showField = true;
 
                             if (!empty($indexField['permissions'])) {
                                 foreach ($indexField['permissions'] as $permission) {
-                                    if (empty($user) || !$user->can($permission)) {
+                                    if (empty($authUser) || !$authUser->can($permission)) {
                                         $showField = false;
                                         break;
                                     }

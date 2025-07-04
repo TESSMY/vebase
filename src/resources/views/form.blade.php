@@ -1,7 +1,7 @@
 @php
     $isCreate = request()->routeIs('*.create');
     $fields = $isCreate ? $model->createFields : $model->updateFields;
-    $user = auth()->user();
+    $authUser = auth()->user();
 @endphp
 <div class="row mb-2">
     @foreach ($fields as $field)
@@ -14,7 +14,7 @@
 
             if (!empty($field['permissions'])) {
                 foreach ($field['permissions'] as $permission) {
-                    if (empty($user) || !$user->can($permission)) {
+                    if (empty($authUser) || !$authUser->can($permission)) {
                         $showField = false;
                         break;
                     }

@@ -12,6 +12,12 @@ abstract class VeModel extends Model
 
     /**
      *
+     * Used in VeController findModel()
+     */
+    public static bool $resourceWithTrashed = false;
+
+    /**
+     *
      * Observers that are to be used by the current model
      */
     public $observers = [];

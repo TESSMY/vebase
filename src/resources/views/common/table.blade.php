@@ -12,7 +12,7 @@
             @else
                 @foreach ($model->indexFields as $indexField)
                     @php
-                    
+
                         $columnName = $indexField['columnName'] ?? strtolower(Str::snake($indexField['displayName']));
                         $showField = true;
                         if (!empty($indexField['permissions'])) {

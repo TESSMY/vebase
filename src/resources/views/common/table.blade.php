@@ -1,31 +1,34 @@
 <table class="table">
+    @php
+        $authUser = auth()->user();
+    @endphp
     @if (View::exists($routePrefix . '.' . $routeName . '.index-table-head'))
         @include($routePrefix . '.' . $routeName . '.index-table-head')
     @else
         <thead>
         <tr>
-            @foreach ($model->indexFields as $indexField)
-                @php
-                    $authUser = auth()->user();
-                    $showField = true;
-
-                    if (!empty($indexField['permissions'])) {
-                        foreach ($indexField['permissions'] as $permission) {
-                            if (empty($authUser) || !$authUser->can($permission)) {
-                                $showField = false;
-                                break;
+            @if (View::exists($routePrefix . '.' . $routeName . '.index-table-th'))
+                @include($routePrefix . '.' . $routeName . '.index-table-th')
+            @else
+                @foreach ($model->indexFields as $indexField)
+                    @php
+                        $showField = true;
+                        if (!empty($indexField['permissions'])) {
+                            foreach ($indexField['permissions'] as $permission) {
+                                if (empty($authUser) || !$authUser->can($permission)) {
+                                    $showField = false;
+                                    break;
+                                }
+                            }
+                            if (!$showField) {
+                                continue;
                             }
                         }
-                        if (!$showField) {
-                            continue;
-                        }
-                    }
-                @endphp
-                @if (View::exists($routePrefix . '.' . $routeName . '.index-table-th'))
-                    @include($routePrefix . '.' . $routeName . '.index-table-th')
-                @else
+                    @endphp
                     <th>
-                        @if (strtolower($indexField['displayName']) == strtolower('Actions') || strtolower($indexField['displayName']) == strtolower('Action'))
+                        @if (View::exists($routePrefix . '.' . $routeName . '.index.' . $columnName . '-th'))
+                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName . '-th', ['data' => $$routeModel])
+                        @elseif (strtolower($indexField['displayName']) == strtolower('Actions') || strtolower($indexField['displayName']) == strtolower('Action'))
                             {{ $indexField['displayName'] }}
                         @else
                             @if (!empty($model->sortable) && !empty($indexField['columnName']) && in_array($indexField['columnName'], $model->sortable))
@@ -35,8 +38,8 @@
                             @endif
                         @endif
                     </th>
-                @endif
-            @endforeach
+                @endforeach
+            @endif
         </tr>
         </thead>
     @endif
@@ -53,7 +56,6 @@
                     @foreach ($model->indexFields as $indexField)
                         @php
                             $columnName = $indexField['columnName'] ?? strtolower(Str::snake($indexField['displayName']));
-                            $authUser = auth()->user();
                             $showField = true;
 
                             if (!empty($indexField['permissions'])) {
@@ -68,7 +70,9 @@
                                 }
                             }
                         @endphp
-                        @if ($columnName == 'show')
+                        @if (View::exists($routePrefix . '.' . $routeName . '.index.' . $columnName))
+                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName, ['data' => $$routeModel])
+                        @elseif ($columnName == 'show')
                             @can('view', $$routeModel)
                                 <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>
                             @endcan
@@ -85,8 +89,6 @@
                                     <a href="{{ route($routePrefix . '.' . $routeName . '.edit', $$routeModel->getRouteKey()) }}"><i class="uil-edit"></i></a>
                                 @endcan
                             </td>
-                        @elseif (View::exists($routePrefix . '.' . $routeName . '.index.' . $columnName))
-                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName)
                         @else
                             @if (empty($indexField['type']))
                                 @if (!isset($$routeModel[$columnName]))

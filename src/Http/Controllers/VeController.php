@@ -48,7 +48,12 @@ class VeController extends Controller
     public function findModel($id)
     {
         $routeKey = $this->model->getRouteKeyName() ?? 'id';
-        $model = $this->model::where($routeKey, $id)->first();
+
+        if ($this->model::$resourceWithTrashed) {
+            $model = $this->model::withTrashed()->where($routeKey, $id)->first();
+        } else {
+            $model = $this->model::where($routeKey, $id)->first();
+        }
         abort_if(empty($model), 404);
 
         return $model;

@@ -14,7 +14,7 @@
 
             // accept array value
             if ($field['inputType'] == 'textarea' && !$isCreate) {
-                $textAreaValue = old($field['name']) ?? (!empty($$routeModel) 
+                $value = old($field['name']) ?? (!empty($$routeModel) 
                     ? (is_array($$routeModel[$field['name']]) 
                         ? json_encode($$routeModel[$field['name']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) : $$routeModel[$field['name']])
                     : '');
@@ -70,7 +70,7 @@
                             @endif
                     ></country-select>
                 @elseif ($field['inputType'] == 'textarea')
-                    <textarea class="form-control" name="{{ $field['name'] }}" placeholder="{{ $field['placeholder'] }}" rows="{{ $field['rows'] ?? 5 }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $textAreaValue }}</textarea>
+                    <textarea class="form-control" name="{{ $field['name'] }}" placeholder="{{ $field['placeholder'] }}" rows="{{ $field['rows'] ?? 5 }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $value }}</textarea>
                 @elseif ($field['inputType'] == 'radio' || $field['inputType'] == 'checkbox')
                     @if (!empty($field['multipleInput']))
                         @foreach ($field['options'] as $option)

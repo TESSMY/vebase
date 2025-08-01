@@ -12,6 +12,14 @@
             $value = old($field['name']) ?? (!$isCreate && !empty($$routeModel) ? $$routeModel[$field['name']] ?? '' : ($field['default'] ?? ''));
             $showField = true;
 
+            // accept array value
+            if ($field['inputType'] == 'textarea' && !$isCreate) {
+                $value = old($field['name']) ?? (!empty($$routeModel) 
+                    ? (is_array($$routeModel[$field['name']]) 
+                        ? json_encode($$routeModel[$field['name']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) : $$routeModel[$field['name']])
+                    : '');
+            }
+
             if (!empty($field['permissions'])) {
                 foreach ($field['permissions'] as $permission) {
                     if (empty($authUser) || !$authUser->can($permission)) {

@@ -59,6 +59,7 @@ class VeController extends Controller
         return $model;
     }
 
+
     /**
      * @param Request $request
      * @return Application|Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
@@ -72,8 +73,13 @@ class VeController extends Controller
         $limit = $request->input('limit') ?? 10;
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
+        $trashed = $request->input('trashed');
 
         $models = $this->model::query();
+
+        if ($trashed) {
+            $models = $models->withTrashed();
+        }
 
         if (! empty($search)) {
             if (! empty($this->model->searchable)) {

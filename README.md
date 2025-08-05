@@ -20,12 +20,24 @@ VE Base is built on top of Laravel framework to allow for minimal development ef
 ## Installation
 Add this line in composer.json
 
+Bitbucket
 ```
 "repositories": [
    ...,
    {
       "type": "vcs",
       "url":  "git@bitbucket.org:pixelafy/vebase.git"
+   }
+],
+```
+
+Github
+```
+"repositories": [
+   ...,
+   {
+      "type": "vcs",
+      "url":  "git@github.com:TESSMY/vebase.git"
    }
 ],
 ```
@@ -37,7 +49,7 @@ composer install vecapital/vebase
 
 If there are updates to this package run the following command
 ```
-composer update vecapital/verp
+composer update vecapital/vebase
 ```
 
 
@@ -170,7 +182,7 @@ public $indexFields = [
     [
         'displayName' => 'Created By',
         'columnName' => 'created_by', // foreign key column
-        'type' => 'relation'
+        'type' => 'relation',
         'relation' => 'createdBy', // relation must follow exactly as defined in the model
         'relatedColumnName' => 'name', // relation column name
     ],

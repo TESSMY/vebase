@@ -147,6 +147,8 @@ abstract class VeModel extends Model
 
     public function __construct()
     {
+        parent::__construct();
+
         if (!empty($this->importExport)) {
             $this->permissionsList[] = 'import';
             $this->permissionsList[] = 'export';

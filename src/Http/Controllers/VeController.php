@@ -5,6 +5,7 @@ namespace Vecapital\Vebase\Http\Controllers;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -49,7 +50,7 @@ class VeController extends Controller
     {
         $routeKey = $this->model->getRouteKeyName() ?? 'id';
 
-        if ($this->model::$resourceWithTrashed) {
+        if ($this->model::$resourceWithTrashed && in_array(SoftDeletes::class, class_uses_recursive($this->model))) {
             $model = $this->model::withTrashed()->where($routeKey, $id)->first();
         } else {
             $model = $this->model::where($routeKey, $id)->first();
@@ -58,6 +59,7 @@ class VeController extends Controller
 
         return $model;
     }
+
 
     /**
      * @param Request $request
@@ -72,8 +74,13 @@ class VeController extends Controller
         $limit = $request->input('limit') ?? 10;
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
+        $trashed = $request->input('trashed');
 
         $models = $this->model::query();
+
+        if ($trashed && in_array(SoftDeletes::class, class_uses_recursive($this->model)) && $this->model::$resourceWithTrashed) {
+            $models = $models->withTrashed();
+        }
 
         if (! empty($search)) {
             if (! empty($this->model->searchable)) {

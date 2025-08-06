@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use Vecapital\Vebase\Exports\ModelsExport;
+
 
 class VeController extends Controller
 {
@@ -383,7 +386,7 @@ class VeController extends Controller
 
     public function export()
     {
-
+        return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.xlsx');
     }
 
     public function import()

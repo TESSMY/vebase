@@ -50,7 +50,7 @@ class VeController extends Controller
     {
         $routeKey = $this->model->getRouteKeyName() ?? 'id';
 
-        if ($this->model::$resourceWithTrashed) {
+        if ($this->model::$resourceWithTrashed && in_array(SoftDeletes::class, class_uses_recursive($this->model))) {
             $model = $this->model::withTrashed()->where($routeKey, $id)->first();
         } else {
             $model = $this->model::where($routeKey, $id)->first();

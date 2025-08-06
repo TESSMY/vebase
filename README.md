@@ -20,7 +20,7 @@ VE Base is built on top of Laravel framework to allow for minimal development ef
 ## Installation
 Add this line in composer.json
 
-Bitbucket
+### Bitbucket
 ```
 "repositories": [
    ...,
@@ -31,7 +31,7 @@ Bitbucket
 ],
 ```
 
-Github
+### Github
 ```
 "repositories": [
    ...,

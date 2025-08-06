@@ -30,19 +30,21 @@
                             <div class="col-md-6">
                                 <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
                             </div>
-                            <div class="col-md-3 mt-2 mt-md-0">
-                                <div class="row justify-content-md-end">
-                                    <div class="col-auto">
-                                        <label class="col-form-label">Include Trashed:</label>
-                                    </div>
-                                    <div class="col-auto">
-                                        <select class="form-select" name="trashed" onchange="this.form.submit()">
-                                            <option value="0" {{ empty(request()->input('trashed')) || request()->input('trashed') == '0' ? 'selected' : '' }}>No</option>
-                                            <option value="1" {{ request()->input('trashed') == '1' ? 'selected' : '' }}>Yes</option>
-                                        </select>
+                            @if ($model::$resourceWithTrashed && in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($model)))
+                                <div class="col-md-3 mt-2 mt-md-0">
+                                    <div class="row justify-content-md-end">
+                                        <div class="col-auto">
+                                            <label class="col-form-label">Include Trashed:</label>
+                                        </div>
+                                        <div class="col-auto">
+                                            <select class="form-select" name="trashed" onchange="this.form.submit()">
+                                                <option value="0" {{ empty(request()->input('trashed')) || request()->input('trashed') == '0' ? 'selected' : '' }}>No</option>
+                                                <option value="1" {{ request()->input('trashed') == '1' ? 'selected' : '' }}>Yes</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            @endif
                             <div class="col-md-3 mt-2 mt-md-0">
                                 <div class="row justify-content-md-end">
                                     <div class="col-auto">

@@ -386,11 +386,13 @@ class VeController extends Controller
 
     public function export()
     {
+        $this->authorize('export', $this->model);
+
         return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.xlsx');
     }
 
     public function import()
     {
-
+        $this->authorize('import', $this->model);
     }
 }

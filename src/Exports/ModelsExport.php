@@ -4,6 +4,7 @@ namespace Vecapital\Vebase\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithMapping;
 
 class ModelsExport implements FromCollection, WithHeadingRow, WithMapping
 {
@@ -31,7 +32,7 @@ class ModelsExport implements FromCollection, WithHeadingRow, WithMapping
 
     public function map($model): array
     {
-        $columns = array_values($this->model->exportImport);
+        $columns = array_values($this->model->importExport);
 
         $map = [];
         foreach ($columns as $column) {

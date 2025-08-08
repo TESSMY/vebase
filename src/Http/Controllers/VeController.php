@@ -386,7 +386,7 @@ class VeController extends Controller
 
     public function export()
     {
-        $this->authorize('export', $this->model);
+        $this->authorize('export-', $this->modelName);
 
         return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.xlsx');
     }

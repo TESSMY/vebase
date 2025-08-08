@@ -23,13 +23,15 @@
                     @endcan
                 @endif
                 <div class="row my-3">
-                    <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex" method="GET">
+                    <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex flex-wrap" method="GET">
                         @if (View::exists($routePrefix . '.' . $routeName . '.index-search'))
                             @include($routePrefix . '.' . $routeName . '.index-search')
                         @else
-                            <div class="col-md-6">
-                                <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
-                            </div>
+                            @if(! empty($model->searchable))
+                                <div class="col-md-6">
+                                    <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
+                                </div>
+                            @endif
                             @if ($model::$resourceWithTrashed && in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($model)))
                                 <div class="col-md-3 mt-2 mt-md-0">
                                     <div class="row justify-content-md-end">
@@ -59,6 +61,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @includeIf('vebase::index-filter')
                         @endif
                     </form>
                 </div>

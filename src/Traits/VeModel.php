@@ -100,6 +100,7 @@ abstract class VeModel extends Model
 
     /**
      *  Columns that will be imported and exported
+     *  E.g 'Name' => 'name'
      */
     public $importExport = [];
 

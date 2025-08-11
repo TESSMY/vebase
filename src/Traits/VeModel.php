@@ -54,7 +54,7 @@ abstract class VeModel extends Model
      *  E.g. [
      *      'name' => 'name',
      *      'displayName' => 'Name',
-     *      'where' => ['status', '=', 'active']
+     *      'where' => [['status', '=', 'active']]
      *      'class' => Category::class,
      *      'key' => 'key',
      *      'value' => 'value',

@@ -59,6 +59,17 @@ abstract class VeModel extends Model
      *      'key' => 'key',
      *      'value' => 'value',
      *  ],
+     *
+     * OR
+     *
+     * E.g. [
+     *      'name' => 'name',
+     *      'displayName' => 'Name',
+     *      'options' => [
+     *          '0' => 'Disabled',
+     *          '1' => 'Enabled',
+     *      ],
+     * ],
      */
     public $filters = [];
 

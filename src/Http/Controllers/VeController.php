@@ -78,6 +78,16 @@ class VeController extends Controller
 
         $models = $this->model::query();
 
+        if (!empty($filters = $this->model->filters)) {
+            foreach ($filters as $filter) {
+                $name = $filter['name'];
+                $value = $request->input($name);
+                if (!is_null($value)) {
+                    $models->where($name, $value);
+                }
+            }
+        }
+
         if ($trashed && in_array(SoftDeletes::class, class_uses_recursive($this->model)) && $this->model::$resourceWithTrashed) {
             $models = $models->withTrashed();
         }

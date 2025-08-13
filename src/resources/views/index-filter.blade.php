@@ -2,8 +2,7 @@
     @foreach ($model->filters as $filter)
         @php
             $field['displayName'] = $filter['displayName'] ?? ucwords(str_replace('_', ' ', $filter['name']));
-            $isCreate = request()->routeIs('*.create');
-            $value = old($filter['name'], request($filter['name'])) ?? (!$isCreate && !empty($$routeModel) ? $$routeModel[$filter['name']] ?? '' : ($filter['default'] ?? ''));
+            $value = request($filter['name']);
             if (!empty($filter['class'])) {
                 $data = $filter['class']::query();
                 if (!empty($filter['where'])) {
@@ -31,7 +30,6 @@
                             <option value="">N/A</option>
                         @endif
                         @foreach ($filter['options'] as $key => $option)
-
                             <option value="{{ $key }}" {{ $value == $key ? 'selected' : '' }}>{{ $option }}</option>
                         @endforeach
                     </select>

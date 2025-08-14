@@ -60,7 +60,6 @@ class VeController extends Controller
         return $model;
     }
 
-
     /**
      * @param Request $request
      * @return Application|Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
@@ -144,6 +143,10 @@ class VeController extends Controller
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
         ];
+
+        if (method_exists($this, 'createBefore')) {
+            $compact = array_merge($compact, $this->createBefore());
+        }
 
         if (View::exists($this->folder.'.'.$this->routeName.'.create')) {
             // returns view if found in app resource view folder
@@ -281,6 +284,10 @@ class VeController extends Controller
             'routePrefix' => $this->folder,
         ];
 
+        if (method_exists($this, 'editBefore')) {
+            $compact = array_merge($compact, $this->editBefore($$routeModel));
+        }
+
         if (View::exists($this->folder.'.'.$this->routeName.'.edit')) {
             // returns view if found in app resource view folder
             return view($this->folder.'.'.$this->routeName.'.edit', $compact);
@@ -390,6 +397,13 @@ class VeController extends Controller
     {
         $model = $this->findModel($id);
         $this->authorize('delete', $model);
+
+        if (method_exists($this, 'destroyBefore')) {
+            $continue = $this->destroyBefore($model);
+            if ($continue === false) {
+                return back();
+            }
+        }
 
         $model->delete();
 

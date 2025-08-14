@@ -2,12 +2,17 @@
 
 namespace Vecapital\Vebase\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithCustomQuerySize;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ModelsExport implements FromCollection, WithHeadingRow, WithMapping
+class ModelsExport implements FromQuery, WithHeadingRow, WithMapping, WithCustomQuerySize, ShouldQueue
 {
+    use Exportable;
+
     public $model;
 
     public function __construct($model)
@@ -15,12 +20,14 @@ class ModelsExport implements FromCollection, WithHeadingRow, WithMapping
         $this->model = $model;
     }
 
-    /**
-    * @return \Illuminate\Support\Collection
-    */
-    public function collection()
+    public function query()
     {
-        return $this->model::all();
+        return $this->model::query();
+    }
+
+    public function querySize(): int
+    {
+        return 1000;
     }
 
     public function headings(): array

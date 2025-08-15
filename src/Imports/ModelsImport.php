@@ -43,19 +43,14 @@ class ModelsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithUps
      */
     public function model(array $row)
     {
-//        $values = [];
-//        foreach ($this->model->importExport as $key => $column) {
-//            $values[$column] = $row[$column];
-//        }
-//        if (empty($values['name'])) {
-//            dd($values);
-//        }
-//
+        $values = [];
+        foreach ($this->model->importExport as $key => $column) {
+            if ($column == 'id') {
+                continue;
+            }
+            $values[$column] = $row[$column];
+        }
 
-        return $this->model::make([
-            'name' => $row['name'],
-            'email' => $row['email'],
-            'password' => Hash::make('12345678'),
-        ]);
+        return $this->model::make($values);
     }
 }

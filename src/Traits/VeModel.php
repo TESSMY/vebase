@@ -104,6 +104,9 @@ abstract class VeModel extends Model
      */
     public $importExport = [];
 
+    /**
+     *  Unique column id for importing
+     */
     public $importUniqueColumn = 'id';
 
     /**

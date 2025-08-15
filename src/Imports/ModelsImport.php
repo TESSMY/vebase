@@ -3,12 +3,15 @@
 namespace Vecapital\Vebase\Imports;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ModelsImport implements ToModel, WithBatchInserts, WithUpserts, WithChunkReading
+class ModelsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithUpserts, WithChunkReading, ShouldQueue
 {
     public $model;
 
@@ -40,11 +43,19 @@ class ModelsImport implements ToModel, WithBatchInserts, WithUpserts, WithChunkR
      */
     public function model(array $row)
     {
-        $values = [];
-        foreach ($this->model->importExport as $key => $column) {
-            $values[$column] = $row[$key];
-        }
+//        $values = [];
+//        foreach ($this->model->importExport as $key => $column) {
+//            $values[$column] = $row[$column];
+//        }
+//        if (empty($values['name'])) {
+//            dd($values);
+//        }
+//
 
-        return new $this->model($values);
+        return $this->model::make([
+            'name' => $row['name'],
+            'email' => $row['email'],
+            'password' => Hash::make('12345678'),
+        ]);
     }
 }

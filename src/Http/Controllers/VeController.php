@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Vecapital\Vebase\Exports\ModelsExport;
+use Vecapital\Vebase\Imports\ModelsImport;
 
 
 class VeController extends Controller
@@ -386,15 +387,17 @@ class VeController extends Controller
 
     public function export()
     {
-        $this->authorize('export-', $this->modelName);
+        $this->authorize('export', $this->model);
 
-        return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.xlsx');
+        return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.csv', \Maatwebsite\Excel\Excel::CSV);
     }
 
-    public function import()
+    public function import(request $request)
     {
         $this->authorize('import', $this->model);
 
+        Excel::import(new ModelsImport($this->model), request()->file('import_file'));
 
+        return redirect()->route($this->folder.'.'.$this->routeName.'.index')->with('success', 'All good!');
     }
 }

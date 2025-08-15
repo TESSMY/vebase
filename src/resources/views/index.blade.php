@@ -15,7 +15,7 @@
             <div class="card-body">
                 <form method="POST" action="{{ route($routePrefix . '.' . $routeName . '.import') }}" enctype="multipart/form-data">
                     @csrf
-                    <input name="import_file" type="file" accept=".xlsx" style="display: none" id="file-upload" onchange="this.form.submit()" />
+                    <input name="import_file" type="file" accept=".xlsx, .csv" style="display: none" id="file-upload" onchange="this.form.submit()" />
                 </form>
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
                     @include($routePrefix . '.' . $routeName . '.index-header')

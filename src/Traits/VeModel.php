@@ -104,6 +104,8 @@ abstract class VeModel extends Model
      */
     public $importExport = [];
 
+    public $importUniqueColumn = 'id';
+
     /**
      *  Register route resource except those stated
      */

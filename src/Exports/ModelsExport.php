@@ -32,7 +32,7 @@ class ModelsExport implements FromQuery, WithHeadingRow, WithMapping, WithCustom
 
     public function headings(): array
     {
-        $headers = array_keys($this->model->exportImport);
+        $headers = array_keys($this->model->importExport);
 
         return $headers;
     }

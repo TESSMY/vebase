@@ -2,10 +2,14 @@
 
 namespace Vecapital\Vebase\Imports;
 
+use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithUpserts;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ModelsImport implements ToModel, WithHeadingRow, WithChunkReading, ShouldQueue
@@ -32,6 +36,6 @@ class ModelsImport implements ToModel, WithHeadingRow, WithChunkReading, ShouldQ
 
     public function chunkSize(): int
     {
-        return 1000;
+        return config('excel.chunk_size');
     }
 }

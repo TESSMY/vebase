@@ -3,15 +3,12 @@
 namespace Vecapital\Vebase\Imports;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ModelsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithUpserts, WithChunkReading, ShouldQueue
+class ModelsImport implements ToModel, WithHeadingRow, WithChunkReading, ShouldQueue
 {
     public $model;
 
@@ -21,36 +18,20 @@ class ModelsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithUps
     }
 
     /**
-     * @return string|array
-     */
-    public function uniqueBy()
-    {
-        return $this->model->importUniqueColumn;
-    }
-
-    public function batchSize(): int
-    {
-        return 1000;
-    }
-
-    public function chunkSize(): int
-    {
-        return 1000;
-    }
-
-    /**
      * @param Collection $collection
      */
     public function model(array $row)
     {
         $values = [];
         foreach ($this->model->importExport as $key => $column) {
-            if ($column == 'id') {
-                continue;
-            }
             $values[$column] = $row[$column];
         }
 
-        return $this->model::make($values);
+        return $this->model::updateOrCreate([$this->model->importUniqueColumn => $values[$this->model->importUniqueColumn]], $values);
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 }

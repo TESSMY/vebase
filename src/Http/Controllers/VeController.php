@@ -397,7 +397,7 @@ class VeController extends Controller
         $this->authorize('import', $this->model);
 
         ini_set('max_execution_time', 0);
-        Excel::queueImport(new ModelsImport($this->model), request()->file('import_file'));
+        Excel::import(new ModelsImport($this->model), request()->file('import_file'));
 
         return redirect()->route($this->folder.'.'.$this->routeName.'.index')->with('success', 'All good!');
     }

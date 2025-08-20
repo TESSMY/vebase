@@ -32,27 +32,51 @@
                     </div>
                 @endif
                 <div class="row my-3">
-                    <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex" method="GET">
+                    <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex flex-wrap" method="GET">
                         @if (View::exists($routePrefix . '.' . $routeName . '.index-search'))
                             @include($routePrefix . '.' . $routeName . '.index-search')
                         @else
-                            <div class="col-md-6">
-                                <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
-                            </div>
-                            <div class="col-md-6 mt-2 mt-md-0">
-                                <div class="row justify-content-md-end">
-                                    <div class="col-auto">
-                                        <label class="col-form-label">Display:</label>
+                            <div class="col-12 d-flex flex-wrap">
+                                @php
+                                    $searchable = $model->searchable;
+                                    $withTrashed = $model::$resourceWithTrashed && in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($model));
+                                @endphp
+                                @if(! empty($searchable))
+                                    <div class="col-12 col-md-6">
+                                        <input class="form-control" type="search" name="search" placeholder="Search" value="{{ request()->get('search') }}">
                                     </div>
-                                    <div class="col-auto">
-                                        <select class="form-select" name="limit" onchange="this.form.submit()">
-                                            <option value="10" {{ empty(request()->input('limit')) || request()->input('limit') == '10' ? 'selected' : '' }}>10</option>
-                                            <option value="25" {{ request()->input('limit') == '25' ? 'selected' : '' }}>25</option>
-                                            <option value="50" {{ request()->input('limit') == '50' ? 'selected' : '' }}>50</option>
-                                        </select>
+                                @endif
+                                @if ($withTrashed)
+                                    <div class="col-12 col-md-3 mt-2 mt-md-0">
+                                        <div class="row @if (!empty($searchable)) justify-content-md-end @endif">
+                                            <div class="col-auto">
+                                                <label class="col-form-label">Include Trashed:</label>
+                                            </div>
+                                            <div class="col-auto">
+                                                <select class="form-select" name="trashed" onchange="this.form.submit()">
+                                                    <option value="0" {{ empty(request()->input('trashed')) || request()->input('trashed') == '0' ? 'selected' : '' }}>No</option>
+                                                    <option value="1" {{ request()->input('trashed') == '1' ? 'selected' : '' }}>Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                                <div class="col-12 col-md-3 mt-2 mt-md-0">
+                                    <div class="row @if (!empty($searchable) || $withTrashed) justify-content-md-end @endif ml-6">
+                                        <div class="col-auto">
+                                            <label class="col-form-label">Display:</label>
+                                        </div>
+                                        <div class="col-auto">
+                                            <select class="form-select" name="limit" onchange="this.form.submit()">
+                                                <option value="10" {{ empty(request()->input('limit')) || request()->input('limit') == '10' ? 'selected' : '' }}>10</option>
+                                                <option value="25" {{ request()->input('limit') == '25' ? 'selected' : '' }}>25</option>
+                                                <option value="50" {{ request()->input('limit') == '50' ? 'selected' : '' }}>50</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            @includeIf('vebase::index-filter')
                         @endif
                     </form>
                 </div>

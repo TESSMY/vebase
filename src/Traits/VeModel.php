@@ -50,6 +50,31 @@ abstract class VeModel extends Model
 
     /**
      *
+     *  The fields that are needed for filters
+     *  E.g. [
+     *      'name' => 'name',
+     *      'displayName' => 'Name',
+     *      'where' => [['status', '=', 'active']],
+     *      'class' => Category::class,
+     *      'key' => 'key',
+     *      'value' => 'value',
+     *  ],
+     *
+     * OR
+     *
+     * E.g. [
+     *      'name' => 'name',
+     *      'displayName' => 'Name',
+     *      'options' => [
+     *          '0' => 'Disabled',
+     *          '1' => 'Enabled',
+     *      ],
+     * ],
+     */
+    public $filters = [];
+
+    /**
+     *
      *  The fields that are to be shown in the `index` page
      *  E.g. id, name
      */

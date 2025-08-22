@@ -14,8 +14,8 @@
 
             // accept array value
             if ($field['inputType'] == 'textarea' && !$isCreate) {
-                $value = old($field['name']) ?? (!empty($$routeModel) 
-                    ? (is_array($$routeModel[$field['name']]) 
+                $value = old($field['name']) ?? (!empty($$routeModel)
+                    ? (is_array($$routeModel[$field['name']])
                         ? json_encode($$routeModel[$field['name']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) : $$routeModel[$field['name']])
                     : '');
             }
@@ -69,6 +69,17 @@
                                 :current-country="{{ json_encode($value) }}"
                             @endif
                     ></country-select>
+                @elseif ($field['inputType'] == 'tagging')
+                    <tagging
+                            name="{{ $field['name'] }}"
+                            :options="{{ json_encode($field['options']) }}"
+                            label="{{ $field['label'] }}"
+                            track-by="{{ $field['trackBy'] }}"
+                            :new-tag="{{ isset($field['allowAddNewTag']) && $field['allowAddNewTag'] === 'true' ? 'true' : 'false' }}"
+                            @if (!$isCreate)
+                                :current-values="{{ json_encode($value) }}"
+                            @endif
+                    ></tagging>
                 @elseif ($field['inputType'] == 'textarea')
                     <textarea class="form-control" name="{{ $field['name'] }}" placeholder="{{ $field['placeholder'] }}" rows="{{ $field['rows'] ?? 5 }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $value }}</textarea>
                 @elseif ($field['inputType'] == 'radio' || $field['inputType'] == 'checkbox')

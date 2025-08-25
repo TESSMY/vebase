@@ -12,10 +12,12 @@
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow">
             <div class="card-body">
-                <form method="POST" action="{{ route($routePrefix . '.' . $routeName . '.import') }}" enctype="multipart/form-data">
-                    @csrf
-                    <input name="import_file" type="file" accept=".xlsx, .csv" style="display: none" id="file-upload" onchange="this.form.submit()" />
-                </form>
+                @can('import-' . strtolower($modelName))
+                    <form method="POST" action="{{ route($routePrefix . '.' . $routeName . '.import') }}" enctype="multipart/form-data">
+                        @csrf
+                        <input name="import_file" type="file" accept=".xlsx, .csv" style="display: none" id="file-upload" onchange="this.form.submit()" />
+                    </form>
+                @endcan
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
                     @include($routePrefix . '.' . $routeName . '.index-header')
                 @else

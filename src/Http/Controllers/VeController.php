@@ -12,6 +12,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -404,14 +405,18 @@ class VeController extends Controller
 
     public function export()
     {
-        $this->authorize('export', $this->model);
+        if (Auth::user()->hasPermissionTo('export-'. $this->modelName)) {
+            abort(401);
+        }
 
         return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.xlsx');
     }
 
     public function import(request $request)
     {
-        $this->authorize('import', $this->model);
+        if (Auth::user()->hasPermissionTo('import-'. $this->modelName)) {
+            abort(401);
+        }
 
         ini_set('max_execution_time', 0);
         Excel::import(new ModelsImport($this->model), request()->file('import_file'));

@@ -406,7 +406,7 @@ class VeController extends Controller
     {
         $this->authorize('export', $this->model);
 
-        return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.csv', \Maatwebsite\Excel\Excel::CSV);
+        return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.xlsx');
     }
 
     public function import(request $request)

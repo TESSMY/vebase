@@ -5,11 +5,12 @@ namespace Vecapital\Vebase\Exports;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithCustomQuerySize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ModelsExport implements FromQuery, WithHeadings, WithMapping, WithCustomQuerySize, ShouldQueue
+class ModelsExport implements FromQuery, WithHeadings, WithMapping, WithCustomQuerySize, ShouldQueue, ShouldAutoSize
 {
     use Exportable;
 

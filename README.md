@@ -530,23 +530,24 @@ public $createFields = [
     ],
     [
         'size' => 'col-md-3',
-        'type' => 'required',
+        'required' => false,
         'inputType' => 'tagging',
         'name' => 'name',
         'displayName' => 'displayName',
+        'placeholder' => 'placeholder',
         'trackBy' => 'code' ,
-        'label' => 'tagName',
-        'allowAddNewTag' => 'true',
+        'label' => 'name',
+        'allowAddNewTag' => false,
         'options' => [
             [
-                'tagName' => 'TEST1',
+                'name' => 'test1',
                 'code' => 'code1',
             ],
             [
-                'tagName' => 'TEST22',
+                'name' => 'test2',
                 'code' => 'code2',
             ]
         ],
-    ]
+    ],
 ];
 ```

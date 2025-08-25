@@ -72,12 +72,14 @@
                 @elseif ($field['inputType'] == 'tagging')
                     <tagging
                             name="{{ $field['name'] }}"
+                            placeholder="{{ $field['placeholder'] }}"
                             :options="{{ json_encode($field['options']) }}"
                             label="{{ $field['label'] }}"
                             track-by="{{ $field['trackBy'] }}"
-                            :new-tag="{{ isset($field['allowAddNewTag']) && $field['allowAddNewTag'] === 'true' ? 'true' : 'false' }}"
+                            :required="{{ isset($field['required']) && $field['required'] == true ? true : false }}"
+                            :allow-add-new-tag="{{ isset($field['allowAddNewTag']) && $field['allowAddNewTag'] == true ? true : false }}"
                             @if (!$isCreate)
-                                :current-values="{{ json_encode($value) }}"
+                                :current-values="{{ $value }}"
                             @endif
                     ></tagging>
                 @elseif ($field['inputType'] == 'textarea')

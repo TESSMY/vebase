@@ -182,6 +182,7 @@ abstract class VeModel extends Model
 
         if ((!in_array('import', $this->permissionsList) || !in_array('export', $this->permissionsList)) && !empty($this->importExport)) {
             $this->permissionsList[] = 'import';
+            $this->permissionsList[] = 'export';
         }
     }
 

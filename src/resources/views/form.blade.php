@@ -76,8 +76,8 @@
                             :options="{{ json_encode($field['options']) }}"
                             label="{{ $field['label'] }}"
                             track-by="{{ $field['trackBy'] }}"
-                            :required="{{ isset($field['required']) && $field['required'] == true ? true : false }}"
-                            :allow-add-new-tag="{{ isset($field['allowAddNewTag']) && $field['allowAddNewTag'] == true ? true : false }}"
+                            :required="{{ !empty($field['required']) ? true : false }}"
+                            :allow-add-new-tag="{{ !empty($field['allowAddNewTag']) ? true : false }}"
                             @if (!$isCreate)
                                 :current-values="{{ $value }}"
                             @endif

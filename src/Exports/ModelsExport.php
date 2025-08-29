@@ -18,6 +18,7 @@ class ModelsExport implements FromQuery, WithHeadings, WithMapping, WithCustomQu
 
     public function __construct($model)
     {
+        ini_set('max_execution_time', 0);
         $this->model = $model;
     }
 

@@ -530,6 +530,27 @@ public $createFields = [
         'name' => 'country',
         'dataName' => 'name',
         'displayName' => 'Country',
-    ]
+    ],
+    [
+        'size' => 'col-md-3',
+        'required' => false,
+        'inputType' => 'tagging',
+        'name' => 'tags',
+        'displayName' => 'testDisplayName',
+        'placeholder' => 'testPlaceholder',
+        'label' => 'name',
+        'trackBy' => 'id',
+        'allowAddNewTag' => false,
+        'options' => [
+            [
+                'name' => 'TEST1',
+                'id' => '1',
+            ],
+            [
+                'name' => 'TEST2',
+                'id' => '2',
+            ]
+        ],
+    ],
 ];
 ```

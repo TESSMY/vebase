@@ -1,7 +1,6 @@
 @extends('layouts/layout')
 
 @section('content')
-
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
@@ -13,14 +12,26 @@
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow">
             <div class="card-body">
+                @can('import-' . strtolower($modelName))
+                    <form method="POST" action="{{ route($routePrefix . '.' . $routeName . '.import') }}" enctype="multipart/form-data">
+                        @csrf
+                        <input name="import_file" type="file" accept=".xlsx, .csv" style="display: none" id="file-upload" onchange="this.form.submit()" />
+                    </form>
+                @endcan
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
                     @include($routePrefix . '.' . $routeName . '.index-header')
                 @else
-                    @can('create-', $model)
-                        <div class="d-flex">
+                    <div class="d-flex">
+                        @can('create-' . strtolower($modelName))
                             <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="btn btn-primary rounded me-2"><i class="uil-plus-circle"></i> Create </a>
-                        </div>
-                    @endcan
+                        @endcan
+                        @can('import-' . strtolower($modelName))
+                            <button class="btn btn-info rounded me-2" type="button" onclick="$('#file-upload').click()"><i class="uil-plus-circle"></i>  Import</button>
+                        @endcan
+                        @can('export-' . strtolower($modelName))
+                            <a class="btn btn-outline-info rounded me-2" href="{{ route($routePrefix . '.' . $routeName . '.export') }}"><i class="uil-export"></i>  Export</a>
+                        @endcan
+                    </div>
                 @endif
                 <div class="row my-3">
                     <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex flex-wrap" method="GET">

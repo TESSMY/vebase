@@ -12,12 +12,17 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use Vecapital\Vebase\Exports\ModelsExport;
+use Vecapital\Vebase\Imports\ModelsImport;
+
 
 class VeController extends Controller
 {
@@ -396,5 +401,25 @@ class VeController extends Controller
         flash()->success('Successfully deleted '.$this->modelName);
 
         return redirect()->route($this->folder.'.'.$this->routeName.'.index');
+    }
+
+    public function export()
+    {
+        if (Auth::user()->hasPermissionTo('export-'. $this->modelName)) {
+            abort(401);
+        }
+
+        return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.xlsx');
+    }
+
+    public function import(request $request)
+    {
+        if (Auth::user()->hasPermissionTo('import-'. $this->modelName)) {
+            abort(401);
+        }
+
+        Excel::import(new ModelsImport($this->model), request()->file('import_file'));
+
+        return redirect()->route($this->folder.'.'.$this->routeName.'.index')->with('success', 'All good!');
     }
 }

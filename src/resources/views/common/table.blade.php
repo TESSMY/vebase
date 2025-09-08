@@ -22,9 +22,15 @@
                                     break;
                                 }
                             }
-                            if (!$showField) {
-                                continue;
+                        }
+                        if (!empty($indexField['roles'])) {
+                            if (empty($authUser) || !$authUser->hasAnyRole(array_merge($indexField['roles'], [\App\Models\User::ROLE_SUPER_ADMIN]))) {
+                                $showField = false;
+                                break;
                             }
+                        }
+                        if (!$showField) {
+                            continue;
                         }
                     @endphp
                     <th>
@@ -67,9 +73,15 @@
                                         break;
                                     }
                                 }
-                                if (!$showField) {
-                                    continue;
+                            }
+                            if (!empty($indexField['roles'])) {
+                                if (empty($authUser) || !$authUser->hasAnyRole(array_merge($indexField['roles'], [\App\Models\User::ROLE_SUPER_ADMIN]))) {
+                                    $showField = false;
+                                    break;
                                 }
+                            }
+                            if (!$showField) {
+                                continue;
                             }
                         @endphp
                         @if (View::exists($routePrefix . '.' . $routeName . '.index.' . $columnName))

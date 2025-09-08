@@ -177,6 +177,8 @@ public $indexFields = [
         'displayName' => '',
         'columnName' => 'image',
         'type' => 'image'
+        'permissions' => ['view-image'],
+        'roles' => [User::ROLE_SUPER_ADMIN],
     ],
     [
         'displayName' => 'ID',
@@ -284,6 +286,8 @@ public $createFields = [
         'displayName' => 'textarea',
         'placeholder' => 'placeholder',
         'rows' => 5,
+        'permissions' => ['view-image'],
+        'roles' => [User::ROLE_SUPER_ADMIN],
     ],
     [
         'size' => 'col-md-6',

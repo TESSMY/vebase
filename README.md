@@ -12,7 +12,7 @@ VE Base is built on top of Laravel framework to allow for minimal development ef
 
 
 2. Permission denied (publickey).\
-   Generate ssh and add key to bitbucket
+   Generate ssh and add key to bitbucket/github
 
 
 ---
@@ -20,7 +20,7 @@ VE Base is built on top of Laravel framework to allow for minimal development ef
 ## Installation
 Add this line in composer.json
 
-Bitbucket
+### Bitbucket
 ```
 "repositories": [
    ...,
@@ -31,7 +31,7 @@ Bitbucket
 ],
 ```
 
-Github
+### Github
 ```
 "repositories": [
    ...,
@@ -42,12 +42,15 @@ Github
 ],
 ```
 
-Run the command to install the package
+### Command to install the package
 ```
 composer install vecapital/vebase
+php artisan vendor:publish --provider="Maatwebsite\Excel\ExcelServiceProvider" --tag=config
 ```
 
-If there are updates to this package run the following command
+---
+
+## Updating vebase
 ```
 composer update vecapital/vebase
 ```
@@ -527,6 +530,27 @@ public $createFields = [
         'name' => 'country',
         'dataName' => 'name',
         'displayName' => 'Country',
-    ]
+    ],
+    [
+        'size' => 'col-md-3',
+        'required' => false,
+        'inputType' => 'tagging',
+        'name' => 'tags',
+        'displayName' => 'testDisplayName',
+        'placeholder' => 'testPlaceholder',
+        'label' => 'name',
+        'trackBy' => 'id',
+        'allowAddNewTag' => false,
+        'options' => [
+            [
+                'name' => 'TEST1',
+                'id' => '1',
+            ],
+            [
+                'name' => 'TEST2',
+                'id' => '2',
+            ]
+        ],
+    ],
 ];
 ```

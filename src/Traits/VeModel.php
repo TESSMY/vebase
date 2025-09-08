@@ -124,6 +124,17 @@ abstract class VeModel extends Model
     public $updateValidator = [];
 
     /**
+     *  Columns that will be imported and exported
+     *  E.g 'Name' => 'name'
+     */
+    public $importExport = [];
+
+    /**
+     *  Unique column id for importing
+     */
+    public $importUniqueColumn = 'id';
+
+    /**
      *  Register route resource except those stated
      */
     public $routesExcept = [];
@@ -164,6 +175,18 @@ abstract class VeModel extends Model
      * Whether or not to include resource route for Admin route
      */
     public $hasAdminResource = true;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        if (!in_array('import', $this->permissionsList) && !empty($this->importExport)) {
+            $this->permissionsList[] = 'import';
+        }
+        if (!in_array('export', $this->permissionsList) && !empty($this->importExport)) {
+            $this->permissionsList[] = 'export';
+        }
+    }
 
     /**
      * @return bool

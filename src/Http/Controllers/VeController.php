@@ -101,7 +101,15 @@ class VeController extends Controller
             if (! empty($this->model->searchable)) {
                 $models = $models->where(function ($query) use ($search) {
                     foreach ($this->model->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%'.$search.'%');
+                        if (str_contains($value, '.')) {
+                            [$relation, $relationColumn] = explode('.', $value, 2);
+
+                            $query->orWhereHas($relation, function ($q) use ($relationColumn, $search) {
+                                $q->where($relationColumn, 'LIKE', '%'.$search.'%');
+                            });
+                        } else {
+                            $query->orWhere($value, 'LIKE', '%'.$search.'%');
+                        }
                     }
                 });
             }

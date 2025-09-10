@@ -12,12 +12,14 @@
         <div class="border my-2 mb-3"></div>
         <div class="bg-white card shadow">
             <div class="card-body">
-                @can('import-' . strtolower($modelName))
-                    <form method="POST" action="{{ route($routePrefix . '.' . $routeName . '.import') }}" enctype="multipart/form-data">
-                        @csrf
-                        <input name="import_file" type="file" accept=".xlsx, .csv" style="display: none" id="file-upload" onchange="this.form.submit()" />
-                    </form>
-                @endcan
+                @if(Spatie\Permission\Models\Permission::where('name', 'import-' . strtolower($modelName))->exists())
+                    @can('import-' . strtolower($modelName))
+                        <form method="POST" action="{{ route($routePrefix . '.' . $routeName . '.import') }}" enctype="multipart/form-data">
+                            @csrf
+                            <input name="import_file" type="file" accept=".xlsx, .csv" style="display: none" id="file-upload" onchange="this.form.submit()" />
+                        </form>
+                    @endcan
+                @endif
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
                     @include($routePrefix . '.' . $routeName . '.index-header')
                 @else
@@ -25,12 +27,16 @@
                         @can('create-' . strtolower($modelName))
                             <a href="{{ route($routePrefix . '.' . $routeName . '.create') }}" class="btn btn-primary rounded me-2"><i class="uil-plus-circle"></i> Create </a>
                         @endcan
-                        @can('import-' . strtolower($modelName))
-                            <button class="btn btn-info rounded me-2" type="button" onclick="$('#file-upload').click()"><i class="uil-plus-circle"></i>  Import</button>
-                        @endcan
-                        @can('export-' . strtolower($modelName))
-                            <a class="btn btn-outline-info rounded me-2" href="{{ route($routePrefix . '.' . $routeName . '.export') }}"><i class="uil-export"></i>  Export</a>
-                        @endcan
+                        @if(Spatie\Permission\Models\Permission::where('name', 'import-' . strtolower($modelName))->exists())
+                            @can('import-' . strtolower($modelName))
+                                <button class="btn btn-info rounded me-2" type="button" onclick="$('#file-upload').click()"><i class="uil-plus-circle"></i>  Import</button>
+                            @endcan
+                        @endif
+                        @if(Spatie\Permission\Models\Permission::where('name', 'export-' . strtolower($modelName))->exists())
+                            @can('export-' . strtolower($modelName))
+                                <a class="btn btn-outline-info rounded me-2" href="{{ route($routePrefix . '.' . $routeName . '.export') }}"><i class="uil-export"></i>  Export</a>
+                            @endcan
+                        @endif
                     </div>
                 @endif
                 <div class="row my-3">

@@ -411,7 +411,7 @@ class VeController extends Controller
         return redirect()->route($this->folder.'.'.$this->routeName.'.index');
     }
 
-    public function export()
+    public function export(request $request)
     {
         if (Auth::user()->hasPermissionTo('export-'. $this->modelName)) {
             abort(401);

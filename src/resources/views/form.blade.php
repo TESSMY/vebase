@@ -27,9 +27,15 @@
                         break;
                     }
                 }
-                if (!$showField) {
-                    continue;
+            }
+            if (!empty($field['roles'])) {
+                if (empty($authUser) || !$authUser->hasAnyRole(array_merge($field['roles'], [\App\Models\User::ROLE_SUPER_ADMIN]))) {
+                    $showField = false;
+                    break;
                 }
+            }
+            if (!$showField) {
+                continue;
             }
 
             if (!empty($field['class'])) {

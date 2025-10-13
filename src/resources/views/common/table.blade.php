@@ -120,6 +120,8 @@
                                 <td>
                                     <span class="{{ $$routeModel[$indexField['class']] ?? '' }}">{{ $$routeModel[$columnName] }}</span>
                                 </td>
+                            @elseif ($indexField['type'] == 'boolean')
+                                <td>{{ !empty($$routeModel[$columnName]) ? 'Yes' : 'No' }}</td>
                             @elseif ($indexField['type'] == 'relation')
                                 @php
                                     $relation = explode('.', $indexField['relation']);

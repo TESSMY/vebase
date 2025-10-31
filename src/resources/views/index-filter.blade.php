@@ -17,7 +17,7 @@
                 }
             }
         @endphp
-        <div class="col-6 {{ $filter['size'] ?? 'col-md-auto' }} my-md-2 my-2">
+        <div class="col-6 {{ $filter['size'] ?? 'col-md-auto' }} my-2 px-2">
             <div class="row">
                 @if (!empty($filter['displayName']))
                     <div class="col-auto">
@@ -27,10 +27,10 @@
                 <div class="col-auto">
                     <select class="form-select" name="{{ $filter['name'] }}" {{ !empty($filter['required']) ? 'required' : '' }} onchange="this.form.submit()">
                         @if (!empty($filter['includeEmpty']))
-                            <option value="">N/A</option>
+                            <option value="">All</option>
                         @endif
                         @foreach ($filter['options'] as $key => $option)
-                            <option value="{{ $key }}" {{ $value == $key ? 'selected' : '' }}>{{ $option }}</option>
+                            <option value="{{ $key }}" {{ !is_null($value) && $value == $key ? 'selected' : '' }}>{{ $option }}</option>
                         @endforeach
                     </select>
                 </div>

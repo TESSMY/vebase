@@ -69,7 +69,7 @@
                                         </div>
                                     </div>
                                 @endif
-                                <div class="col-12 col-md-3 mt-2 mt-md-0">
+                                <div class="col-12 mt-2 mt-md-0 @if (!empty($searchable) || $withTrashed) col-md-6 @else col-md-3 @endif">
                                     <div class="row @if (!empty($searchable) || $withTrashed) justify-content-md-end @endif ml-6">
                                         <div class="col-auto">
                                             <label class="col-form-label">Display:</label>

@@ -17,7 +17,7 @@
                 }
             }
         @endphp
-        <div class="col-12 {{ $filter['size'] ?? 'col-md-6' }} my-md-2 my-2">
+        <div class="col-6 {{ $filter['size'] ?? 'col-md-auto' }} my-md-2 my-2">
             <div class="row">
                 @if (!empty($filter['displayName']))
                     <div class="col-auto">

@@ -91,10 +91,10 @@
                     <textarea class="form-control" name="{{ $field['name'] }}" placeholder="{{ $field['placeholder'] }}" rows="{{ $field['rows'] ?? 5 }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $value }}</textarea>
                 @elseif ($field['inputType'] == 'radio' || $field['inputType'] == 'checkbox')
                     @if (!empty($field['multipleInput']))
-                        @foreach ($field['options'] as $option)
-                            <div class="form-check mb-2 {{ !empty($field['switchType']) && $field['switchType'] == 'true' ? 'form-switch' : '' }}">
-                                <input class="form-check-input" type="{{ $option['inputType'] }}" name="{{ $option['name'] }}" id="{{ $option['id'] }}" value="{{ $option['value'] }}" {{ $value == $option['value'] ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}>
-                                <label class="form-check-label" for="{{ $option['id'] }}">{{ $option['displayValue'] }}</label>
+                        @foreach ($field['options'] as $key => $option)
+                            <div class="form-check mb-2 {{ !empty($field['switchType']) ? 'form-switch' : '' }}">
+                                <input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $key }}" value="{{ $option }}" {{ $value == $key ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}>
+                                <label class="form-check-label">{{ $option }}</label>
                             </div>
                         @endforeach
                     @else

@@ -93,14 +93,12 @@
                     @if (!empty($field['multipleInput']))
                         @foreach ($field['options'] as $key => $option)
                             <div class="form-check mb-2 {{ !empty($field['switchType']) ? 'form-switch' : '' }}">
-                                <input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $key }}" value="{{ $option }}" {{ $value == $key ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}>
-                                <label class="form-check-label">{{ $option }}</label>
+                                <label class="form-check-label"><input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}[]" value="{{ $option }}" {{ ((is_array($value) && in_array($key, $value)) || $value == $key) ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}> {{ $option }}</label>
                             </div>
                         @endforeach
                     @else
                         <div class="form-check">
-                            <input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}" id="{{ $field['id'] }}" value="{{ $field['value'] }}" {{ boolval($value) ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}>
-                            <label class="form-check-label" for="{{ $field['id'] }}">{{ $field['displayValue'] }}</label>
+                            <label class="form-check-label"><input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}" id="{{ $field['id'] }}" value="{{ $field['value'] }}" {{ boolval($value) ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}> {{ $field['displayValue'] }}</label>
                         </div>
                     @endif
                 @elseif ($field['inputType'] == 'range')

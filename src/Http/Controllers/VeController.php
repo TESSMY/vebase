@@ -413,7 +413,7 @@ class VeController extends Controller
 
     public function export(request $request)
     {
-        if (Auth::user()->hasPermissionTo('export-'. $this->modelName)) {
+        if (Auth::user()->hasPermissionTo('export-'. strtolower($this->modelName))) {
             abort(401);
         }
 
@@ -422,7 +422,7 @@ class VeController extends Controller
 
     public function import(request $request)
     {
-        if (Auth::user()->hasPermissionTo('import-'. $this->modelName)) {
+        if (Auth::user()->hasPermissionTo('import-'. strtolower($this->modelName))) {
             abort(401);
         }
 

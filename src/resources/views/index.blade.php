@@ -39,7 +39,7 @@
                         @endif
                     </div>
                 @endif
-                <div class="row my-3">
+                <div class="row my-2">
                     <form action="{{  route($routePrefix . '.' . $routeName . '.index') }}" class="d-md-flex flex-wrap" method="GET">
                         @if (View::exists($routePrefix . '.' . $routeName . '.index-search'))
                             @include($routePrefix . '.' . $routeName . '.index-search')

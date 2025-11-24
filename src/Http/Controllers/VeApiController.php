@@ -15,6 +15,8 @@ class VeApiController extends ApiController
 
     protected $routeName;
 
+    protected $paginateSize = 10;
+
     /**
      * creates the model from the request path
      */
@@ -43,7 +45,7 @@ class VeApiController extends ApiController
 
         $search = $request->input('search');
         $with = $request->input('with');
-        $limit = min(intval($request->get('limit', 10)), 1000);
+        $limit = min(intval($request->get('limit', $this->paginateSize)), 1000);
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
 

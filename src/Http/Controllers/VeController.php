@@ -36,6 +36,8 @@ class VeController extends Controller
 
     protected $folder;
 
+    protected $paginateSize = 10;
+
     /**
      * creates the model from the request path
      */
@@ -76,7 +78,7 @@ class VeController extends Controller
         $this->authorize('viewAny', $this->model);
 
         $search = $request->input('search');
-        $limit = $request->input('limit') ?? 10;
+        $limit = $request->input('limit') ?? $this->paginateSize;
         $orderColumn = $request->input('order_column');
         $orderBy = $request->input('order_by');
         $trashed = $request->input('trashed');

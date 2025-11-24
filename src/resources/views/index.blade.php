@@ -76,9 +76,10 @@
                                         </div>
                                         <div class="col-auto">
                                             <select class="form-select" name="limit" onchange="this.form.submit()">
-                                                <option value="10" {{ empty(request()->input('limit')) || request()->input('limit') == '10' ? 'selected' : '' }}>10</option>
-                                                <option value="25" {{ request()->input('limit') == '25' ? 'selected' : '' }}>25</option>
-                                                <option value="50" {{ request()->input('limit') == '50' ? 'selected' : '' }}>50</option>
+                                                <option value="10" {{ $limit == '10' ? 'selected' : '' }}>10</option>
+                                                <option value="25" {{ $limit == '25' ? 'selected' : '' }}>25</option>
+                                                <option value="50" {{ $limit == '50' ? 'selected' : '' }}>50</option>
+                                                <option value="50" {{ $limit == '100' ? 'selected' : '' }}>100</option>
                                             </select>
                                         </div>
                                     </div>

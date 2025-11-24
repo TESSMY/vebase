@@ -79,8 +79,6 @@ class VeController extends Controller
 
         $search = $request->input('search');
         $limit = $request->input('limit') ?? $this->paginateSize;
-        $orderColumn = $request->input('order_column');
-        $orderBy = $request->input('order_by');
         $trashed = $request->input('trashed');
 
         $models = $this->model::query();
@@ -130,6 +128,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
+            'limit' => $limit,
         ];
 
         if (View::exists($this->folder.'.'.$this->routeName.'.index')) {

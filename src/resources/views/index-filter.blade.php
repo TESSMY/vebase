@@ -10,6 +10,11 @@
                         $data->where($condition[0], $condition[1], $condition[2]);
                     }
                 }
+                if (!empty($filter['order'])) {
+                    foreach ($filter['order'] as $order) {
+                        $data->orderBy($order[0], $order[1]);
+                    }
+                }
                 $data = $data->get();
                 $filter['options'] = [];
                 foreach ($data as $item) {

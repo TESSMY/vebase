@@ -406,7 +406,7 @@ class VeController extends Controller
         $this->authorize('delete', $model);
 
         if (method_exists($this, 'deleteBefore')) {
-            $this->deleteBefore();
+            $this->deleteBefore($model);
         }
 
         $model->delete();

@@ -405,7 +405,15 @@ class VeController extends Controller
         $model = $this->findModel($id);
         $this->authorize('delete', $model);
 
+        if (method_exists($this, 'deleteBefore')) {
+            $this->deleteBefore();
+        }
+
         $model->delete();
+
+        if (method_exists($this, 'deleteAfter')) {
+            $this->deleteAfter();
+        }
 
         flash()->success('Successfully deleted '.$this->modelName);
 

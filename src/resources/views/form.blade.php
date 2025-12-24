@@ -78,11 +78,11 @@
                     <tagging
                             name="{{ $field['name'] }}"
                             placeholder="{{ $field['placeholder'] }}"
-                            :options="{{ json_encode($field['options']) }}"
+                            :options='@json($field["options"])'
                             label="{{ $field['label'] }}"
                             track-by="{{ $field['trackBy'] }}"
-                            :required="{{ !empty($field['required']) ? true : false }}"
-                            :allow-add-new-tag="{{ !empty($field['allowAddNewTag']) ? true : false }}"
+                            :required='@json(!empty($field["required"]))'
+                            :allow-add-new-tag='@json(!empty($field["allowAddNewTag"]))'
                             @if (!$isCreate)
                                 :current-values='@json(is_array($value) ? $value : [$value])'
                             @endif

@@ -84,7 +84,7 @@
                             :required="{{ !empty($field['required']) ? true : false }}"
                             :allow-add-new-tag="{{ !empty($field['allowAddNewTag']) ? true : false }}"
                             @if (!$isCreate)
-                                :current-values="{{ is_array($value) ? json_encode($value) : $value }}"
+                                :current-values='@json(is_array($value) ? $value : [$value])'
                             @endif
                     ></tagging>
                 @elseif ($field['inputType'] == 'textarea')

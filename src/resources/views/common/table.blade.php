@@ -35,7 +35,7 @@
                     @endphp
                     <th>
                         @if (View::exists($routePrefix . '.' . $routeName . '.index.' . $columnName . '-th'))
-                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName . '-th', ['data' => $$routeModel])
+                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName . '-th', [$routeModel => $model])
                         @elseif (strtolower($indexField['displayName']) == strtolower('Actions') || strtolower($indexField['displayName']) == strtolower('Action'))
                             {{ $indexField['displayName'] }}
                         @else
@@ -85,7 +85,7 @@
                             }
                         @endphp
                         @if (View::exists($routePrefix . '.' . $routeName . '.index.' . $columnName))
-                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName . '-th', [$routeModel => $model])
+                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName, [$routeModel => $model])
                         @elseif ($columnName == 'show')
                             @can('view', $$routeModel)
                                 <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>

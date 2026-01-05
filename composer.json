@@ -11,13 +11,13 @@
     "authors": [
         {
             "name": "Gerald Lam",
-            "email": "gerald@vecapital.asia"
+            "email": "gerald@tess.gg"
         }
     ],
     "require": {
-        "php": ">=8.1.0",
+        "php": ">=8.3.0",
         "haydenpierce/class-finder": "^0.4.4",
-        "laravel/framework": "^10.0",
+        "laravel/framework": "^11.0",
         "kyslik/column-sortable": "^6.6",
         "maatwebsite/excel": "^3.1"
     },

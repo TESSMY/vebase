@@ -435,7 +435,7 @@ class VeController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error updating ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
+            flash()->error('There was an error deleting ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
 
             return back();
         }

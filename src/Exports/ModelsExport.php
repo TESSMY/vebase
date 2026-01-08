@@ -45,7 +45,12 @@ class ModelsExport implements FromQuery, WithHeadings, WithMapping, WithCustomQu
 
         $map = [];
         foreach ($columns as $column) {
-            $map[] = $model[$column];
+            if (is_array($column)) {
+                $value = $model->{$column['value']};
+            } else {
+                $value = $column;
+            }
+            $map[] = $value;
         }
 
         return $map;

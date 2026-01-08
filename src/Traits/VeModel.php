@@ -126,6 +126,9 @@ abstract class VeModel extends Model
     /**
      *  Columns that will be imported and exported
      *  E.g 'Name' => 'name'
+     *
+     *  To work with translated values like status_text
+     *  'Status' => ['key' => 'status', 'value' => 'status_text', 'from_array' => [0 => 'Pending', 1 => Approved], 'default' => 0]
      */
     public $importExport = [];
 

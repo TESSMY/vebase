@@ -420,14 +420,24 @@ class VeController extends Controller
         $model = $this->findModel($id);
         $this->authorize('delete', $model);
 
-        if (method_exists($this, 'deleteBefore')) {
-            $this->deleteBefore($model);
-        }
+        DB::beginTransaction();
+        try {
+            if (method_exists($this, 'deleteBefore')) {
+                $this->deleteBefore($model);
+            }
 
-        $model->delete();
+            $model->delete();
 
-        if (method_exists($this, 'deleteAfter')) {
-            $this->deleteAfter();
+            if (method_exists($this, 'deleteAfter')) {
+                $this->deleteAfter();
+            }
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            flash()->error('There was an error updating ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
+
+            return back();
         }
 
         flash()->success('Successfully deleted '.$this->modelName);

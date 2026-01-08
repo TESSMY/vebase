@@ -130,54 +130,58 @@ abstract class VeModel extends Model
      *  To work with translated values like status_text
      *  'Status' => ['key' => 'status', 'value' => 'status_text', 'from_array' => [0 => 'Pending', 1 => Approved], 'default' => 0]
      */
-    public $importExport = [];
+    public array $importExport = [];
 
     /**
      *  Unique column id for importing
      */
-    public $importUniqueColumn = 'id';
+    public string $importUniqueColumn = 'id';
 
     /**
      *  Register route resource except those stated
      */
-    public $routesExcept = [];
+    public array $routesExcept = [];
 
     /**
      *  Register route resource except those stated
      */
-    public $routesOnly = [];
+    public array $routesOnly = [];
 
     /*
      * Icon for sidebar
      */
-    public $icon = '';
+    public string $icon = '';
 
     /*
      * Sidebar name - if planning to override
      */
-    public $sidebarName = '';
+    public string $sidebarName = '';
 
     /*
      * Sidebar order - in ascending order
      */
-    public $sidebarOrder = 0;
+    public int $sidebarOrder = 0;
 
     /*
      * Permissions needed or used - to disable, either set this to empty or override hasPolicies()
      */
-    public $permissionsList = [
+    public array $permissionsList = [
         'view', 'create', 'edit', 'delete'
     ];
 
     /**
      * Whether to include resource route for API
      */
-    public $hasApiResource = false;
+    public bool $hasApiResource = false;
 
     /**
-     * Whether or not to include resource route for Admin route
+     * Whether to include resource route for Admin route
      */
-    public $hasAdminResource = true;
+    public bool $hasAdminResource = true;
+
+    public bool $disableExport = false;
+
+    public bool $disableImport = false;
 
     public function __construct(array $attributes = [])
     {
@@ -216,11 +220,11 @@ abstract class VeModel extends Model
 
     public function createValidator()
     {
-        return [];
+        return $this->createValidator;
     }
 
     public function updateValidator()
     {
-        return [];
+        return $this->updateValidator;
     }
 }

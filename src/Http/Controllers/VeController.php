@@ -187,8 +187,8 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (! empty($this->model->createValidator) || ! empty($this->model->createValidator())) {
-            $validator = Validator::make($input, $this->model->createValidator() ?? $this->model->createValidator);
+        if (!empty($this->model->createValidator())) {
+            $validator = Validator::make($input, $this->model->createValidator());
             if ($validator->fails()) {
                 flash('Error: '.implode(' ', $validator->errors()->all()))->error();
 
@@ -335,8 +335,8 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (!empty($model->updateValidator) || ! empty($model->updateValidator())) {
-            $validator = Validator::make($input, $model->updateValidator() ?? $model->updateValidator);
+        if (empty($model->updateValidator())) {
+            $validator = Validator::make($input, $model->updateValidator());
             if ($validator->fails()) {
                 flash('Error: '.implode(' ', $validator->errors()->all()))->error();
 

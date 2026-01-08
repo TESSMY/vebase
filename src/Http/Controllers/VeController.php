@@ -265,7 +265,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-        ] + $this->showFields();
+        ] + $this->showFields($$routeModel);
 
         if (View::exists($this->folder.'.'.$this->routeName.'.show')) {
             // returns view if found in app resource view folder
@@ -279,7 +279,7 @@ class VeController extends Controller
         }
     }
 
-    public function showFields() : array
+    public function showFields($model) : array
     {
         return [];
     }
@@ -303,7 +303,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-        ] + $this->editFields();
+        ] + $this->editFields($request, $$routeModel);
 
         if (View::exists($this->folder.'.'.$this->routeName.'.edit')) {
             // returns view if found in app resource view folder
@@ -317,7 +317,7 @@ class VeController extends Controller
         }
     }
 
-    public function editFields() : array
+    public function editFields($request, $model) : array
     {
         return [];
     }

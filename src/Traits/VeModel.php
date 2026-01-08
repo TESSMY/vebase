@@ -150,34 +150,34 @@ abstract class VeModel extends Model
     /*
      * Icon for sidebar
      */
-    public string $icon = '';
+    public $icon = '';
 
     /*
      * Sidebar name - if planning to override
      */
-    public string $sidebarName = '';
+    public $sidebarName = '';
 
     /*
      * Sidebar order - in ascending order
      */
-    public int $sidebarOrder = 0;
+    public $sidebarOrder = 0;
 
     /*
      * Permissions needed or used - to disable, either set this to empty or override hasPolicies()
      */
-    public array $permissionsList = [
+    public $permissionsList = [
         'view', 'create', 'edit', 'delete'
     ];
 
     /**
      * Whether to include resource route for API
      */
-    public bool $hasApiResource = false;
+    public $hasApiResource = false;
 
     /**
      * Whether to include resource route for Admin route
      */
-    public bool $hasAdminResource = true;
+    public $hasAdminResource = true;
 
     public bool $disableExport = false;
 

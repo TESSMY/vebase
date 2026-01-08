@@ -157,7 +157,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-        ];
+        ] + $this->createFields();
 
         if (View::exists($this->folder.'.'.$this->routeName.'.create')) {
             // returns view if found in app resource view folder
@@ -169,6 +169,11 @@ class VeController extends Controller
             // default vendor view
             return View::make('vebase::create', $compact);
         }
+    }
+
+    public function createFields() : array
+    {
+        return [];
     }
 
     /**
@@ -260,7 +265,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-        ];
+        ] + $this->showFields();
 
         if (View::exists($this->folder.'.'.$this->routeName.'.show')) {
             // returns view if found in app resource view folder
@@ -272,6 +277,11 @@ class VeController extends Controller
             // default vendor view
             return View::make('vebase::show', $compact);
         }
+    }
+
+    public function showFields() : array
+    {
+        return [];
     }
 
     /**
@@ -293,7 +303,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-        ];
+        ] + $this->editFields();
 
         if (View::exists($this->folder.'.'.$this->routeName.'.edit')) {
             // returns view if found in app resource view folder
@@ -305,6 +315,11 @@ class VeController extends Controller
             // default vendor view
             return View::make('vebase::edit', $compact);
         }
+    }
+
+    public function editFields() : array
+    {
+        return [];
     }
 
     /**

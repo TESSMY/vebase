@@ -5,6 +5,7 @@ namespace Vecapital\Vebase;
 use Illuminate\Support\Facades\Route;
 use HaydenPierce\ClassFinder\ClassFinder;
 use Illuminate\Support\Str;
+use Vecapital\Vebase\Http\Controllers\VeApiController;
 use Vecapital\Vebase\Http\Controllers\VeController;
 use Vecapital\Vebase\Traits\VeModel;
 
@@ -34,6 +35,21 @@ class VeHelper
                 Route::resource(strtolower($name), $controller);
             }
         }
-        Route::post('import', 'ImportController@import')->name('import');
+    }
+
+    public static function apiRoutes()
+    {
+        $classes = ClassFinder::getClassesInNamespace('App\Models');
+
+        foreach ($classes as $class) {
+            $class = new $class();
+            if ($class instanceof VeModel && $class->hasApiResourceRoute()) {
+                $name = (new \ReflectionClass($class))->getShortName();
+                $overrideClass = 'App\\Http\\Controllers\\Api\\' . $name . 'Controller';
+                $class = class_exists($overrideClass) ? $overrideClass : VeApiController::class;
+                $name = Str::plural(Str::kebab($name));
+                Route::apiResource(strtolower($name), $class);
+            }
+        }
     }
 }

@@ -85,7 +85,7 @@
                             }
                         @endphp
                         @if (View::exists($routePrefix . '.' . $routeName . '.index.' . $columnName))
-                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName, [$routeModel => $model])
+                            @include($routePrefix . '.' . $routeName . '.index.' . $columnName, ['data' => $$routeModel])
                         @elseif ($columnName == 'show')
                             @can('view', $$routeModel)
                                 <td><a href="{{ route($routePrefix . '.' . $routeName . '.show', $$routeModel->getRouteKey()) }}"><i class="uil-eye"></i></a></td>

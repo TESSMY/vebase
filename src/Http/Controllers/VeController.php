@@ -83,6 +83,11 @@ class VeController extends Controller
 
         $models = $this->model::query();
 
+
+        if (method_exists($this, 'indexFilter')) {
+            $models = $this->indexFilter($request, $models);
+        }
+
         if (!empty($filters = $this->model->filters)) {
             foreach ($filters as $filter) {
                 $name = $filter['name'];
@@ -113,10 +118,6 @@ class VeController extends Controller
                     }
                 });
             }
-        }
-
-        if (method_exists($this, 'indexFilter')) {
-            $models = $this->indexFilter($request, $models);
         }
 
         $models = $models->sortable()->latest()->paginate($limit)->withQueryString();

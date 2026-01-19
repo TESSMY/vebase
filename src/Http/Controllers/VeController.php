@@ -158,7 +158,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-        ];
+        ] + $this->createFields();
 
         if (View::exists($this->folder.'.'.$this->routeName.'.create')) {
             // returns view if found in app resource view folder
@@ -172,6 +172,11 @@ class VeController extends Controller
         }
     }
 
+    public function createFields() : array
+    {
+        return [];
+    }
+
     /**
      * @param Request $request
      * @return RedirectResponse
@@ -183,8 +188,8 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (! empty($this->model->createValidator) || ! empty($this->model->createValidator())) {
-            $validator = Validator::make($input, $this->model->createValidator() ?? $this->model->createValidator);
+        if (!empty($this->model->createValidator())) {
+            $validator = Validator::make($input, $this->model->createValidator());
             if ($validator->fails()) {
                 flash('Error: '.implode(' ', $validator->errors()->all()))->error();
 
@@ -261,7 +266,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-        ];
+        ] + $this->showFields($$routeModel);
 
         if (View::exists($this->folder.'.'.$this->routeName.'.show')) {
             // returns view if found in app resource view folder
@@ -273,6 +278,11 @@ class VeController extends Controller
             // default vendor view
             return View::make('vebase::show', $compact);
         }
+    }
+
+    public function showFields($model) : array
+    {
+        return [];
     }
 
     /**
@@ -294,7 +304,7 @@ class VeController extends Controller
             'modelName' => $this->modelName,
             'routeName' => $this->routeName,
             'routePrefix' => $this->folder,
-        ];
+        ] + $this->editFields($request, $$routeModel);
 
         if (View::exists($this->folder.'.'.$this->routeName.'.edit')) {
             // returns view if found in app resource view folder
@@ -306,6 +316,11 @@ class VeController extends Controller
             // default vendor view
             return View::make('vebase::edit', $compact);
         }
+    }
+
+    public function editFields($request, $model) : array
+    {
+        return [];
     }
 
     /**
@@ -321,8 +336,8 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (!empty($model->updateValidator) || ! empty($model->updateValidator())) {
-            $validator = Validator::make($input, $model->updateValidator() ?? $model->updateValidator);
+        if (empty($model->updateValidator())) {
+            $validator = Validator::make($input, $model->updateValidator());
             if ($validator->fails()) {
                 flash('Error: '.implode(' ', $validator->errors()->all()))->error();
 
@@ -406,14 +421,24 @@ class VeController extends Controller
         $model = $this->findModel($id);
         $this->authorize('delete', $model);
 
-        if (method_exists($this, 'deleteBefore')) {
-            $this->deleteBefore($model);
-        }
+        DB::beginTransaction();
+        try {
+            if (method_exists($this, 'deleteBefore')) {
+                $this->deleteBefore($model);
+            }
 
-        $model->delete();
+            $model->delete();
 
-        if (method_exists($this, 'deleteAfter')) {
-            $this->deleteAfter();
+            if (method_exists($this, 'deleteAfter')) {
+                $this->deleteAfter();
+            }
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error($exception);
+            flash()->error('There was an error deleting ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
+
+            return back();
         }
 
         flash()->success('Successfully deleted '.$this->modelName);

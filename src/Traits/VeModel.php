@@ -126,23 +126,26 @@ abstract class VeModel extends Model
     /**
      *  Columns that will be imported and exported
      *  E.g 'Name' => 'name'
+     *
+     *  To work with translated values like status_text
+     *  'Status' => ['key' => 'status', 'value' => 'status_text', 'from_array' => [0 => 'Pending', 1 => Approved], 'default' => 0]
      */
-    public $importExport = [];
+    public array $importExport = [];
 
     /**
      *  Unique column id for importing
      */
-    public $importUniqueColumn = 'id';
+    public string $importUniqueColumn = 'id';
 
     /**
      *  Register route resource except those stated
      */
-    public $routesExcept = [];
+    public array $routesExcept = [];
 
     /**
      *  Register route resource except those stated
      */
-    public $routesOnly = [];
+    public array $routesOnly = [];
 
     /*
      * Icon for sidebar
@@ -172,9 +175,13 @@ abstract class VeModel extends Model
     public $hasApiResource = false;
 
     /**
-     * Whether or not to include resource route for Admin route
+     * Whether to include resource route for Admin route
      */
     public $hasAdminResource = true;
+
+    public bool $disableExport = false;
+
+    public bool $disableImport = false;
 
     public function __construct(array $attributes = [])
     {
@@ -213,11 +220,11 @@ abstract class VeModel extends Model
 
     public function createValidator()
     {
-        return [];
+        return $this->createValidator;
     }
 
     public function updateValidator()
     {
-        return [];
+        return $this->updateValidator;
     }
 }

@@ -28,10 +28,28 @@ class ModelsImport implements ToModel, WithHeadingRow, WithChunkReading, ShouldQ
     {
         $values = [];
         foreach ($this->model->importExport as $key => $column) {
-            $values[$column] = $row[$column];
+            $key = $column;
+            if (is_array($column)) {
+                $key = $column['key'];
+                $value = $row[$column['value']];
+                if (!empty($column['from_array'])) {
+                    $value = array_search($value, $column['from_array']);
+                    if ($value === false) {
+                        if (!empty($column['default'])) {
+                            $value = $column['default'];
+                        } else {
+                            throw new \Exception('Value for ' . $key . ' incorrect: ' . $row[$column['value']]);
+                        }
+                    }
+                }
+            } else {
+                $value = $row[$column];
+            }
+            $values[$key] = $value;
         }
+        $primary = $this->model->importUniqueColumn;
 
-        return $this->model::updateOrCreate([$this->model->importUniqueColumn => $values[$this->model->importUniqueColumn]], $values);
+        return $this->model::updateOrCreate([$primary => $values[$primary]], $values);
     }
 
     public function chunkSize(): int

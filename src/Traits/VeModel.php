@@ -74,11 +74,26 @@ abstract class VeModel extends Model
     public $filters = [];
 
     /**
-     *
      *  The fields that are to be shown in the `index` page
-     *  E.g. id, name
+     *
+     *  E.g. [
+     *    'type' => 'text',
+     *    'columnName' => 'name',
+     *    'displayName' => 'Name'
+     *   ]
      */
     public $indexFields = [];
+
+    /**
+     *  The fields that are to be shown in the `show` page
+     *
+     *  E.g. [
+     *    'type' => 'text',
+     *    'columnName' => 'name',
+     *    'displayName' => 'Name'
+     *   ]
+     */
+    public $showFields = [];
 
     /**
      *

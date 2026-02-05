@@ -35,7 +35,7 @@ class VeHelper
                 if (!empty($class->routesExcept)) {
                     Route::resource(strtolower($name), $controller)->except($class->routesExcept);
                 } elseif (!empty($class->routesOnly)) {
-                    Route::resource(strtolower($name), $controller)->only($class->routesExcept);
+                    Route::resource(strtolower($name), $controller)->only($class->routesOnly);
                 } else {
                     Route::resource(strtolower($name), $controller);
                 }

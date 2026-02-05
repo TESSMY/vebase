@@ -32,7 +32,13 @@ class VeHelper
                     }
                 }
 
-                Route::resource(strtolower($name), $controller);
+                if (!empty($class->routesExcept)) {
+                    Route::resource(strtolower($name), $controller)->except($class->routesExcept);
+                } elseif (!empty($class->routesOnly)) {
+                    Route::resource(strtolower($name), $controller)->only($class->routesExcept);
+                } else {
+                    Route::resource(strtolower($name), $controller);
+                }
             }
         }
     }

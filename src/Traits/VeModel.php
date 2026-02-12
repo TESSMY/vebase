@@ -208,6 +208,9 @@ abstract class VeModel extends Model
         if (!in_array('export', $this->permissionsList) && !empty($this->importExport)) {
             $this->permissionsList[] = 'export';
         }
+        if (!empty($this->routesExcept) && !empty($this->routesOnly)) {
+            throw new \Exception('Can use only either $routesExcept or $routesOnly.');
+        }
     }
 
     /**

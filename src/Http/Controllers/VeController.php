@@ -401,6 +401,14 @@ class VeController extends Controller
             DB::commit();
             flash()->success('Successfully updated '.strtolower($this->modelName).'. ID: '.$model->id);
 
+            if (!empty($this->update_redirect_route)) {
+                if (!empty($this->update_redirect_object)) {
+                    return redirect()->route($this->update_redirect_route, [$this->update_redirect_object]);
+                }
+
+                return redirect()->route($this->update_redirect_route);
+            }
+
             return redirect()->route($this->folder.'.'.$this->routeName.'.index');
         } catch (\Exception $exception) {
             DB::rollBack();

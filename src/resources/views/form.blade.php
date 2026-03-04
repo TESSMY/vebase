@@ -52,7 +52,10 @@
             }
         @endphp
         @if ($showField)
-            <div class="col-12 {{ $field['size'] ?? 'col-md-6' }} mb-md-2 mb-2">
+            @if (\Illuminate\Support\Facades\View::exists($routePrefix . '.' . $routeName . '.form.' . $field['name']))
+                @include($routePrefix . '.' . $routeName . '.form.' . $field['name'])
+            @else
+                <div class="col-12 {{ $field['size'] ?? 'col-md-6' }} mb-md-2 mb-2">
                 @if (!empty($field['displayName']))
                     <label class="form-label">{{ $field['displayName'] }}</label>
                 @endif
@@ -130,6 +133,7 @@
                     <input class="form-control" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}" placeholder="{{ $field['placeholder'] }}" value="{{ $value }}" {{ !empty($field['required']) ? 'required' : '' }}>
                 @endif
             </div>
+            @endif
         @endif
     @endforeach
 </div>

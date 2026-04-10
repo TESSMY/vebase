@@ -15,7 +15,11 @@
                         $data->orderBy($order[0], $order[1]);
                     }
                 }
-                $data = $data->get();
+                if (!empty($filter['columns'])) {
+                    $data = $data->get($filter['columns']);
+                } else {
+                    $data = $data->get();
+                }
                 $filter['options'] = [];
                 foreach ($data as $item) {
                     $filter['options'][$item[$filter['key'] ?? 'id']] = $item[$filter['value'] ?? 'name'];

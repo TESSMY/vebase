@@ -24,10 +24,10 @@ class VeHelper
                 $name = Str::plural(Str::kebab($name));
 
                 if (!empty($class->importExport)) {
-                    if (!$class->disableExport) {
+                    if (!$class->disableImport) {
                         Route::post(strtolower($name) . '/import', $controller . '@import')->name(strtolower($name) . '.import');
                     }
-                    if (!$class->disableImport) {
+                    if (!$class->disableExport) {
                         Route::get(strtolower($name) . '/export', $controller . '@export')->name(strtolower($name) . '.export');
                     }
                 }

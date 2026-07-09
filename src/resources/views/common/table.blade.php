@@ -132,7 +132,7 @@
                                 @endphp
                                 <td>{{ $data?->{$indexField['relatedColumnName']} ?? '-' }}</td>
                             @elseif ($indexField['type'] == 'html')
-                                <td>{!! $indexField['html'] !!}</td>
+                                <td>{!! $indexField['html'] ?? $$routeModel[$columnName] !!}</td>
                             @elseif ($indexField['type'] == 'decimal')
                                 <td>{{ number_format($$routeModel[$columnName], $indexField['decimal']) }}</td>
                             @elseif ($indexField['type'] == 'url')

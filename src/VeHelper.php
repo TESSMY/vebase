@@ -2,8 +2,8 @@
 
 namespace Vecapital\Vebase;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
-use HaydenPierce\ClassFinder\ClassFinder;
 use Illuminate\Support\Str;
 use Vecapital\Vebase\Http\Controllers\VeApiController;
 use Vecapital\Vebase\Http\Controllers\VeController;
@@ -13,7 +13,7 @@ class VeHelper
 {
     public static function adminRoutes()
     {
-        $classes = ClassFinder::getClassesInNamespace('App\Models');
+        $classes = static::getModelClasses();
 
         foreach ($classes as $class) {
             $class = new $class();
@@ -45,7 +45,7 @@ class VeHelper
 
     public static function apiRoutes()
     {
-        $classes = ClassFinder::getClassesInNamespace('App\Models');
+        $classes = static::getModelClasses();
 
         foreach ($classes as $class) {
             $class = new $class();
@@ -57,5 +57,33 @@ class VeHelper
                 Route::apiResource(strtolower($name), $class);
             }
         }
+    }
+
+    /**
+     * Get all model class names from the app's Models directory.
+     */
+    protected static function getModelClasses(): array
+    {
+        $namespace = app()->getNamespace();
+        $modelsPath = app_path('Models');
+
+        if (! File::isDirectory($modelsPath)) {
+            return [];
+        }
+
+        return collect(File::allFiles($modelsPath))
+            ->filter(fn ($file) => $file->getExtension() === 'php')
+            ->map(function ($file) use ($namespace, $modelsPath) {
+                $relativePath = str_replace(
+                    ['/', '.php'],
+                    ['\\', ''],
+                    $file->getRelativePathname()
+                );
+
+                return $namespace . 'Models\\' . $relativePath;
+            })
+            ->filter(fn ($class) => class_exists($class))
+            ->values()
+            ->all();
     }
 }

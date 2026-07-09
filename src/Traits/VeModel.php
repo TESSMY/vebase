@@ -202,10 +202,10 @@ abstract class VeModel extends Model
     {
         parent::__construct($attributes);
 
-        if (!in_array('import', $this->permissionsList) && !empty($this->importExport)) {
+        if (!in_array('import', $this->permissionsList) && !empty($this->importExport) && !$this->disableImport) {
             $this->permissionsList[] = 'import';
         }
-        if (!in_array('export', $this->permissionsList) && !empty($this->importExport)) {
+        if (!in_array('export', $this->permissionsList) && !empty($this->importExport) && !$this->disableExport) {
             $this->permissionsList[] = 'export';
         }
         if (!empty($this->routesExcept) && !empty($this->routesOnly)) {

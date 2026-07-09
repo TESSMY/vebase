@@ -14,10 +14,30 @@
             <div class="card-body">
                 @if(Spatie\Permission\Models\Permission::where('name', 'import-' . strtolower(\Illuminate\Support\Str::kebab($modelName)))->exists())
                     @can('import-' . strtolower(\Illuminate\Support\Str::kebab($modelName)))
-                        <form method="POST" action="{{ route($routePrefix . '.' . $routeName . '.import') }}" enctype="multipart/form-data">
-                            @csrf
-                            <input name="import_file" type="file" accept=".xlsx, .csv" style="display: none" id="file-upload" onchange="this.form.submit()" />
-                        </form>
+                        {{-- File input is submitted via fetch() (see ve-import-submit below)
+                             instead of a native form submit, which a theme-level submit
+                             handler was silently swallowing (page reloaded, no POST). --}}
+                        <input name="import_file" type="file" accept=".xlsx, .csv" style="display: none" id="file-upload"
+                               data-import-url="{{ route($routePrefix . '.' . $routeName . '.import') }}"
+                               onchange="veImportSubmit(this)" />
+                        <script>
+                            function veImportSubmit(input) {
+                                if (!input.files || !input.files.length) return;
+                                var fd = new FormData();
+                                fd.append('import_file', input.files[0]);
+                                fd.append('_token', '{{ csrf_token() }}');
+                                fetch(input.getAttribute('data-import-url'), {
+                                    method: 'POST',
+                                    body: fd,
+                                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                    credentials: 'same-origin'
+                                }).then(function () {
+                                    window.location.reload();
+                                }).catch(function (e) {
+                                    alert('Import failed: ' + e);
+                                });
+                            }
+                        </script>
                     @endcan
                 @endif
                 @if (View::exists($routePrefix . '.' . $routeName . '.index-header'))
@@ -29,7 +49,7 @@
                         @endcan
                         @if(Spatie\Permission\Models\Permission::where('name', 'import-' . \Illuminate\Support\Str::kebab(strtolower($modelName)))->exists())
                             @can('import-' . strtolower(\Illuminate\Support\Str::kebab($modelName)))
-                                <button class="btn btn-info rounded me-2" type="button" onclick="$('#file-upload').click()"><i class="uil-plus-circle"></i>  Import</button>
+                                <button class="btn btn-info rounded me-2" type="button" onclick="document.getElementById('file-upload').click()"><i class="uil-plus-circle"></i>  Import</button>
                             @endcan
                         @endif
                         @if(Spatie\Permission\Models\Permission::where('name', 'export-' . \Illuminate\Support\Str::kebab(strtolower($modelName)))->exists())

@@ -336,7 +336,7 @@ class VeController extends Controller
 
         $input = $request->all();
 
-        if (empty($model->updateValidator())) {
+        if (!empty($model->updateValidator())) {
             $validator = Validator::make($input, $model->updateValidator());
             if ($validator->fails()) {
                 flash('Error: '.implode(' ', $validator->errors()->all()))->error();
@@ -456,7 +456,7 @@ class VeController extends Controller
 
     public function export(request $request)
     {
-        if (Auth::user()->hasPermissionTo('export-'. strtolower($this->modelName))) {
+        if (!Auth::user()->hasPermissionTo('export-'. \Illuminate\Support\Str::kebab(strtolower($this->modelName)))) {
             abort(401);
         }
 
@@ -465,7 +465,7 @@ class VeController extends Controller
 
     public function import(request $request)
     {
-        if (Auth::user()->hasPermissionTo('import-'. strtolower($this->modelName))) {
+        if (!Auth::user()->hasPermissionTo('import-'. \Illuminate\Support\Str::kebab(strtolower($this->modelName)))) {
             abort(401);
         }
 

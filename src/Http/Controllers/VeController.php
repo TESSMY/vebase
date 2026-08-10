@@ -135,7 +135,7 @@ class VeController extends Controller
         if (View::exists($this->folder.'.'.$this->routeName.'.index')) {
             // returns view if found in app resource view folder
             return view($this->folder.'.'.$this->routeName.'.index', $compact);
-        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/'.$this->routeName.'/index.blade.php'))) {
+        } elseif (View::exists('vebase::'.$this->routeName.'.index')) {
             // returns view found in vendor resource folder
             return View::make('vebase::'.$this->routeName.'.index', $compact);
         } else {
@@ -163,7 +163,7 @@ class VeController extends Controller
         if (View::exists($this->folder.'.'.$this->routeName.'.create')) {
             // returns view if found in app resource view folder
             return view($this->folder.'.'.$this->routeName.'.create', $compact);
-        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/'.$this->routeName.'/create.blade.php'))) {
+        } elseif (View::exists('vebase::'.$this->routeName.'.create')) {
             // returns view found in vendor resource folder
             return View::make('vebase::'.$this->routeName.'.create', $compact);
         } else {
@@ -271,7 +271,7 @@ class VeController extends Controller
         if (View::exists($this->folder.'.'.$this->routeName.'.show')) {
             // returns view if found in app resource view folder
             return view($this->folder.'.'.$this->routeName.'.show', $compact);
-        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/'.$this->routeName.'/show.blade.php'))) {
+        } elseif (View::exists('vebase::'.$this->routeName.'.show')) {
             // returns view found in vendor resource folder
             return View::make('vebase::'.$this->routeName.'.show', $compact);
         } else {
@@ -309,7 +309,7 @@ class VeController extends Controller
         if (View::exists($this->folder.'.'.$this->routeName.'.edit')) {
             // returns view if found in app resource view folder
             return view($this->folder.'.'.$this->routeName.'.edit', $compact);
-        } elseif (file_exists(base_path('vendor/vecapital/vebase/resources/'.$this->routeName.'/edit.blade.php'))) {
+        } elseif (View::exists('vebase::'.$this->routeName.'.edit')) {
             // returns view found in vendor resource folder
             return View::make('vebase::'.$this->routeName.'.edit', $compact);
         } else {

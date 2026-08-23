@@ -120,7 +120,7 @@ class VeController extends Controller
             }
         }
 
-        $models = $models->sortable()->latest()->paginate($limit)->withQueryString();
+        $models = $this->applySort($request, $models)->latest()->paginate($limit)->withQueryString();
 
         $compact = [
             'routeModel' => Str::singular($this->routeName),
@@ -142,6 +142,39 @@ class VeController extends Controller
             // default vendor view
             return View::make('vebase::index', $compact);
         }
+    }
+
+    /**
+     * Applies the request sort, restricted to the columns the model declares in $sortable.
+     *
+     * ColumnSortable reads `sort` straight off the request rather than from the argument, and
+     * treats any value containing a `.` as `relation.column`. The left half is handed to
+     * Builder::getRelation(), which calls it as a method on a new model instance, and
+     * Model::__call forwards unknown methods to the query builder -- so an unchecked value
+     * reaches zero-argument builder methods such as truncate(). Anything not on the allow list
+     * is stripped from the request before sortable() ever reads it.
+     */
+    protected function applySort(Request $request, $query)
+    {
+        $sort = $request->input('sort');
+        $sortable = $this->model->sortable ?? [];
+
+        if (! empty($sort) && (! is_array($sortable) || ! in_array($sort, $sortable, true))) {
+            Log::warning('Rejected sort parameter for '.$this->model::class.': '.(is_string($sort) ? $sort : gettype($sort)));
+
+            // scopeSortable() resolves the parameters through request(), which is this same
+            // instance, so the value has to be removed from every input source it reads.
+            foreach (['sort', 'direction'] as $key) {
+                $request->query->remove($key);
+                $request->request->remove($key);
+
+                if ($request->isJson()) {
+                    $request->json()->remove($key);
+                }
+            }
+        }
+
+        return $query->sortable();
     }
 
     /**

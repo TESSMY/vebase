@@ -1,7 +1,9 @@
 @if (! empty($model->filters))
     @foreach ($model->filters as $filter)
         @php
-            $field['displayName'] = $filter['displayName'] ?? ucwords(str_replace('_', ' ', $filter['name']));
+            // The default was written to $field, a variable nothing here reads, so a filter
+            // without an explicit displayName rendered with no label at all.
+            $filter['displayName'] = $filter['displayName'] ?? ucwords(str_replace('_', ' ', $filter['name']));
             $value = request($filter['name']);
             if (!empty($filter['class'])) {
                 $data = $filter['class']::query();
@@ -25,6 +27,9 @@
                     $filter['options'][$item[$filter['key'] ?? 'id']] = $item[$filter['value'] ?? 'name'];
                 }
             }
+
+            // A filter declared with neither `class` nor `options` used to fatal on the loop below.
+            $options = $filter['options'] ?? [];
         @endphp
         <div class="col-6 {{ $filter['size'] ?? 'col-md-auto' }} mt-2 px-2">
             <div class="row">
@@ -38,7 +43,7 @@
                         @if (!empty($filter['includeEmpty']))
                             <option value="">All</option>
                         @endif
-                        @foreach ($filter['options'] as $key => $option)
+                        @foreach ($options as $key => $option)
                             <option value="{{ $key }}" {{ !is_null($value) && $value == $key ? 'selected' : '' }}>{{ $option }}</option>
                         @endforeach
                     </select>

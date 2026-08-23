@@ -2,6 +2,9 @@
     $isCreate = request()->routeIs('*.create');
     $fields = $isCreate ? $model->createFields : $model->updateFields;
     $authUser = auth()->user();
+    // Referencing the app's User constant directly makes this vendor view fatal in any app
+    // whose User model does not declare it.
+    $superAdminRole = defined('\App\Models\User::ROLE_SUPER_ADMIN') ? [\App\Models\User::ROLE_SUPER_ADMIN] : [];
 @endphp
 <div class="row mb-2">
     @foreach ($fields as $field)
@@ -14,10 +17,10 @@
 
             // accept array value
             if ($field['inputType'] == 'textarea' && !$isCreate) {
-                $value = old($field['name']) ?? (!empty($$routeModel)
-                    ? (is_array($$routeModel[$field['name']])
-                        ? json_encode($$routeModel[$field['name']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) : $$routeModel[$field['name']])
-                    : '');
+                $raw = !empty($$routeModel) ? ($$routeModel[$field['name']] ?? '') : '';
+                $value = old($field['name']) ?? (is_array($raw)
+                    ? json_encode($raw, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)
+                    : $raw);
             }
 
             if (!empty($field['permissions'])) {
@@ -28,10 +31,8 @@
                     }
                 }
             }
-            if (!empty($field['roles'])) {
-                if (empty($authUser) || !$authUser->hasAnyRole(array_merge($field['roles'], [\App\Models\User::ROLE_SUPER_ADMIN]))) {
-                    $showField = false;
-                }
+            if ($showField && !empty($field['roles'])) {
+                $showField = !empty($authUser) && $authUser->hasAnyRole(array_merge($field['roles'], $superAdminRole));
             }
             if (!$showField) {
                 continue;
@@ -44,12 +45,22 @@
                         $data->where($condition[0], $condition[1], $condition[2]);
                     }
                 }
-                $data = $data->get();
+                if (!empty($field['order'])) {
+                    foreach ($field['order'] as $order) {
+                        $data->orderBy($order[0], $order[1]);
+                    }
+                }
+                // `columns` narrows the select for large option tables, which otherwise hydrate
+                // every column of every row just to build a dropdown. Opt-in, because a `value`
+                // that is an accessor may need columns beyond the two read below.
+                $data = !empty($field['columns']) ? $data->get($field['columns']) : $data->get();
                 $field['options'] = [];
                 foreach ($data as $item) {
                     $field['options'][$item[$field['key'] ?? 'id']] = $item[$field['value'] ?? 'name'];
                 }
             }
+
+            $options = $field['options'] ?? [];
         @endphp
         @if ($showField)
             @if (\Illuminate\Support\Facades\View::exists($routePrefix . '.' . $routeName . '.form.' . $field['name']))
@@ -64,7 +75,7 @@
                         @if (!empty($field['includeEmpty']))
                             <option value="">N/A</option>
                         @endif
-                        @foreach ($field['options'] as $key => $option)
+                        @foreach ($options as $key => $option)
                             <option value="{{ $key }}" {{ $value == $key ? 'selected' : '' }}>{{ $option }}</option>
                         @endforeach
                     </select>
@@ -72,7 +83,7 @@
                     <country-select
                             :countries="{{ json_encode(array_values(countries())) }}"
                             name="{{ $field['name'] }}"
-                            data-name="{{ $field['dataName'] }}"
+                            data-name="{{ $field['dataName'] ?? $field['name'] }}"
                             @if (!$isCreate)
                                 :current-country="{{ json_encode($value) }}"
                             @endif
@@ -81,9 +92,9 @@
                     <tagging
                             name="{{ $field['name'] }}"
                             placeholder="{{ $field['placeholder'] }}"
-                            :options='@json($field["options"])'
-                            label="{{ $field['label'] }}"
-                            track-by="{{ $field['trackBy'] }}"
+                            :options='@json($options)'
+                            label="{{ $field['label'] ?? 'name' }}"
+                            track-by="{{ $field['trackBy'] ?? 'id' }}"
                             :required='@json(!empty($field["required"]))'
                             :allow-add-new-tag='@json(!empty($field["allowAddNewTag"]))'
                             @if (!$isCreate)
@@ -94,14 +105,14 @@
                     <textarea class="form-control" name="{{ $field['name'] }}" placeholder="{{ $field['placeholder'] }}" rows="{{ $field['rows'] ?? 5 }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $value }}</textarea>
                 @elseif ($field['inputType'] == 'radio' || $field['inputType'] == 'checkbox')
                     @if (!empty($field['multipleInput']))
-                        @foreach ($field['options'] as $key => $option)
+                        @foreach ($options as $key => $option)
                             <div class="form-check mb-2 {{ !empty($field['switchType']) ? 'form-switch' : '' }}">
                                 <label class="form-check-label"><input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}[]" value="{{ $option }}" {{ ((is_array($value) && in_array($key, $value)) || $value == $key) ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}> {{ $option }}</label>
                             </div>
                         @endforeach
                     @else
                         <div class="form-check">
-                            <label class="form-check-label"><input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}" id="{{ $field['id'] }}" value="{{ $field['value'] }}" {{ boolval($value) ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}> {{ $field['displayValue'] }}</label>
+                            <label class="form-check-label"><input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}" id="{{ $field['id'] ?? $field['name'] }}" value="{{ $field['value'] ?? 1 }}" {{ boolval($value) ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}> {{ $field['displayValue'] ?? '' }}</label>
                         </div>
                     @endif
                 @elseif ($field['inputType'] == 'range')

@@ -5,7 +5,7 @@ namespace Vecapital\Vebase\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
+use Vecapital\Vebase\VeHelper;
 
 class VeApiController extends ApiController
 {
@@ -22,17 +22,24 @@ class VeApiController extends ApiController
      */
     public function __construct(Request $request)
     {
-        if (! empty($request->segments())) {
-            $this->routeName = $request->segment(2);
-            $name = Str::singular(Str::camel($this->routeName));
-            $this->model = app('App\\Models\\'.ucfirst($name));
-            $this->modelName = preg_replace('/([a-z])([A-Z])/s', '$1 $2', ucfirst($name));
-        }
+        $this->routeName = $request->segment(2);
+
+        // The segment is attacker controlled. resolveModelClass() only hands back concrete
+        // VeModel classes the app declares, so an unmatched segment is a 404 rather than an
+        // arbitrary container resolution.
+        $class = VeHelper::resolveModelClass($this->routeName);
+        abort_if($class === null, 404);
+
+        $this->model = app($class);
+        $this->modelName = preg_replace('/([a-z])([A-Z])/s', '$1 $2', class_basename($class));
     }
 
     public function findModel($id)
     {
-        $routeKey = $this->model->getRouteKey() ?? 'id';
+        // getRouteKey() returns the key *value* of this empty prototype instance (null), not
+        // the column name, so a model with a custom route key was silently looked up by id.
+        $routeKey = $this->model->getRouteKeyName() ?: 'id';
+
         $model = $this->model::where($routeKey, $id)->first();
         abort_if(empty($model), 404);
 
@@ -43,46 +50,27 @@ class VeApiController extends ApiController
     {
         $this->authorize('viewAny', $this->model);
 
-        $search = $request->input('search');
-        $with = $request->input('with');
-        $limit = min(intval($request->get('limit', $this->paginateSize)), 1000);
-        $orderColumn = $request->input('order_column');
-        $orderBy = $request->input('order_by');
+        $search = VeHelper::sanitizeSearchTerm($request->input('search'));
+        $limit = VeHelper::sanitizeLimit($request->input('limit'), $this->paginateSize, self::DEFAULT_MAX_LIMIT);
 
         $models = $this->model::query();
 
-        if (! empty($search)) {
-            if (! empty($this->model->searchable)) {
-                $models = $models->where(function ($query) use ($search) {
-                    foreach ($this->model->searchable as $value) {
-                        $query->orWhere($value, 'LIKE', '%'.$search.'%');
-                    }
-                });
-            }
-        }
-
-        if (! empty($with)) {
-            if (is_array($with)) {
-                foreach ($with as $relatable) {
-                    if (in_array($relatable, $this->model->relatable)) {
-                        $models = $models->with($relatable);
-                    }
+        if (! empty($search) && ! empty($this->model->searchable)) {
+            $models = $models->where(function ($query) use ($search) {
+                foreach ($this->model->searchable as $value) {
+                    $query->orWhere($value, 'LIKE', '%'.$search.'%');
                 }
-            } else {
-                $models = $models->with($with);
-            }
+            });
         }
 
-        if (! empty($orderColumn) && in_array($orderColumn, $this->model->sortable)) {
-            $models = $models->orderBy($orderColumn, $orderBy);
-        } else {
-            $sortBy = $request->input('sort_by', 'latest');
-            if ($sortBy === 'oldest') {
-                $models->oldest();
-            } elseif ($sortBy === 'latest') {
-                $models->latest();
-            }
+        // Every requested relation goes through the allow list. The previous code applied a
+        // non-array `with` verbatim, so `?with=user.tokens` eager loaded whatever the caller
+        // named regardless of what the model chose to expose.
+        foreach ($this->allowedRelations($request->input('with'), $this->model) as $relation) {
+            $models = $models->with($relation);
         }
+
+        $models = $this->applyOrder($request, $models, $this->model);
 
         return $this->respondPagination($request, $models->paginate($limit));
     }
@@ -93,11 +81,12 @@ class VeApiController extends ApiController
 
         $input = $request->all();
 
-        if (empty($this->model->createValidator)) {
-            throw new \Exception($this->model.' createValidator is empty');
+        $rules = $this->model->createValidator();
+        if (empty($rules)) {
+            throw new \Exception($this->model::class.' createValidator is empty');
         }
 
-        $validator = Validator::make($input, $this->model->createValidator);
+        $validator = Validator::make($input, $rules);
         if ($validator->fails()) {
             return $this->showValidationError($validator);
         }
@@ -115,16 +104,14 @@ class VeApiController extends ApiController
 
     public function show(Request $request, $id)
     {
-        $input = $request->input();
         $model = $this->findModel($id);
         $this->authorize('view', $model);
 
-        if (! empty($input['relatable'])) {
-            foreach ($input['relatable'] as $relatable) {
-                if (in_array($relatable, $model->relatable)) {
-                    $model->with($relatable);
-                }
-            }
+        // load(), not with(): with() on an already retrieved model returns a throwaway builder,
+        // so the requested relations never actually reached the response.
+        $relations = $this->allowedRelations($request->input('relatable'), $model);
+        if (! empty($relations)) {
+            $model->load($relations);
         }
 
         return $this->respond($model);
@@ -137,19 +124,23 @@ class VeApiController extends ApiController
 
         $input = $request->all();
 
-        if (empty($this->model->updateValidator())) {
-            throw new \Exception($this->model.' updateValidator is empty');
+        $rules = $model->updateValidator();
+        if (empty($rules)) {
+            throw new \Exception($model::class.' updateValidator is empty');
         }
 
-        $validator = Validator::make($input, $model->updateValidator());
+        $validator = Validator::make($input, $rules);
         if ($validator->fails()) {
             return $this->showValidationError($validator);
         }
 
         try {
-            $model = $this->model::update($input);
+            // `$this->model::update()` was a static call, which Eloquent forwards to a fresh
+            // query builder with no where clause -- updating every row in the table on any
+            // authorised PUT. The update has to run against the resolved instance.
+            $model->update($input);
 
-            return $this->respond($model);
+            return $this->respond($model->fresh());
         } catch (\Exception $exception) {
             Log::error($exception);
 
@@ -165,5 +156,46 @@ class VeApiController extends ApiController
         $model->delete();
 
         return $this->respond();
+    }
+
+    /**
+     * Filters requested relation names down to the ones the model publishes in $relatable.
+     */
+    protected function allowedRelations($requested, $model): array
+    {
+        if (empty($requested)) {
+            return [];
+        }
+
+        $allowed = (array) ($model->relatable ?? []);
+        if (empty($allowed)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            (array) $requested,
+            fn ($relation) => is_string($relation) && in_array($relation, $allowed, true)
+        ));
+    }
+
+    /**
+     * Applies the request ordering, restricted to the columns the model declares in $sortable.
+     *
+     * The direction is validated here rather than left to Builder::orderBy(), which rejects
+     * anything but asc/desc with an uncaught InvalidArgumentException -- and a missing
+     * `order_by` used to reach it as null.
+     */
+    protected function applyOrder(Request $request, $query, $model)
+    {
+        $orderColumn = $request->input('order_column');
+        $sortable = (array) ($model->sortable ?? []);
+
+        if (is_string($orderColumn) && in_array($orderColumn, $sortable, true)) {
+            $direction = strtolower((string) $request->input('order_by', 'asc'));
+
+            return $query->orderBy($orderColumn, in_array($direction, ['asc', 'desc'], true) ? $direction : 'asc');
+        }
+
+        return $request->input('sort_by', 'latest') === 'oldest' ? $query->oldest() : $query->latest();
     }
 }

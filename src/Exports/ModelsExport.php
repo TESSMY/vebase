@@ -14,12 +14,26 @@ class ModelsExport implements FromQuery, WithHeadings, WithMapping, WithCustomQu
 {
     use Exportable;
 
+    /**
+     * Ceiling for the export's execution time, in seconds. Overridable via config so a slow
+     * export can be given room without handing an unauthenticated-in-effect endpoint the
+     * ability to pin a PHP worker forever, which `max_execution_time = 0` did.
+     */
+    public const DEFAULT_TIMEOUT = 300;
+
     public $model;
+
+    /**
+     * Cached column map, so map() does not re-read and re-walk $importExport for every row.
+     */
+    protected array $columns;
 
     public function __construct($model)
     {
-        ini_set('max_execution_time', 0);
         $this->model = $model;
+        $this->columns = array_values($model->importExport);
+
+        @ini_set('max_execution_time', (string) config('vebase.export_timeout', self::DEFAULT_TIMEOUT));
     }
 
     public function query()
@@ -27,30 +41,33 @@ class ModelsExport implements FromQuery, WithHeadings, WithMapping, WithCustomQu
         return $this->model::query();
     }
 
+    /**
+     * Total rows to export.
+     *
+     * This was hardcoded to 1000, which is the number of rows the chunked reader was told
+     * existed -- so any table with more than 1000 rows silently exported only the first 1000.
+     */
     public function querySize(): int
     {
-        return 1000;
+        return $this->query()->count();
     }
 
     public function headings(): array
     {
-        $headers = array_keys($this->model->importExport);
-
-        return $headers;
+        return array_keys($this->model->importExport);
     }
 
     public function map($model): array
     {
-        $columns = array_values($this->model->importExport);
-
         $map = [];
-        foreach ($columns as $column) {
-            if (is_array($column)) {
-                $value = $model->{$column['value']};
-            } else {
-                $value = $column;
-            }
-            $map[] = $value;
+
+        foreach ($this->columns as $column) {
+            // The plain-string branch used to assign $column itself, so a simple
+            // 'Name' => 'name' mapping wrote the literal string "name" into every row
+            // instead of the record's value.
+            $map[] = is_array($column)
+                ? $model->{$column['value']}
+                : $model->{$column};
         }
 
         return $map;

@@ -20,8 +20,10 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Vecapital\Vebase\Exports\ModelsExport;
 use Vecapital\Vebase\Imports\ModelsImport;
+use Vecapital\Vebase\VeHelper;
 
 
 class VeController extends Controller
@@ -39,23 +41,61 @@ class VeController extends Controller
     protected $paginateSize = 10;
 
     /**
+     * Largest page size a request may ask for. Without a ceiling `?limit=1000000` hydrates
+     * the whole table into memory and renders a row for each.
+     */
+    protected int $maxPaginateSize = VeHelper::MAX_PAGINATE_LIMIT;
+
+    /**
+     * Largest accepted import upload, in kilobytes.
+     */
+    protected int $maxImportSize = 10240;
+
+    /**
+     * Restricts store()/update() input to the names the model declares in $createFields /
+     * $updateFields, on top of Eloquent's own $fillable.
+     *
+     * Off by default because controllers commonly submit fields that never appear in the
+     * generated form. Turn it on for any model using `$guarded = []`, where $request->all()
+     * otherwise lets a caller write any column it can name.
+     */
+    protected bool $restrictInputToFields = false;
+
+    /**
+     * Optional redirect targets honoured after a successful store()/update().
+     *
+     * Declared rather than set dynamically -- reading an undeclared property raises an
+     * "Undefined property" warning on every write request.
+     */
+    protected $create_redirect_route;
+
+    protected $create_redirect_object;
+
+    protected $update_redirect_route;
+
+    protected $update_redirect_object;
+
+    /**
      * creates the model from the request path
      */
     public function __construct(Request $request)
     {
-        if (! empty($request->segments())) {
-            $this->routeName = $request->segment(2);
-            $name = Str::singular(Str::camel($this->routeName));
-            $this->model = app('App\\Models\\'.ucfirst($name));
-            $this->modelName = preg_replace('/([a-z])([A-Z])/s', '$1 $2', ucfirst($name));
+        $this->routeName = $request->segment(2);
 
-            $this->folder = Str::singular($request->segment(1));
-        }
+        // The segment is attacker controlled. resolveModelClass() only hands back concrete
+        // VeModel classes the app declares, so an unmatched segment is a 404 rather than an
+        // arbitrary container resolution driven by the URL.
+        $class = VeHelper::resolveModelClass($this->routeName);
+        abort_if($class === null, 404);
+
+        $this->model = app($class);
+        $this->modelName = preg_replace('/([a-z])([A-Z])/s', '$1 $2', class_basename($class));
+        $this->folder = Str::singular($request->segment(1));
     }
 
     public function findModel($id)
     {
-        $routeKey = $this->model->getRouteKeyName() ?? 'id';
+        $routeKey = $this->model->getRouteKeyName() ?: 'id';
 
         if ($this->model::$resourceWithTrashed && in_array(SoftDeletes::class, class_uses_recursive($this->model))) {
             $model = $this->model::withTrashed()->where($routeKey, $id)->first();
@@ -77,22 +117,29 @@ class VeController extends Controller
     {
         $this->authorize('viewAny', $this->model);
 
-        $search = $request->input('search');
-        $limit = $request->input('limit') ?? $this->paginateSize;
+        $search = VeHelper::sanitizeSearchTerm($request->input('search'));
+        // A subclass that raises $paginateSize past the cap means to allow that many, so the
+        // ceiling never sits below the controller's own default.
+        $limit = VeHelper::sanitizeLimit(
+            $request->input('limit'),
+            $this->paginateSize,
+            max($this->maxPaginateSize, $this->paginateSize)
+        );
         $trashed = $request->input('trashed');
 
         $models = $this->model::query();
 
-
         if (method_exists($this, 'indexFilter')) {
-            $models = $this->indexFilter($request, $models);
+            $models = $this->indexFilter($request, $models) ?? $models;
         }
 
-        if (!empty($filters = $this->model->filters)) {
+        if (! empty($filters = $this->model->filters)) {
             foreach ($filters as $filter) {
                 $name = $filter['name'];
                 $value = $request->input($name);
-                if (!is_null($value)) {
+                // Array input reaches the grammar as a single binding and blows up the query;
+                // only a scalar can meaningfully match an equality filter.
+                if (! is_null($value) && is_scalar($value)) {
                     $models->where($name, $value);
                 }
             }
@@ -102,22 +149,26 @@ class VeController extends Controller
             $models = $models->withTrashed();
         }
 
-        if (! empty($search)) {
-            if (! empty($this->model->searchable)) {
-                $models = $models->where(function ($query) use ($search) {
-                    foreach ($this->model->searchable as $value) {
-                        if (str_contains($value, '.')) {
-                            [$relation, $relationColumn] = explode('.', $value, 2);
+        if (! empty($search) && ! empty($this->model->searchable)) {
+            $models = $models->where(function ($query) use ($search) {
+                foreach ($this->model->searchable as $value) {
+                    if (str_contains($value, '.')) {
+                        [$relation, $relationColumn] = explode('.', $value, 2);
 
-                            $query->orWhereHas($relation, function ($q) use ($relationColumn, $search) {
-                                $q->where($relationColumn, 'LIKE', '%'.$search.'%');
-                            });
-                        } else {
-                            $query->orWhere($value, 'LIKE', '%'.$search.'%');
-                        }
+                        $query->orWhereHas($relation, function ($q) use ($relationColumn, $search) {
+                            $q->where($relationColumn, 'LIKE', '%'.$search.'%');
+                        });
+                    } else {
+                        $query->orWhere($value, 'LIKE', '%'.$search.'%');
                     }
-                });
-            }
+                }
+            });
+        }
+
+        // The index table walks `relation` index fields per row, so without this a listing of
+        // N rows issues N extra queries for each of them.
+        if (! empty($eagerLoads = VeHelper::eagerLoadsFor($this->model))) {
+            $models = $models->with($eagerLoads);
         }
 
         $models = $this->applySort($request, $models)->latest()->paginate($limit)->withQueryString();
@@ -219,7 +270,7 @@ class VeController extends Controller
     {
         $this->authorize('create', $this->model);
 
-        $input = $request->all();
+        $input = $this->inputFor($request, $this->model->createFields ?? []);
 
         if (!empty($this->model->createValidator())) {
             $validator = Validator::make($input, $this->model->createValidator());
@@ -233,21 +284,7 @@ class VeController extends Controller
         try {
             DB::beginTransaction();
 
-            if (! empty($this->model->files)) {
-                foreach ($this->model->files as $file) {
-                    if ($request->hasFile($file)) {
-                        if (is_array($request->file($file))) {
-                            $files = [];
-                            foreach ($request->file($file) as $item) {
-                                $files[] = Storage::url($item->store(strtolower(Str::snake($this->modelName)) . '/' . time()));
-                            }
-                            $input[$file] = $files;
-                        } else {
-                            $input[$file] = Storage::url($request->file($file)->store(strtolower(Str::snake($this->modelName)) . '/' . time()));
-                        }
-                    }
-                }
-            }
+            $input = $this->storeUploadedFiles($request, $input, strtolower(Str::snake($this->modelName)).'/'.time());
 
             if (method_exists($this, 'storeInput')) {
                 $input = $this->storeInput($input);
@@ -271,10 +308,17 @@ class VeController extends Controller
             }
 
             return redirect()->route($this->folder.'.'.$this->routeName.'.index');
+        } catch (HttpException | AuthorizationException $exception) {
+            // Guards in storeInput/storeAfter (or anything they call) surface abort()/authorize()
+            // as these exception types. Roll the write back but let the framework render the
+            // proper 401/403 -- do not flatten to a flashed 302, which would look like a
+            // validation error and hide the refusal.
+            DB::rollBack();
+            throw $exception;
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error creating ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
+            flash()->error($this->failureMessage('creating', $exception));
 
             return back()->withInput();
         }
@@ -367,7 +411,7 @@ class VeController extends Controller
         $model = $this->findModel($id);
         $this->authorize('update', $model);
 
-        $input = $request->all();
+        $input = $this->inputFor($request, $this->model->updateFields ?? []);
 
         if (!empty($model->updateValidator())) {
             $validator = Validator::make($input, $model->updateValidator());
@@ -381,45 +425,9 @@ class VeController extends Controller
         try {
             DB::beginTransaction();
 
-            if (! empty($this->model->files)) {
-                foreach ($this->model->files as $file) {
-                    if ($request->hasFile($file)) {
-
-                        // Handle deletion first
-                        if (! empty($model[$file])) {
-                            if (is_array($model[$file])) {
-                                $files = [];
-                                foreach ($model[$file] as $item) {
-                                    $path = $item;
-                                    if (config('filesystems.default') == 'public') {
-                                        $initialPath = config('filesystems.disks.public.url');
-                                        $path = substr($path, strlen($initialPath));
-                                    }
-                                    Storage::delete($path);
-                                }
-                            } else {
-                                $path = $model[$file];
-                                if (config('filesystems.default') == 'public') {
-                                    $initialPath = config('filesystems.disks.public.url');
-                                    $path = substr($path, strlen($initialPath));
-                                }
-                                Storage::delete($path);
-                            }
-                        }
-                        // Actually store the files now
-                        if (is_array($request->file($file))) {
-                            $files = [];
-                            foreach ($request->file($file) as $item) {
-                                $files[] = Storage::url($item->store(strtolower(Str::snake($this->modelName)) . '/' . md5($model->id)));
-                            }
-                            $input[$file] = $files;
-                        } else {
-                            $input[$file] = Storage::url($request->file($file)->store(strtolower(Str::snake($this->modelName)) . '/' . md5($model->id)));
-                        }
-
-                    }
-                }
-            }
+            // Replacing a file: drop what is already there, then store the new upload.
+            $this->deleteStoredFiles($request, $model);
+            $input = $this->storeUploadedFiles($request, $input, strtolower(Str::snake($this->modelName)).'/'.md5((string) $model->id));
 
             if (method_exists($this, 'updateInput')) {
                 $input = $this->updateInput($input);
@@ -443,10 +451,15 @@ class VeController extends Controller
             }
 
             return redirect()->route($this->folder.'.'.$this->routeName.'.index');
+        } catch (HttpException | AuthorizationException $exception) {
+            // See store(): keep abort()/authorize() from hook methods as 401/403 rather than
+            // a flashed 302. The rollback still runs so no partial write survives.
+            DB::rollBack();
+            throw $exception;
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error updating ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
+            flash()->error($this->failureMessage('updating', $exception));
 
             return back()->withInput();
         }
@@ -474,10 +487,14 @@ class VeController extends Controller
                 $this->deleteAfter();
             }
             DB::commit();
+        } catch (HttpException | AuthorizationException $exception) {
+            // See store(): keep abort()/authorize() from deleteBefore/deleteAfter as 401/403.
+            DB::rollBack();
+            throw $exception;
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error($exception);
-            flash()->error('There was an error deleting ' . strtolower($this->modelName) . '. Error: ' . $exception->getMessage());
+            flash()->error($this->failureMessage('deleting', $exception));
 
             return back();
         }
@@ -487,23 +504,171 @@ class VeController extends Controller
         return redirect()->route($this->folder.'.'.$this->routeName.'.index');
     }
 
-    public function export(request $request)
+    public function export(Request $request)
     {
-        if (!Auth::user()->hasPermissionTo('export-'. \Illuminate\Support\Str::kebab(strtolower($this->modelName)))) {
-            abort(401);
-        }
+        $this->authorizePermission('export');
 
         return Excel::download(new ModelsExport($this->model), $this->modelName . '-' . now()->toDateString() . '.xlsx');
     }
 
-    public function import(request $request)
+    public function import(Request $request)
     {
-        if (!Auth::user()->hasPermissionTo('import-'. \Illuminate\Support\Str::kebab(strtolower($this->modelName)))) {
-            abort(401);
+        $this->authorizePermission('import');
+
+        // The upload went straight into the spreadsheet reader unchecked: a missing field was a
+        // TypeError, and any file of any size and type was parsed.
+        $request->validate([
+            'import_file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:'.$this->maxImportSize],
+        ]);
+
+        try {
+            Excel::import(new ModelsImport($this->model), $request->file('import_file'));
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            flash()->error($this->failureMessage('importing', $exception));
+
+            return back();
         }
 
-        Excel::import(new ModelsImport($this->model), request()->file('import_file'));
-
         return redirect()->route($this->folder.'.'.$this->routeName.'.index')->with('success', 'All good!');
+    }
+
+    /**
+     * Aborts unless the current user holds the `<action>-<model>` permission.
+     *
+     * can() rather than hasPermissionTo(): the latter raises PermissionDoesNotExist for a
+     * permission the app never registered, turning a denial into a 500. A guest reached it as
+     * a null dereference. Missing authorisation is a 403 -- 401 means "not authenticated yet".
+     */
+    protected function authorizePermission(string $action): void
+    {
+        $user = Auth::user();
+        $permission = $action.'-'.Str::kebab(strtolower($this->modelName));
+
+        abort_if($user === null, 401);
+        abort_if(! $user->can($permission), 403);
+    }
+
+    /**
+     * The input array a write should operate on.
+     *
+     * Framework-internal keys never belong in a model write. When $restrictInputToFields is on,
+     * the input is further narrowed to the field names the model declares.
+     */
+    protected function inputFor(Request $request, array $fields): array
+    {
+        $input = $request->except(['_token', '_method']);
+
+        if (! $this->restrictInputToFields) {
+            return $input;
+        }
+
+        $allowed = [];
+        foreach ($fields as $field) {
+            if (is_array($field) && ! empty($field['name'])) {
+                $allowed[] = $field['name'];
+            }
+        }
+
+        return empty($allowed) ? $input : array_intersect_key($input, array_flip($allowed));
+    }
+
+    /**
+     * Stores any uploaded files listed in $model->files under $directory and returns the input
+     * with those keys replaced by the resulting public URLs.
+     */
+    protected function storeUploadedFiles(Request $request, array $input, string $directory): array
+    {
+        foreach ((array) ($this->model->files ?? []) as $file) {
+            if (! $request->hasFile($file)) {
+                continue;
+            }
+
+            $uploaded = $request->file($file);
+
+            if (is_array($uploaded)) {
+                $stored = [];
+                foreach ($uploaded as $item) {
+                    $stored[] = Storage::url($item->store($directory));
+                }
+                $input[$file] = $stored;
+            } else {
+                $input[$file] = Storage::url($uploaded->store($directory));
+            }
+        }
+
+        return $input;
+    }
+
+    /**
+     * Removes the files currently referenced by $model for each upload being replaced.
+     */
+    protected function deleteStoredFiles(Request $request, $model): void
+    {
+        foreach ((array) ($this->model->files ?? []) as $file) {
+            if (! $request->hasFile($file) || empty($model[$file])) {
+                continue;
+            }
+
+            foreach ((array) $model[$file] as $item) {
+                if (! is_string($item)) {
+                    continue;
+                }
+
+                if ($path = $this->storagePathFromUrl($item)) {
+                    Storage::delete($path);
+                }
+            }
+        }
+    }
+
+    /**
+     * Maps a stored public URL back to the disk-relative path it was written to.
+     *
+     * The previous logic only stripped a prefix when the default disk was literally named
+     * "public", and compared a `Storage::url()` result against the configured base URL, so on
+     * every other disk Storage::delete() was handed a full URL and quietly deleted nothing --
+     * replaced files accumulated forever. Deriving the prefix from the same call that built
+     * the URL keeps the two in step whatever the disk is.
+     */
+    protected function storagePathFromUrl(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        try {
+            $prefix = rtrim(Storage::url(''), '/');
+        } catch (\Throwable) {
+            // Driver cannot build URLs; the stored value is already a relative path.
+            $prefix = '';
+        }
+
+        if ($prefix !== '' && str_starts_with($value, $prefix)) {
+            $value = substr($value, strlen($prefix));
+        }
+
+        $value = ltrim(rawurldecode($value), '/');
+
+        // A column an operator can write reaching a filesystem delete has to stay inside the
+        // disk root, whatever Flysystem would have made of the traversal itself.
+        if ($value === '' || str_contains($value, '..')) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * A user-facing failure message. Exception text can carry SQL fragments, table names and
+     * absolute paths, so it is only surfaced when the app is in debug mode; the full exception
+     * is logged either way.
+     */
+    protected function failureMessage(string $action, \Throwable $exception): string
+    {
+        $message = 'There was an error '.$action.' '.strtolower($this->modelName).'.';
+
+        return config('app.debug') ? $message.' Error: '.$exception->getMessage() : $message;
     }
 }

@@ -11,52 +11,185 @@ use Vecapital\Vebase\Traits\VeModel;
 
 class VeHelper
 {
+    /**
+     * Longest accepted `search` term. The term becomes a LIKE pattern scanned against every
+     * searchable column of every row, so an unbounded one is a cheap way to burn database time.
+     */
+    public const MAX_SEARCH_LENGTH = 128;
+
+    /**
+     * Upper bound for a request supplied page size, so `?limit=1000000` cannot ask the
+     * database and the view layer to materialise the whole table.
+     */
+    public const MAX_PAGINATE_LIMIT = 100;
+
+    /**
+     * Concrete VeModel class names, resolved once per process rather than on every call.
+     */
+    protected static ?array $modelClasses = null;
+
     public static function adminRoutes()
     {
-        $classes = static::getModelClasses();
+        foreach (static::veModelClasses() as $class) {
+            $model = new $class();
+            if (! $model->hasAdminResourceRoute()) {
+                continue;
+            }
 
-        foreach ($classes as $class) {
-            $class = new $class();
-            if ($class instanceof VeModel && $class->hasAdminResourceRoute()) {
-                $name = (new \ReflectionClass($class))->getShortName();
-                $overrideClass = 'App\\Http\\Controllers\\Admin\\' . $name . 'Controller';
-                $controller = class_exists($overrideClass) ? $overrideClass : VeController::class;
-                $name = Str::plural(Str::kebab($name));
+            $shortName = class_basename($class);
+            $overrideClass = 'App\\Http\\Controllers\\Admin\\'.$shortName.'Controller';
+            $controller = class_exists($overrideClass) ? $overrideClass : VeController::class;
+            $name = strtolower(Str::plural(Str::kebab($shortName)));
 
-                if (!empty($class->importExport)) {
-                    if (!$class->disableImport) {
-                        Route::post(strtolower($name) . '/import', $controller . '@import')->name(strtolower($name) . '.import');
-                    }
-                    if (!$class->disableExport) {
-                        Route::get(strtolower($name) . '/export', $controller . '@export')->name(strtolower($name) . '.export');
-                    }
+            if (! empty($model->importExport)) {
+                if (! $model->disableImport) {
+                    Route::post($name.'/import', $controller.'@import')->name($name.'.import');
                 }
-
-                if (!empty($class->routesExcept)) {
-                    Route::resource(strtolower($name), $controller)->except($class->routesExcept);
-                } elseif (!empty($class->routesOnly)) {
-                    Route::resource(strtolower($name), $controller)->only($class->routesOnly);
-                } else {
-                    Route::resource(strtolower($name), $controller);
+                if (! $model->disableExport) {
+                    Route::get($name.'/export', $controller.'@export')->name($name.'.export');
                 }
+            }
+
+            if (! empty($model->routesExcept)) {
+                Route::resource($name, $controller)->except($model->routesExcept);
+            } elseif (! empty($model->routesOnly)) {
+                Route::resource($name, $controller)->only($model->routesOnly);
+            } else {
+                Route::resource($name, $controller);
             }
         }
     }
 
     public static function apiRoutes()
     {
-        $classes = static::getModelClasses();
+        foreach (static::veModelClasses() as $class) {
+            $model = new $class();
+            if (! $model->hasApiResourceRoute()) {
+                continue;
+            }
 
-        foreach ($classes as $class) {
-            $class = new $class();
-            if ($class instanceof VeModel && $class->hasApiResourceRoute()) {
-                $name = (new \ReflectionClass($class))->getShortName();
-                $overrideClass = 'App\\Http\\Controllers\\Api\\' . $name . 'Controller';
-                $class = class_exists($overrideClass) ? $overrideClass : VeApiController::class;
-                $name = Str::plural(Str::kebab($name));
-                Route::apiResource(strtolower($name), $class);
+            $shortName = class_basename($class);
+            $overrideClass = 'App\\Http\\Controllers\\Api\\'.$shortName.'Controller';
+            $controller = class_exists($overrideClass) ? $overrideClass : VeApiController::class;
+
+            Route::apiResource(strtolower(Str::plural(Str::kebab($shortName))), $controller);
+        }
+    }
+
+    /**
+     * Turns a URL segment into the model class it names, or null when it names nothing.
+     *
+     * The segment is attacker controlled, so the result is pinned to the App\Models namespace
+     * and has to be a concrete VeModel. Resolving the raw string through the container instead
+     * would build whatever binding the segment happens to spell.
+     *
+     * Deliberately checked class-by-class rather than against veModelClasses(): this runs on
+     * every request through a Ve controller, and scanning the Models directory there would
+     * autoload every model in the app just to validate one name.
+     */
+    public static function resolveModelClass(?string $segment): ?string
+    {
+        if (empty($segment)) {
+            return null;
+        }
+
+        $class = 'App\\Models\\'.ucfirst(Str::singular(Str::camel($segment)));
+
+        if (! class_exists($class) || ! is_subclass_of($class, VeModel::class)) {
+            return null;
+        }
+
+        return (new \ReflectionClass($class))->isInstantiable() ? $class : null;
+    }
+
+    /**
+     * Normalises a request supplied search term: scalars only, trimmed and length capped.
+     *
+     * Returns null when there is nothing to search for. Array input would otherwise reach
+     * string concatenation as "Array" and raise a fatal.
+     */
+    public static function sanitizeSearchTerm($value): ?string
+    {
+        if (! is_scalar($value)) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        return Str::limit($value, static::MAX_SEARCH_LENGTH, '');
+    }
+
+    /**
+     * Normalises a request supplied page size to a positive integer no larger than $max.
+     */
+    public static function sanitizeLimit($value, int $default, ?int $max = null): int
+    {
+        $max = $max ?? static::MAX_PAGINATE_LIMIT;
+
+        if (! is_scalar($value) || ! is_numeric($value)) {
+            return $default;
+        }
+
+        return max(1, min((int) $value, $max));
+    }
+
+    /**
+     * The relations an index listing walks, taken from the model's `relation` index fields.
+     *
+     * table.blade.php reads these per row, so without eager loading a listing of N rows
+     * issues N extra queries for every relation field.
+     */
+    public static function eagerLoadsFor($model): array
+    {
+        $relations = [];
+
+        foreach ((array) ($model->indexFields ?? []) as $field) {
+            if (! is_array($field)) {
+                continue;
+            }
+
+            if (($field['type'] ?? null) === 'relation' && ! empty($field['relation']) && is_string($field['relation'])) {
+                $relations[] = $field['relation'];
             }
         }
+
+        return array_values(array_unique($relations));
+    }
+
+    /**
+     * Concrete VeModel classes in the app's Models directory.
+     *
+     * The subclass check runs on the class name so abstract classes, and classes whose
+     * constructor needs arguments, are filtered out before anything is instantiated.
+     */
+    public static function veModelClasses(): array
+    {
+        if (static::$modelClasses !== null) {
+            return static::$modelClasses;
+        }
+
+        return static::$modelClasses = collect(static::getModelClasses())
+            ->filter(function ($class) {
+                if (! is_subclass_of($class, VeModel::class)) {
+                    return false;
+                }
+
+                return (new \ReflectionClass($class))->isInstantiable();
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Clears the memoised model list. Only needed by tests that declare classes at runtime.
+     */
+    public static function flushModelClasses(): void
+    {
+        static::$modelClasses = null;
     }
 
     /**
@@ -73,14 +206,14 @@ class VeHelper
 
         return collect(File::allFiles($modelsPath))
             ->filter(fn ($file) => $file->getExtension() === 'php')
-            ->map(function ($file) use ($namespace, $modelsPath) {
+            ->map(function ($file) use ($namespace) {
                 $relativePath = str_replace(
                     ['/', '.php'],
                     ['\\', ''],
                     $file->getRelativePathname()
                 );
 
-                return $namespace . 'Models\\' . $relativePath;
+                return $namespace.'Models\\'.$relativePath;
             })
             ->filter(fn ($class) => class_exists($class))
             ->values()

@@ -179,14 +179,17 @@ class ApiController extends Controller
     }
 
     /**
-     * Adds debugging information to the response
+     * Adds debugging information to the response.
+     *
+     * Gated on app.debug: respondInternalError() feeds exception detail through here, and in
+     * production that detail (SQL fragments, file paths, class names) would be serialised
+     * straight into the JSON response body.
      */
     public function addDebugInfo($data): void
     {
-        $this->debugInfo[] = $data;
-        //    if (config('app.debug')) {
-        //        $this->debugInfo[] = $data;
-        //    }
+        if (config('app.debug')) {
+            $this->debugInfo[] = $data;
+        }
     }
 
     /**
@@ -226,8 +229,10 @@ class ApiController extends Controller
      */
     public function paginate(Request $request, array $items): LengthAwarePaginator
     {
-        $limit = min(intval($request->get('limit', $this->defaultPaginateLimit)), self::DEFAULT_MAX_LIMIT);
-        $page = (int) $request->get('page', 1);
+        // Both values are clamped to at least 1: `?limit=0` divided by zero when the paginator
+        // computed the last page, and a negative page produced a negative array offset.
+        $limit = max(1, min(intval($request->get('limit', $this->defaultPaginateLimit)), self::DEFAULT_MAX_LIMIT));
+        $page = max(1, (int) $request->get('page', 1));
         $offset = ($page - 1) * $limit;
         $items = new LengthAwarePaginator(array_slice($items, $offset, $limit), count($items), $limit, $page);
 

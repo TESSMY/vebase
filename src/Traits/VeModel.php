@@ -198,19 +198,42 @@ abstract class VeModel extends Model
 
     public bool $disableImport = false;
 
+    /**
+     * Per-class result of resolving $permissionsList, so the work below runs once per class
+     * rather than once per model.
+     *
+     * Eloquent builds a fresh instance for every row it hydrates, which put the import/export
+     * bookkeeping and the mutually-exclusive route check on the path of every single result
+     * row of every query.
+     */
+    protected static array $resolvedPermissionsList = [];
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
-        if (!in_array('import', $this->permissionsList) && !empty($this->importExport) && !$this->disableImport) {
-            $this->permissionsList[] = 'import';
-        }
-        if (!in_array('export', $this->permissionsList) && !empty($this->importExport) && !$this->disableExport) {
-            $this->permissionsList[] = 'export';
-        }
+        $this->permissionsList = static::$resolvedPermissionsList[static::class]
+            ??= $this->resolvePermissionsList();
+    }
+
+    protected function resolvePermissionsList(): array
+    {
         if (!empty($this->routesExcept) && !empty($this->routesOnly)) {
             throw new \Exception('Can use only either $routesExcept or $routesOnly.');
         }
+
+        $permissions = $this->permissionsList;
+
+        if (!empty($this->importExport)) {
+            if (!$this->disableImport && !in_array('import', $permissions)) {
+                $permissions[] = 'import';
+            }
+            if (!$this->disableExport && !in_array('export', $permissions)) {
+                $permissions[] = 'export';
+            }
+        }
+
+        return $permissions;
     }
 
     /**

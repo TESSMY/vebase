@@ -2,13 +2,19 @@
 
 namespace Vecapital\Vebase\Imports;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class ModelsImport implements ToModel, WithHeadingRow, WithChunkReading, ShouldQueue
+/**
+ * Runs synchronously, chunk by chunk.
+ *
+ * It used to implement ShouldQueue, which on any real queue connection made Excel::import()
+ * return as soon as the job was queued: VeController::import() reported success before a row
+ * was read, a bad row failed silently in the worker, and its error handling never ran.
+ */
+class ModelsImport implements ToModel, WithHeadingRow, WithChunkReading
 {
     /**
      * Sentinel for "this column was not in the row", so a legitimate null value is not

@@ -7,10 +7,14 @@ use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithCustomQuerySize;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 
-class ModelsExport implements FromQuery, WithHeadings, WithMapping, WithCustomQuerySize, ShouldQueue, ShouldAutoSize
+class ModelsExport extends DefaultValueBinder implements FromQuery, WithHeadings, WithMapping, WithCustomQuerySize, WithCustomValueBinder, ShouldQueue, ShouldAutoSize
 {
     use Exportable;
 
@@ -71,5 +75,23 @@ class ModelsExport implements FromQuery, WithHeadings, WithMapping, WithCustomQu
         }
 
         return $map;
+    }
+
+    /**
+     * Writes text that starts with `=` as text.
+     *
+     * The default binder stores any such string as a live formula, so a record value like
+     * `=HYPERLINK(...)` or `=WEBSERVICE(...)` -- typed into any exported column by whoever
+     * can edit the record -- ran in the spreadsheet of the admin who opened the export.
+     */
+    public function bindValue(Cell $cell, $value)
+    {
+        if (is_string($value) && str_starts_with($value, '=')) {
+            $cell->setValueExplicit($value, DataType::TYPE_STRING);
+
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 }

@@ -114,24 +114,28 @@
                                 @endcan
                             </td>
                         @else
+                            {{-- v-pre on every data cell: the page is compiled by Vue's in-DOM
+                                 template compiler, so a stored value such as a name of
+                                 `{{ ... }}` would otherwise run as a Vue expression for
+                                 whoever opens the listing. Blade's escaping does not stop it. --}}
                             @if (empty($indexField['type']))
                                 @if (!isset($$routeModel[$columnName]))
-                                    <td>-</td>
+                                    <td v-pre>-</td>
                                 @else
-                                    <td>{{ $$routeModel[$columnName] }}</td>
+                                    <td v-pre>{{ $$routeModel[$columnName] }}</td>
                                 @endif
                             @elseif ($indexField['type'] == 'image')
-                                <td>
+                                <td v-pre>
                                     @if (!empty($$routeModel[$columnName]))
                                         <img src="{{ $$routeModel[$columnName] }}" class="avatar">
                                     @endif
                                 </td>
                             @elseif ($indexField['type'] == 'span')
-                                <td>
+                                <td v-pre>
                                     <span class="{{ $$routeModel[$indexField['class']] ?? '' }}">{{ $$routeModel[$columnName] }}</span>
                                 </td>
                             @elseif ($indexField['type'] == 'boolean')
-                                <td>{{ !empty($$routeModel[$columnName]) ? 'Yes' : 'No' }}</td>
+                                <td v-pre>{{ !empty($$routeModel[$columnName]) ? 'Yes' : 'No' }}</td>
                             @elseif ($indexField['type'] == 'relation')
                                 @php
                                     $relation = explode('.', $indexField['relation']);
@@ -140,13 +144,13 @@
                                         $data = $data?->{$relation[$i]};
                                     }
                                 @endphp
-                                <td>{{ $data?->{$indexField['relatedColumnName']} ?? '-' }}</td>
+                                <td v-pre>{{ $data?->{$indexField['relatedColumnName']} ?? '-' }}</td>
                             @elseif ($indexField['type'] == 'html')
                                 {{-- Raw by request: `type => 'html'` is the opt-in for unescaped output.
                                      Only point it at a column whose contents you control. --}}
-                                <td>{!! $indexField['html'] ?? $$routeModel[$columnName] !!}</td>
+                                <td v-pre>{!! $indexField['html'] ?? $$routeModel[$columnName] !!}</td>
                             @elseif ($indexField['type'] == 'decimal')
-                                <td>{{ number_format($$routeModel[$columnName], $indexField['decimal']) }}</td>
+                                <td v-pre>{{ number_format($$routeModel[$columnName], $indexField['decimal']) }}</td>
                             @elseif ($indexField['type'] == 'url')
                                 @php
                                     $url = $$routeModel[$columnName] ?? null;
@@ -166,18 +170,18 @@
                                     }
                                 @endphp
                                 @if (!empty($url))
-                                    <td>
+                                    <td v-pre>
                                         <a href="{{ $url }}" target="{{ $target }}" @if ($target === '_blank') rel="noopener noreferrer" @endif>
                                             {{ $indexField['displayText'] ?? 'View' }}
                                         </a>
                                     </td>
                                 @else
-                                    <td>-</td>
+                                    <td v-pre>-</td>
                                 @endif
                             @elseif ($indexField['type'] == 'decimal_with_currency')
-                                <td>{{ $$routeModel[$columnName] . ' ' . $indexField['currency'] }}</td>
+                                <td v-pre>{{ $$routeModel[$columnName] . ' ' . $indexField['currency'] }}</td>
                             @elseif ($indexField['type'] == 'dollar_decimal')
-                                <td>$ {{ number_format($$routeModel[$columnName], $indexField['decimal']) }}</td>
+                                <td v-pre>$ {{ number_format($$routeModel[$columnName], $indexField['decimal']) }}</td>
                             @endif
                         @endif
                     @endforeach

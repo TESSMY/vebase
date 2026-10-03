@@ -64,7 +64,9 @@
                                             @endphp
                                             <span class="col-5 mb-2 fw-bold">{{ $showField['displayName'] }} </span>
 
-                                            <span class="col-7 mb-2">
+                                            {{-- v-pre: see common/table.blade.php -- stored values must not
+                                                 reach Vue's template compiler. --}}
+                                            <span class="col-7 mb-2" v-pre>
                                                 {{-- Every branch below used to read $indexField, which does not
                                                      exist in this view -- so `type` was always seen as empty and
                                                      no field ever rendered as anything but plain text. --}}

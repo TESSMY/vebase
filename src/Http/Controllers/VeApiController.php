@@ -26,12 +26,22 @@ class VeApiController extends ApiController
 
         // The segment is attacker controlled. resolveModelClass() only hands back concrete
         // VeModel classes the app declares, so an unmatched segment is a 404 rather than an
-        // arbitrary container resolution.
+        // arbitrary container resolution. As in VeController, the 404 is raised from
+        // callAction() so console commands that build the controller keep working.
         $class = VeHelper::resolveModelClass($this->routeName);
-        abort_if($class === null, 404);
+        if ($class === null) {
+            return;
+        }
 
         $this->model = app($class);
         $this->modelName = preg_replace('/([a-z])([A-Z])/s', '$1 $2', class_basename($class));
+    }
+
+    public function callAction($method, $parameters)
+    {
+        abort_if($this->model === null, 404);
+
+        return parent::callAction($method, $parameters);
     }
 
     public function findModel($id)
@@ -53,15 +63,7 @@ class VeApiController extends ApiController
         $search = VeHelper::sanitizeSearchTerm($request->input('search'));
         $limit = VeHelper::sanitizeLimit($request->input('limit'), $this->paginateSize, self::DEFAULT_MAX_LIMIT);
 
-        $models = $this->model::query();
-
-        if (! empty($search) && ! empty($this->model->searchable)) {
-            $models = $models->where(function ($query) use ($search) {
-                foreach ($this->model->searchable as $value) {
-                    $query->orWhere($value, 'LIKE', '%'.$search.'%');
-                }
-            });
-        }
+        $models = VeHelper::applySearch($this->model::query(), $this->model->searchable ?? [], $search);
 
         // Every requested relation goes through the allow list. The previous code applied a
         // non-array `with` verbatim, so `?with=user.tokens` eager loaded whatever the caller
@@ -92,7 +94,10 @@ class VeApiController extends ApiController
         }
 
         try {
-            $model = $this->model::create($input);
+            // Only what the rules vouch for is written. The whole request body used to reach
+            // create(), so anything the caller added that happened to be fillable was written
+            // unvalidated -- an API cannot rely on a form to have limited the fields.
+            $model = $this->model::create($validator->validated());
 
             return $this->respondCreated($model);
         } catch (\Exception $exception) {
@@ -137,8 +142,9 @@ class VeApiController extends ApiController
         try {
             // `$this->model::update()` was a static call, which Eloquent forwards to a fresh
             // query builder with no where clause -- updating every row in the table on any
-            // authorised PUT. The update has to run against the resolved instance.
-            $model->update($input);
+            // authorised PUT. The update has to run against the resolved instance, and only
+            // with validated fields (see store()).
+            $model->update($validator->validated());
 
             return $this->respond($model->fresh());
         } catch (\Exception $exception) {
@@ -196,6 +202,10 @@ class VeApiController extends ApiController
             return $query->orderBy($orderColumn, in_array($direction, ['asc', 'desc'], true) ? $direction : 'asc');
         }
 
-        return $request->input('sort_by', 'latest') === 'oldest' ? $query->oldest() : $query->latest();
+        // A bare latest() fails on models without a created-at column; fall back to the key.
+        $createdAt = $model->usesTimestamps() ? $model->getCreatedAtColumn() : null;
+        $column = $model->qualifyColumn($createdAt ?: $model->getKeyName());
+
+        return $request->input('sort_by', 'latest') === 'oldest' ? $query->orderBy($column) : $query->orderByDesc($column);
     }
 }

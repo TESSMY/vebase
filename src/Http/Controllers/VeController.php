@@ -12,6 +12,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -76,6 +77,28 @@ class VeController extends Controller
     protected $update_redirect_object;
 
     /**
+     * Request keys never flashed back to the session when a write is rejected.
+     *
+     * A failed user form used to flash the whole request -- the submitted password included --
+     * into the session store in plain text, and the next page read it back out.
+     */
+    protected array $dontFlash = ['password', 'password_confirmation', 'current_password'];
+
+    /**
+     * Extensions refused for any `$files` upload, whatever the model's own rules allow.
+     *
+     * Uploads are stored on the default disk -- usually the public one, served from the app's
+     * own origin -- under a name whose extension is guessed from the content. An SVG or HTML
+     * upload therefore became a same-origin page that runs script for whoever opens its URL.
+     * Models should still validate their uploads; this closes the gap when one does not.
+     */
+    protected array $blockedUploadExtensions = [
+        'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'pht', 'phps', 'phar',
+        'html', 'htm', 'shtml', 'xhtml', 'xht', 'svg', 'svgz', 'xml', 'xsl', 'js', 'mjs',
+        'asp', 'aspx', 'jsp', 'cgi', 'pl', 'py', 'sh', 'bat', 'cmd', 'exe', 'htaccess',
+    ];
+
+    /**
      * creates the model from the request path
      */
     public function __construct(Request $request)
@@ -85,12 +108,25 @@ class VeController extends Controller
         // The segment is attacker controlled. resolveModelClass() only hands back concrete
         // VeModel classes the app declares, so an unmatched segment is a 404 rather than an
         // arbitrary container resolution driven by the URL.
+        //
+        // The 404 itself waits for callAction(): the router (and `artisan route:list`) builds
+        // controllers just to read their middleware, and aborting here made every console
+        // command that does so die with a NotFoundHttpException.
         $class = VeHelper::resolveModelClass($this->routeName);
-        abort_if($class === null, 404);
+        if ($class === null) {
+            return;
+        }
 
         $this->model = app($class);
         $this->modelName = preg_replace('/([a-z])([A-Z])/s', '$1 $2', class_basename($class));
         $this->folder = Str::singular($request->segment(1));
+    }
+
+    public function callAction($method, $parameters)
+    {
+        abort_if($this->model === null, 404);
+
+        return parent::callAction($method, $parameters);
     }
 
     public function findModel($id)
@@ -139,7 +175,21 @@ class VeController extends Controller
                 $value = $request->input($name);
                 // Array input reaches the grammar as a single binding and blows up the query;
                 // only a scalar can meaningfully match an equality filter.
-                if (! is_null($value) && is_scalar($value)) {
+                if (is_null($value) || ! is_scalar($value)) {
+                    continue;
+                }
+
+                if (! empty($filter['relation'])) {
+                    // A filter on a related model (e.g. a user's roles). Without this the
+                    // value was matched against a column of the same name on this table,
+                    // which does not exist, so controllers stripped the parameter from the
+                    // request to dodge the SQL error -- and the filter then vanished from the
+                    // pagination links and from the selected option.
+                    $column = $filter['relationColumn'] ?? $filter['key'] ?? 'id';
+                    $models->whereHas($filter['relation'], function ($q) use ($column, $value) {
+                        $q->where($q->qualifyColumn($column), $value);
+                    });
+                } else {
                     $models->where($name, $value);
                 }
             }
@@ -149,21 +199,7 @@ class VeController extends Controller
             $models = $models->withTrashed();
         }
 
-        if (! empty($search) && ! empty($this->model->searchable)) {
-            $models = $models->where(function ($query) use ($search) {
-                foreach ($this->model->searchable as $value) {
-                    if (str_contains($value, '.')) {
-                        [$relation, $relationColumn] = explode('.', $value, 2);
-
-                        $query->orWhereHas($relation, function ($q) use ($relationColumn, $search) {
-                            $q->where($relationColumn, 'LIKE', '%'.$search.'%');
-                        });
-                    } else {
-                        $query->orWhere($value, 'LIKE', '%'.$search.'%');
-                    }
-                }
-            });
-        }
+        $models = VeHelper::applySearch($models, $this->model->searchable ?? [], $search);
 
         // The index table walks `relation` index fields per row, so without this a listing of
         // N rows issues N extra queries for each of them.
@@ -171,7 +207,7 @@ class VeController extends Controller
             $models = $models->with($eagerLoads);
         }
 
-        $models = $this->applySort($request, $models)->latest()->paginate($limit)->withQueryString();
+        $models = $this->applyDefaultOrder($this->applySort($request, $models))->paginate($limit)->withQueryString();
 
         $compact = [
             'routeModel' => Str::singular($this->routeName),
@@ -229,6 +265,21 @@ class VeController extends Controller
     }
 
     /**
+     * Newest first, as the tie-breaker after any requested sort.
+     *
+     * latest() orders by a bare `created_at`: that is ambiguous once ColumnSortable joins a
+     * related table for a `relation.column` sort, and missing outright on models without
+     * timestamps -- both an SQL error on the index page. The column is qualified, and models
+     * without a created-at column fall back to their key.
+     */
+    protected function applyDefaultOrder($query)
+    {
+        $createdAt = $this->model->usesTimestamps() ? $this->model->getCreatedAtColumn() : null;
+
+        return $query->orderByDesc($this->model->qualifyColumn($createdAt ?: $this->model->getKeyName()));
+    }
+
+    /**
      * @return Application|Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
      * @throws AuthorizationException
      */
@@ -272,19 +323,16 @@ class VeController extends Controller
 
         $input = $this->inputFor($request, $this->model->createFields ?? []);
 
-        if (!empty($this->model->createValidator())) {
-            $validator = Validator::make($input, $this->model->createValidator());
-            if ($validator->fails()) {
-                flash('Error: '.implode(' ', $validator->errors()->all()))->error();
-
-                return back()->withInput($request->input())->withErrors($validator);
-            }
+        if ($rejected = $this->rejectInvalidInput($request, $input, $this->model->createValidator())) {
+            return $rejected;
         }
+
+        $stored = [];
 
         try {
             DB::beginTransaction();
 
-            $input = $this->storeUploadedFiles($request, $input, strtolower(Str::snake($this->modelName)).'/'.time());
+            $input = $this->storeUploadedFiles($request, $input, strtolower(Str::snake($this->modelName)).'/'.time(), $stored);
 
             if (method_exists($this, 'storeInput')) {
                 $input = $this->storeInput($input);
@@ -314,13 +362,17 @@ class VeController extends Controller
             // proper 401/403 -- do not flatten to a flashed 302, which would look like a
             // validation error and hide the refusal.
             DB::rollBack();
+            $this->deleteFiles($stored);
             throw $exception;
         } catch (\Exception $exception) {
             DB::rollBack();
+            // The rollback cannot reach the disk: without this every failed create left its
+            // uploads behind with nothing referencing them.
+            $this->deleteFiles($stored);
             Log::error($exception);
             flash()->error($this->failureMessage('creating', $exception));
 
-            return back()->withInput();
+            return back()->withInput($this->flashableInput($request));
         }
     }
 
@@ -413,21 +465,21 @@ class VeController extends Controller
 
         $input = $this->inputFor($request, $this->model->updateFields ?? []);
 
-        if (!empty($model->updateValidator())) {
-            $validator = Validator::make($input, $model->updateValidator());
-            if ($validator->fails()) {
-                flash('Error: '.implode(' ', $validator->errors()->all()))->error();
-
-                return back()->withInput($request->input())->withErrors($validator);
-            }
+        if ($rejected = $this->rejectInvalidInput($request, $input, $model->updateValidator())) {
+            return $rejected;
         }
+
+        $stored = [];
 
         try {
             DB::beginTransaction();
 
-            // Replacing a file: drop what is already there, then store the new upload.
-            $this->deleteStoredFiles($request, $model);
-            $input = $this->storeUploadedFiles($request, $input, strtolower(Str::snake($this->modelName)).'/'.md5((string) $model->id));
+            // Replacing a file: the old one is only removed once the new value is committed.
+            // It used to be deleted up front, so any failure later in the write -- a hook's
+            // guard, a constraint violation -- rolled the row back to point at a file that
+            // no longer existed.
+            $replaced = $this->replacedFilePaths($request, $model);
+            $input = $this->storeUploadedFiles($request, $input, strtolower(Str::snake($this->modelName)).'/'.md5((string) $model->getKey()), $stored);
 
             if (method_exists($this, 'updateInput')) {
                 $input = $this->updateInput($input);
@@ -440,7 +492,8 @@ class VeController extends Controller
             }
 
             DB::commit();
-            flash()->success('Successfully updated '.strtolower($this->modelName).'. ID: '.$model->id);
+            $this->deleteFiles($replaced);
+            flash()->success('Successfully updated '.strtolower($this->modelName).'. ID: '.$model->getKey());
 
             if (!empty($this->update_redirect_route)) {
                 if (!empty($this->update_redirect_object)) {
@@ -455,13 +508,15 @@ class VeController extends Controller
             // See store(): keep abort()/authorize() from hook methods as 401/403 rather than
             // a flashed 302. The rollback still runs so no partial write survives.
             DB::rollBack();
+            $this->deleteFiles($stored);
             throw $exception;
         } catch (\Exception $exception) {
             DB::rollBack();
+            $this->deleteFiles($stored);
             Log::error($exception);
             flash()->error($this->failureMessage('updating', $exception));
 
-            return back()->withInput();
+            return back()->withInput($this->flashableInput($request));
         }
     }
 
@@ -522,7 +577,10 @@ class VeController extends Controller
         ]);
 
         try {
-            Excel::import(new ModelsImport($this->model), $request->file('import_file'));
+            // One transaction for the whole file. Rows are written chunk by chunk, so a bad row
+            // halfway down used to leave everything above it imported while the user was told
+            // the import failed -- re-running it then duplicated or re-applied those rows.
+            DB::transaction(fn () => Excel::import(new ModelsImport($this->model), $request->file('import_file')));
         } catch (\Exception $exception) {
             Log::error($exception);
             flash()->error($this->failureMessage('importing', $exception));
@@ -530,7 +588,11 @@ class VeController extends Controller
             return back();
         }
 
-        return redirect()->route($this->folder.'.'.$this->routeName.'.index')->with('success', 'All good!');
+        // flash(), like every other outcome here. `->with('success')` wrote a session key the
+        // flash partial never reads, so a successful import showed no confirmation at all.
+        flash()->success('Successfully imported '.Str::plural(strtolower($this->modelName)).'.');
+
+        return redirect()->route($this->folder.'.'.$this->routeName.'.index');
     }
 
     /**
@@ -574,10 +636,76 @@ class VeController extends Controller
     }
 
     /**
+     * Validates a write's input, plus the upload extension block list. Returns the redirect
+     * back to the form when anything fails, or null when the write may go ahead.
+     */
+    protected function rejectInvalidInput(Request $request, array $input, $rules): ?RedirectResponse
+    {
+        $validator = Validator::make($input, empty($rules) ? [] : $rules);
+
+        $validator->after(function ($validator) use ($request) {
+            foreach ($this->blockedUploadErrors($request) as $field => $message) {
+                $validator->errors()->add($field, $message);
+            }
+        });
+
+        if (! $validator->fails()) {
+            return null;
+        }
+
+        flash('Error: '.implode(' ', $validator->errors()->all()))->error();
+
+        return back()->withInput($this->flashableInput($request))->withErrors($validator);
+    }
+
+    /**
+     * The request input that may be flashed back to the form, without $dontFlash keys.
+     */
+    protected function flashableInput(Request $request): array
+    {
+        return Arr::except($request->input(), $this->dontFlash);
+    }
+
+    /**
+     * One error per `$files` field carrying an upload whose extension is on the block list.
+     *
+     * Both the content-guessed extension -- which store() puts on the stored name -- and the
+     * client's own are checked.
+     */
+    protected function blockedUploadErrors(Request $request): array
+    {
+        $errors = [];
+        $blocked = array_map('strtolower', $this->blockedUploadExtensions);
+
+        foreach ((array) ($this->model->files ?? []) as $file) {
+            if (! $request->hasFile($file)) {
+                continue;
+            }
+
+            foreach (Arr::flatten(Arr::wrap($request->file($file))) as $upload) {
+                $extensions = [
+                    strtolower((string) $upload->guessExtension()),
+                    strtolower((string) $upload->getClientOriginalExtension()),
+                ];
+
+                if (array_intersect($extensions, $blocked)) {
+                    $errors[$file] = 'The '.str_replace('_', ' ', $file).' file type is not allowed.';
+                    break;
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
      * Stores any uploaded files listed in $model->files under $directory and returns the input
      * with those keys replaced by the resulting public URLs.
+     *
+     * Each disk path written is appended to $stored, so a write that fails afterwards can
+     * remove them again.
      */
-    protected function storeUploadedFiles(Request $request, array $input, string $directory): array
+    protected function storeUploadedFiles(Request $request, array $input, string $directory, array &$stored = []): array
     {
         foreach ((array) ($this->model->files ?? []) as $file) {
             if (! $request->hasFile($file)) {
@@ -587,13 +715,13 @@ class VeController extends Controller
             $uploaded = $request->file($file);
 
             if (is_array($uploaded)) {
-                $stored = [];
+                $urls = [];
                 foreach ($uploaded as $item) {
-                    $stored[] = Storage::url($item->store($directory));
+                    $urls[] = Storage::url($stored[] = $item->store($directory));
                 }
-                $input[$file] = $stored;
+                $input[$file] = $urls;
             } else {
-                $input[$file] = Storage::url($uploaded->store($directory));
+                $input[$file] = Storage::url($stored[] = $uploaded->store($directory));
             }
         }
 
@@ -601,24 +729,43 @@ class VeController extends Controller
     }
 
     /**
-     * Removes the files currently referenced by $model for each upload being replaced.
+     * Disk paths of the files $model currently references for each upload being replaced.
      */
-    protected function deleteStoredFiles(Request $request, $model): void
+    protected function replacedFilePaths(Request $request, $model): array
     {
+        $paths = [];
+
         foreach ((array) ($this->model->files ?? []) as $file) {
             if (! $request->hasFile($file) || empty($model[$file])) {
                 continue;
             }
 
             foreach ((array) $model[$file] as $item) {
-                if (! is_string($item)) {
-                    continue;
-                }
-
-                if ($path = $this->storagePathFromUrl($item)) {
-                    Storage::delete($path);
+                if (is_string($item) && ($path = $this->storagePathFromUrl($item))) {
+                    $paths[] = $path;
                 }
             }
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Best-effort removal of stored files. A file that cannot be removed is logged rather than
+     * allowed to fail a write that has already been committed or rolled back.
+     */
+    protected function deleteFiles(array $paths): void
+    {
+        $paths = array_values(array_filter($paths, fn ($path) => is_string($path) && $path !== ''));
+
+        if (empty($paths)) {
+            return;
+        }
+
+        try {
+            Storage::delete($paths);
+        } catch (\Throwable $exception) {
+            Log::warning($exception);
         }
     }
 

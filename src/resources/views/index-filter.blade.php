@@ -39,7 +39,8 @@
                     </div>
                 @endif
                 <div class="col-auto">
-                    <select class="form-select" name="{{ $filter['name'] }}" {{ !empty($filter['required']) ? 'required' : '' }} onchange="this.form.submit()">
+                    {{-- v-pre: option labels are stored values (see common/table.blade.php). --}}
+                    <select v-pre class="form-select" name="{{ $filter['name'] }}" {{ !empty($filter['required']) ? 'required' : '' }} onchange="this.form.submit()">
                         @if (!empty($filter['includeEmpty']))
                             <option value="">All</option>
                         @endif

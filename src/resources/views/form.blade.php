@@ -13,6 +13,11 @@
             $field['inputType'] = $field['inputType'] ?? 'text';
             $field['placeholder'] = $field['placeholder'] ?? $field['displayName'];
             $value = old($field['name']) ?? (!$isCreate && !empty($$routeModel) ? $$routeModel[$field['name']] ?? '' : ($field['default'] ?? ''));
+            // A password input is never pre-filled: on edit this used to print the stored hash
+            // into the page source, and submitting the form unchanged wrote it straight back.
+            if ($field['inputType'] === 'password') {
+                $value = '';
+            }
             $showField = true;
 
             // accept array value
@@ -70,8 +75,11 @@
                 @if (!empty($field['displayName']))
                     <label class="form-label">{{ $field['displayName'] }}</label>
                 @endif
+                {{-- v-pre on every element whose text is a stored value (options, textareas, option
+                     labels): the form is compiled by Vue in the browser, and `{{ ... }}` in that
+                     text would run as a Vue expression. Attribute values are not affected. --}}
                 @if ($field['inputType'] == 'select')
-                    <select class="form-select" name="{{ $field['name'] }}" {{ !empty($field['required']) ? 'required' : '' }}>
+                    <select v-pre class="form-select" name="{{ $field['name'] }}" {{ !empty($field['required']) ? 'required' : '' }}>
                         @if (!empty($field['includeEmpty']))
                             <option value="">N/A</option>
                         @endif
@@ -102,12 +110,12 @@
                             @endif
                     ></tagging>
                 @elseif ($field['inputType'] == 'textarea')
-                    <textarea class="form-control" name="{{ $field['name'] }}" placeholder="{{ $field['placeholder'] }}" rows="{{ $field['rows'] ?? 5 }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $value }}</textarea>
+                    <textarea v-pre class="form-control" name="{{ $field['name'] }}" placeholder="{{ $field['placeholder'] }}" rows="{{ $field['rows'] ?? 5 }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $value }}</textarea>
                 @elseif ($field['inputType'] == 'radio' || $field['inputType'] == 'checkbox')
                     @if (!empty($field['multipleInput']))
                         @foreach ($options as $key => $option)
                             <div class="form-check mb-2 {{ !empty($field['switchType']) ? 'form-switch' : '' }}">
-                                <label class="form-check-label"><input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}[]" value="{{ $option }}" {{ ((is_array($value) && in_array($key, $value)) || $value == $key) ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}> {{ $option }}</label>
+                                <label class="form-check-label" v-pre><input class="form-check-input" type="{{ $field['inputType'] }}" name="{{ $field['name'] }}[]" value="{{ $option }}" {{ ((is_array($value) && in_array($key, $value)) || $value == $key) ? 'checked' : '' }} {{ !empty($field['required']) ? 'required' : '' }}> {{ $option }}</label>
                             </div>
                         @endforeach
                     @else
@@ -127,7 +135,7 @@
                     @endphp
                     <input class="form-control" type="date" min="{{ $field['min'] ?? '' }}" max="{{ $field['max'] ?? '' }}" name="{{ $field['name'] }}" value="{{ $value }}" {{ !empty($field['required']) ? 'required' : '' }}>
                 @elseif ($field['inputType'] === 'wysiwyg')
-                    <textarea name="{{ $field['name'] }}" {{ !empty($field['required']) ? 'required' : '' }} class="tinymce">{{ $value }}</textarea>
+                    <textarea v-pre name="{{ $field['name'] }}" {{ !empty($field['required']) ? 'required' : '' }} class="tinymce">{{ $value }}</textarea>
                 @elseif ($field['inputType'] == 'file')
                     @if (!$isCreate && !empty($field['show']) && !empty($value))
                         <br />

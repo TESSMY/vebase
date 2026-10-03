@@ -70,6 +70,10 @@ abstract class VeModel extends Model
      *          '1' => 'Enabled',
      *      ],
      * ],
+     *
+     * Add 'relation' to filter through a relation instead of a column on this table; the value
+     * is matched against 'relationColumn' on the related model (default: 'key', then 'id').
+     * E.g. ['name' => 'role', 'relation' => 'roles', 'class' => Role::class, 'key' => 'id']
      */
     public $filters = [];
 

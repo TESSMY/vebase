@@ -124,6 +124,40 @@ class VeHelper
     }
 
     /**
+     * Constrains $query to rows where any of $columns contains $search.
+     *
+     * A `relation.column` entry searches through the relation (nested relations use the usual
+     * dot path, `company.owner.name`). Shared by the web and API controllers: the API copy used
+     * to pass a dotted entry straight to orWhere(), which reads it as `table.column` and fails
+     * with an unknown-table SQL error.
+     */
+    public static function applySearch($query, $columns, ?string $search)
+    {
+        $columns = array_filter((array) $columns, fn ($column) => is_string($column) && $column !== '');
+
+        if ($search === null || $search === '' || empty($columns)) {
+            return $query;
+        }
+
+        $pattern = '%'.$search.'%';
+
+        return $query->where(function ($query) use ($columns, $pattern) {
+            foreach ($columns as $column) {
+                if (str_contains($column, '.')) {
+                    $relation = Str::beforeLast($column, '.');
+                    $relationColumn = Str::afterLast($column, '.');
+
+                    $query->orWhereHas($relation, function ($q) use ($relationColumn, $pattern) {
+                        $q->where($q->qualifyColumn($relationColumn), 'LIKE', $pattern);
+                    });
+                } else {
+                    $query->orWhere($query->qualifyColumn($column), 'LIKE', $pattern);
+                }
+            }
+        });
+    }
+
+    /**
      * Normalises a request supplied page size to a positive integer no larger than $max.
      */
     public static function sanitizeLimit($value, int $default, ?int $max = null): int
